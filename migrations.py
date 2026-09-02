@@ -1,6 +1,8 @@
 import sqlite3
+import os
 
-conn = sqlite3.connect('violations.db')
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'violations.db')
+conn = sqlite3.connect(DB_PATH)
 c = conn.cursor()
 
 # Table 1: Cameras with GPS coordinates

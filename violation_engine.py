@@ -127,8 +127,8 @@ class ViolationEngine:
 
 
 def log_to_trajectory(plate_text, camera_id, timestamp):
-    import sqlite3
-    conn = sqlite3.connect('violations.db')
+    from trajectory_engine import _connect
+    conn = _connect()
     c = conn.cursor()
     
     camera = c.execute('SELECT latitude, longitude FROM cameras WHERE id = ?', 
@@ -146,4 +146,4 @@ def log_to_trajectory(plate_text, camera_id, timestamp):
             (camera_id, plate_text, timestamp))
         conn.commit()
     
-    conn.close()
+    conn.close()

@@ -30,6 +30,14 @@ The dashboard carries **Satyameva Jayate (सत्यमेव जयते)**.
 - Public citizen portal — no login required, masked plate numbers
 - Analytics page with 5 Chart.js charts, 6 KPIs
 - CSV export, mark-as-paid, performance metrics API (`/metrics`)
+- AI Safety Intelligence command centre at `/ai-safety`
+- Explainable historical vehicle risk scores (`/api/risk/vehicles`)
+- Track-based near-miss heuristic events (`/api/near-misses`), explicitly not guaranteed accident prediction
+- Heatmap-backed current/emerging blackspots (`/api/blackspots`)
+- Emergency-event API surface with simulated signal integration only (`/api/emergency-events`)
+- Evidence SHA-256 verification (`/api/evidence/<id>/verify`) and confidence-based review workflow (`/api/reviews`)
+- System health, recommendation, weather demo, and what-if simulation panels
+- Demo Video Library with all locally available inputs and Hackathon Demo Mode
 - Dockerized — deployed live on Hugging Face Spaces (CPU, 16GB RAM)
 
 ---
@@ -51,6 +59,8 @@ templates/          — Flask HTML templates (login, dashboard, citizen, analyti
 static/             — Screenshots, challans
 videos/             — Input video files
 models/             — YOLOv8 weights (downloaded at Docker build time)
+safety_intelligence.py — Explainable risk, near-miss, blackspot, evidence and review helpers
+demo_catalog.py     — Metadata catalog for existing and new hackathon demo videos
 Dockerfile          — CPU-only build, pre-downloads models + EasyOCR
 docker-compose.yml  — Local multi-container setup
 ```
@@ -84,6 +94,11 @@ GMAIL_APP_PASS=your-app-password
 CITIZEN_EMAIL=citizen@example.com
 ADMIN_EMAIL=admin@example.com
 
+# Optional — WhatsApp delivery (Twilio or Meta Cloud API)
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_WHATSAPP_FROM=+14155238886
+
 # Optional — Vahan API
 VAHAN_API_KEY=
 
@@ -105,8 +120,17 @@ python app.py
 
 Open `http://localhost:5001/citizen` — public citizen portal
 Open `http://localhost:5001/login` — admin login (traffic police)
+Open `http://localhost:5001/ai-safety` — AI Safety Intelligence (after officer login)
 
 From the admin dashboard, select a video file or enter an RTSP URL and click **▶ ADD**.
+
+### Hackathon demo flow
+
+Open **Demo Videos**, keep **Hackathon Demo Mode** enabled, and run the **Demo Video - No Helmet Detection** input first: video → detection → plate/OCR → evidence → risk → review → challan. Then run **Demo Video - Traffic Intelligence** to show vehicle tracking, traffic density, and location-backed safety analysis. The catalog reports “No instance detected in this video” when the database has no observed event; it never fabricates detections.
+
+### Safety intelligence APIs
+
+All officer APIs require the admin session: `/api/risk/vehicles`, `/api/near-misses`, `/api/blackspots`, `/api/emergency-events`, `/api/reviews`, `/api/recommendations`, and `/api/system-health`. Public challan verification remains available at `/verify/<id>`. Risk and simulation outputs are estimates grounded in available data, not guarantees.
 
 ### Batch video processing
 

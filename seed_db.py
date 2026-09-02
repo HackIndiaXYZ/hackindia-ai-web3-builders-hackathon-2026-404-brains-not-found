@@ -13,7 +13,7 @@ import os
 import random
 from datetime import datetime, timedelta
 
-DB_PATH = "violations.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "violations.db")
 
 # ── Sample data pools ──────────────────────────────────────
 PLATES = [

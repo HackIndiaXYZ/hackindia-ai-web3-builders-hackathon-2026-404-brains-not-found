@@ -1,14 +1,63 @@
 import sqlite3
+import os
 from datetime import datetime, timedelta
 import uuid
 from geopy.distance import geodesic
+
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'violations.db')
+
+
+def _ensure_schema(conn):
+    conn.executescript('''
+        CREATE TABLE IF NOT EXISTS cameras (
+            id TEXT PRIMARY KEY,
+            name TEXT UNIQUE,
+            latitude REAL,
+            longitude REAL,
+            rtsp_url TEXT,
+            sector TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS trajectories (
+            id TEXT PRIMARY KEY,
+            plate_text TEXT,
+            camera_start_id TEXT,
+            time_start TIMESTAMP,
+            camera_end_id TEXT,
+            time_end TIMESTAMP,
+            distance_km REAL
+        );
+        CREATE TABLE IF NOT EXISTS trajectory_points (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            trajectory_id TEXT,
+            camera_id TEXT,
+            plate_text TEXT,
+            latitude REAL,
+            longitude REAL,
+            timestamp TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS heatmap_cells (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            grid_lat REAL,
+            grid_lng REAL,
+            vehicle_count INTEGER,
+            timestamp_hour TIMESTAMP
+        );
+    ''')
+
+
+def _connect():
+    conn = sqlite3.connect(DB_PATH)
+    _ensure_schema(conn)
+    return conn
+
 
 def match_plates_across_cameras(time_window_sec=600, max_distance_km=2.0):
     """
     Match same plate detected at different cameras within time window
     and distance threshold
     """
-    conn = sqlite3.connect('violations.db')
+    conn = _connect()
     c = conn.cursor()
     
     detections = c.execute('''
@@ -49,16 +98,15 @@ def match_plates_across_cameras(time_window_sec=600, max_distance_km=2.0):
     
     trajectory_count = 0
     for plate, detections_list in plate_detections.items():
-        for i, detection1 in enumerate(detections_list[:-1]):
-            detection2 = detections_list[i + 1]
+        for detection1, detection2 in zip(detections_list, detections_list[1:]):
             
             dist = geodesic(
                 (detection1['lat'], detection1['lng']),
                 (detection2['lat'], detection2['lng'])
             ).km
             
-            time1 = datetime.fromisoformat(detection1['timestamp'])
-            time2 = datetime.fromisoformat(detection2['timestamp'])
+            time1 = _parse_timestamp(detection1['timestamp'])
+            time2 = _parse_timestamp(detection2['timestamp'])
             time_gap = (time2 - time1).total_seconds()
             
             if dist < max_distance_km and time_gap < time_window_sec:
@@ -93,7 +141,7 @@ def compute_heatmap(grid_size_m=500):
     """
     Create traffic density heatmap by dividing city into grid cells
     """
-    conn = sqlite3.connect('violations.db')
+    conn = _connect()
     c = conn.cursor()
     
     violations = c.execute('''
@@ -139,3 +187,12 @@ def compute_heatmap(grid_size_m=500):
     
     print(f"Heatmap: {len(heatmap)} cells computed")
     return heatmap
+
+
+def _parse_timestamp(value):
+    """Accept SQLite's common timestamp formats, including a trailing Z."""
+    normalized = str(value).strip().replace('Z', '+00:00')
+    try:
+        return datetime.fromisoformat(normalized)
+    except ValueError:
+        return datetime.strptime(normalized, '%Y-%m-%d %H:%M:%S')

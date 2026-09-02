@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 import sqlite3
 import uuid
+from trajectory_engine import _connect
 
 bp = Blueprint('cameras', __name__)
 
@@ -9,7 +10,7 @@ def add_camera():
     data = request.json
     cam_id = str(uuid.uuid4())[:8]
     
-    conn = sqlite3.connect('violations.db')
+    conn = _connect()
     c = conn.cursor()
     c.execute('''INSERT INTO cameras VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)''',
               (cam_id, data['name'], data['lat'], data['lng'], 
@@ -21,7 +22,7 @@ def add_camera():
 
 @bp.route('/admin/cameras/list', methods=['GET'])
 def list_cameras():
-    conn = sqlite3.connect('violations.db')
+    conn = _connect()
     c = conn.cursor()
     cameras = c.execute('SELECT id, name, latitude, longitude, sector FROM cameras').fetchall()
     conn.close()
@@ -38,7 +39,7 @@ def list_cameras():
 def search_plate():
     plate = request.args.get('plate')
     
-    conn = sqlite3.connect('violations.db')
+    conn = _connect()
     c = conn.cursor()
     
     points = c.execute('''

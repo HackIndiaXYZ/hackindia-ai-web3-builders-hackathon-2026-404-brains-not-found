@@ -57,6 +57,9 @@ from config import (APP_NAME, TAGLINE, AUTHOR_NAME, AUTHOR_ROLE, AUTHOR_EMAIL,
                     AUTHOR_GITHUB, AUTHOR_LINKEDIN, EDUCATION, UNIVERSITY,
                     CGPA, EXPECTED_GRADUATION, SECRET_KEY, ADMIN_PASSWORD,
                     DEMO_PASSWORD, REPORT_DIR)
+from demo_catalog import build_demo_catalog
+from safety_intelligence import (init_safety_tables, vehicle_risks, blackspots,
+                                  verify_evidence, reviews, near_miss)
 
 app = Flask(__name__)
 app.register_blueprint(camera_bp)
@@ -154,6 +157,7 @@ def init_db():
         referrer   TEXT,
         ua         TEXT
     )''')
+    init_safety_tables(conn)
     conn.commit()
     c.execute("SELECT COUNT(*) FROM violations")
     if c.fetchone()[0] == 0:
@@ -566,6 +570,17 @@ def process_frame(frame, state):
     engine     = state["engine"]
     violations = engine.check(traffic_objects, helmet_objects, traffic_boxes, w_f, h_f)
 
+    safety_event = near_miss(traffic_boxes, state.setdefault("track_history", {}), state["label"])
+    if safety_event:
+        conn = _get_conn()
+        conn.execute(
+            "INSERT INTO near_miss_events (camera,timestamp,vehicle_ids,risk_score,risk_level,reason,source) VALUES (?,?,?,?,?,?,?)",
+            (safety_event["camera"], datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+             ",".join(map(str, safety_event["vehicle_ids"])), safety_event["risk_score"],
+             safety_event["risk_level"], safety_event["reason"], safety_event["source"]),
+        )
+        conn.commit(); conn.close()
+
     # Triple riding + no helmet: front rider's helmet cancels nohelmet on pillion
     # in the default frame-global check. Override: any nohelmet present while
     # triple riding is confirmed is a valid additional violation.
@@ -855,6 +870,7 @@ def make_camera_state(cam_id, source, label):
         "all_violations_seen": set(),
         "wrong_way_seen":  False,
         "wrong_way_frames": 0,
+        "track_history": {},
         "logged":              False,
     }
 
@@ -1037,8 +1053,27 @@ def index():
     _log_visitor('/dashboard')
     videos = [f for f in os.listdir(VIDEO_FOLDER)
               if f.lower().endswith(('.mp4','.avi','.mov','.mkv'))]
-    return render_template('index.html', videos=videos,
+    conn = _get_conn()
+    demo_videos = build_demo_catalog(VIDEO_FOLDER, conn)
+    conn.close()
+    return render_template('index.html', videos=videos, demo_videos=demo_videos,
                            is_demo=session.get('is_demo', False))
+
+@app.route('/api/demo-videos')
+@require_admin_api
+def demo_videos_api():
+    conn = _get_conn()
+    try:
+        return jsonify(build_demo_catalog(VIDEO_FOLDER, conn))
+    finally:
+        conn.close()
+
+@app.route('/demo-video/<path:filename>')
+@require_admin
+def demo_video(filename):
+    """Serve demo inputs only from the configured video directory."""
+    safe_name = os.path.basename(filename)
+    return send_from_directory(VIDEO_FOLDER, safe_name)
 
 @app.route('/analytics')
 @require_admin
@@ -1243,6 +1278,78 @@ def stats_api():
 @require_admin_api
 def insights_api():
     return jsonify(get_enforcement_insights())
+
+@app.route('/ai-safety')
+@require_admin
+def ai_safety_page():
+    return render_template('ai_safety.html')
+
+@app.route('/api/risk/vehicles')
+@require_admin_api
+def vehicle_risk_api():
+    conn = _get_conn()
+    try:
+        return jsonify({"disclaimer": "Historical, explainable risk estimate; not accident prediction.", "vehicles": vehicle_risks(conn)})
+    finally:
+        conn.close()
+
+@app.route('/api/near-misses')
+@require_admin_api
+def near_misses_api():
+    conn = _get_conn()
+    try:
+        rows = conn.execute("SELECT id,camera,timestamp,vehicle_ids,risk_score,risk_level,reason,evidence_frame,source FROM near_miss_events ORDER BY id DESC LIMIT 50").fetchall()
+        return jsonify({"disclaimer": "AI-assisted risk estimation; not guaranteed accident prediction.", "events": [dict(row) for row in rows]})
+    finally:
+        conn.close()
+
+@app.route('/api/blackspots')
+@require_admin_api
+def blackspots_api():
+    conn = _get_conn()
+    try:
+        return jsonify({"basis": "Available heatmap data only; location-less records are excluded.", "blackspots": blackspots(conn)})
+    finally:
+        conn.close()
+
+@app.route('/api/emergency-events')
+@require_admin_api
+def emergency_events_api():
+    conn = _get_conn()
+    try:
+        rows = conn.execute("SELECT * FROM emergency_events ORDER BY id DESC LIMIT 50").fetchall()
+        return jsonify({"events": [dict(row) for row in rows], "signal_control": "API-ready simulation only; no real traffic signals are controlled."})
+    finally:
+        conn.close()
+
+@app.route('/api/reviews')
+@require_admin_api
+def reviews_api():
+    conn = _get_conn()
+    try:
+        return jsonify({"workflow": {"automated": ">=95%", "human_review": "70-95%", "needs_evidence": "<70%"}, "reviews": reviews(conn)})
+    finally:
+        conn.close()
+
+@app.route('/api/recommendations')
+@require_admin_api
+def recommendations_api():
+    return jsonify({"recommendations": get_enforcement_insights()["recommendations"], "basis": "Existing violation ledger and available heatmap data."})
+
+@app.route('/api/system-health')
+@require_admin_api
+def system_health_api():
+    return jsonify({"status": "degraded" if not ML_AVAILABLE else "healthy", "ml_available": ML_AVAILABLE, "cameras": len(cameras), "database": "connected", "privacy_mode": "ON"})
+
+@app.route('/api/evidence/<int:vid>/verify')
+@require_admin_api
+def evidence_verify_api(vid):
+    conn = _get_conn()
+    try:
+        result = verify_evidence(conn, vid, SCREENSHOT_DIR)
+        return jsonify(result or {"error": "Violation not found"}), 404 if result is None else 200
+    finally:
+        conn.close()
 
 @app.route('/verify/<int:vid>')
 def verify_challan(vid):
