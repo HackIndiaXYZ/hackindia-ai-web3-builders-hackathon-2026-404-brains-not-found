@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} - Admin Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f4f6f9; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+        input[type="text"] { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { cursor: pointer; }
+        hr { border: none; border-top: 1px solid #eee; margin: 15px 0; }
+        h3, h4 { margin-top: 0; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h3>{{ app_name }} · Admin tools</h3>
+    <a href="/map" style="display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 5px;">Open Traffic Map</a>
+    <hr>
+    <h4>Blacklist Management</h4>
+    <input type="text" id="blacklistPlate" placeholder="Plate to blacklist (e.g. MH12AB1234)" />
+    <input type="text" id="blacklistReason" placeholder="Reason (stolen, wanted, etc)" />
+    <button onclick="addBlacklist()" style="width: 100%; padding: 10px; background: #e74c3c; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;">Add to Blacklist</button>
+</div>
+
+<script>
+function addBlacklist() {
+    const plate = document.getElementById('blacklistPlate').value;
+    const reason = document.getElementById('blacklistReason').value;
+    if (!plate || !reason) {
+        alert('Please enter both plate and reason');
+        return;
+    }
+    
+    fetch('/admin/blacklist/add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({plate_text: plate, reason: reason})
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert('Added ' + data.plate_text + ' to blacklist');
+        document.getElementById('blacklistPlate').value = '';
+        document.getElementById('blacklistReason').value = '';
+    })
+    .catch(err => alert('Error adding to blacklist: ' + err));
+}
+</script>
+</body>
+</html>

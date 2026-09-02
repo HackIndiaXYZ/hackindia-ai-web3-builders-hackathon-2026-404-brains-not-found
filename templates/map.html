@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} — Geolocation Heat Map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 300px; height: 100%; 
+                   background: white; z-index: 999; overflow-y: auto; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+        .sidebar h2 { background: #2c3e50; color: white; padding: 15px; margin: 0; }
+        .sidebar input { width: 85%; padding: 8px; margin: 10px; box-sizing: border-box; }
+        .sidebar button { width: 90%; padding: 10px; margin: 5px; background: #3498db; color: white; border: none; cursor: pointer; }
+        .sidebar button:hover { background: #2980b9; }
+        .trajectory-info { background: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px; }
+        .badge { display: inline-block; padding: 3px 8px; background: #e74c3c; color: white; border-radius: 3px; font-size: 12px; }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <h2>{{ app_name }} Map</h2>
+    <input type="text" id="searchPlate" placeholder="Search plate (XX-00-AB-1234)" />
+    <button onclick="searchTrajectory()">Search Trajectory</button>
+    <button onclick="loadHeatmap()">Show Heatmap</button>
+    <button onclick="loadCameras()">Show Cameras</button>
+    <hr>
+    <div id="results"></div>
+</div>
+<div id="map"></div>
+
+<script>
+const map = L.map('map').setView([28.6139, 77.2090], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+}).addTo(map);
+
+let trajectoryPolyline = null;
+
+function searchTrajectory() {
+    const plate = document.getElementById('searchPlate').value;
+    if (!plate) { alert('Enter plate'); return; }
+    
+    fetch('/api/trajectory/search?plate=' + plate)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.trajectory.features || data.trajectory.features.length === 0) {
+                document.getElementById('results').innerHTML = '<p>No sightings found</p>';
+                return;
+            }
+            
+            data.trajectory.features.forEach((feature, idx) => {
+                const [lng, lat] = feature.geometry.coordinates;
+                L.marker([lat, lng])
+                    .bindPopup(feature.properties.camera + '<br>' + feature.properties.time)
+                    .addTo(map);
+            });
+            
+            const coords = data.trajectory.features.map(f => {
+                const [lng, lat] = f.geometry.coordinates;
+                return [lat, lng];
+            });
+            
+            if (trajectoryPolyline) map.removeLayer(trajectoryPolyline);
+            trajectoryPolyline = L.polyline(coords, {color: 'red', weight: 3}).addTo(map);
+            map.fitBounds(trajectoryPolyline.getBounds());
+            
+            document.getElementById('results').innerHTML = 
+                '<div class="trajectory-info"><strong>' + plate + 
+                '</strong><br>Sightings: ' + data.trajectory.features.length + '</div>';
+        });
+}
+
+function loadCameras() {
+    fetch('/admin/cameras/list')
+        .then(r => r.json())
+        .then(cameras => {
+            cameras.forEach(cam => {
+                L.circleMarker([cam.lat, cam.lng], {
+                    radius: 6, color: 'blue', fillOpacity: 0.7
+                }).bindPopup('Camera: ' + cam.name)
+                 .addTo(map);
+            });
+            document.getElementById('results').innerHTML = 
+                '<p>Cameras loaded: ' + cameras.length + '</p>';
+        });
+}
+
+function loadHeatmap() {
+    fetch('/api/heatmap')
+        .then(r => r.json())
+        .then(cells => {
+            cells.forEach(cell => {
+                const maxCount = Math.max(...cells.map(c => c.vehicle_count));
+                const intensity = cell.vehicle_count / maxCount;
+                const color = intensity > 0.7 ? '#e74c3c' : intensity > 0.4 ? '#f39c12' : '#3498db';
+                
+                L.circle([cell.grid_lat, cell.grid_lng], {
+                    radius: 250, color: color, fillOpacity: 0.5, weight: 0
+                }).bindPopup('Vehicles: ' + cell.vehicle_count)
+                 .addTo(map);
+            });
+            document.getElementById('results').innerHTML = 
+                '<p>Heatmap: ' + cells.length + ' cells</p>';
+        });
+}
+</script>
+</body>
+</html>

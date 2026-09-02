@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{{ app_name }} — Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:        #080c10;
+    --surface:   #0d1117;
+    --surface2:  #111820;
+    --border:    #1c2a3a;
+    --accent:    #00e5ff;
+    --red:       #ff2d55;
+    --green:     #00ff88;
+    --yellow:    #ffd60a;
+    --purple:    #bf5af2;
+    --orange:    #ff9f0a;
+    --text:      #c9d1d9;
+    --muted:     #4a5568;
+    --font-ui:   'Rajdhani', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,229,255,0.012) 2px, rgba(0,229,255,0.012) 4px
+    );
+    pointer-events: none; z-index: 9999;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, rgba(0,229,255,0.05) 0%, transparent 60%);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    border: 2px solid var(--accent); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,229,255,0.3);
+  }
+
+  .logo-text { font-size: 22px; font-weight: 700; letter-spacing: 2px; color: #fff; }
+  .logo-text span { color: var(--accent); }
+
+  .nav-links { display: flex; gap: 8px; }
+
+  .nav-btn {
+    padding: 8px 18px; border-radius: 6px;
+    font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    text-decoration: none; cursor: pointer;
+    border: 1px solid var(--border); color: var(--muted);
+    background: transparent; transition: all 0.2s;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  .refresh-btn {
+    padding: 8px 16px; background: transparent;
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--muted); font-family: var(--font-mono); font-size: 12px;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+  }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .refresh-btn .spin { display: inline-block; transition: transform 0.5s; }
+  .refresh-btn:hover .spin { transform: rotate(180deg); }
+
+  /* ── PAGE ── */
+  .page { padding: 28px 32px; max-width: 1600px; margin: 0 auto; }
+
+  .page-title {
+    font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--muted); font-weight: 600; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .page-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .kpi-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--kpi-color, var(--accent));
+  }
+
+  .kpi-label {
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); font-weight: 600; margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-family: var(--font-mono);
+    font-size: 28px; font-weight: 700;
+    color: var(--kpi-color, var(--accent));
+    line-height: 1;
+  }
+
+  .kpi-sub {
+    font-size: 11px; color: var(--muted); margin-top: 6px;
+  }
+
+  /* ── CHART GRID ── */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .chart-grid-bottom {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+  }
+
+  .chart-card.span-2 { grid-column: span 2; }
+
+  .chart-title {
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); font-weight: 600; margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .chart-title-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); display: inline-block; margin-right: 8px;
+    box-shadow: 0 0 6px var(--accent);
+  }
+
+  .chart-wrap {
+    position: relative;
+    height: 220px;
+  }
+
+  .chart-wrap-tall { height: 280px; }
+
+  /* ── TABLE ── */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+
+  table {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--font-mono); font-size: 12px;
+  }
+
+  thead tr {
+    background: rgba(0,229,255,0.04);
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th {
+    padding: 10px 16px; text-align: left;
+    font-size: 10px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(28,42,58,0.5);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: rgba(0,229,255,0.03); }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody td { padding: 10px 16px; color: var(--text); }
+
+  .plate-cell {
+    color: var(--accent); letter-spacing: 2px; font-weight: 700;
+  }
+
+  .fine-cell { color: var(--yellow); font-weight: 700; }
+
+  .badge-sm {
+    padding: 2px 6px; border-radius: 3px;
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  }
+
+  .badge-danger  { background: rgba(255,45,85,0.15);  color: var(--red);    border: 1px solid rgba(255,45,85,0.3);  }
+  .badge-warning { background: rgba(255,214,10,0.15); color: var(--yellow); border: 1px solid rgba(255,214,10,0.3); }
+  .badge-info    { background: rgba(0,229,255,0.1);   color: var(--accent); border: 1px solid rgba(0,229,255,0.2);  }
+
+  /* ── EMPTY / LOADING ── */
+  .no-data {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 180px; color: var(--muted);
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px;
+    gap: 12px;
+  }
+  .no-data .icon { font-size: 36px; opacity: 0.3; }
+
+  .loading-bar {
+    height: 2px; background: var(--border);
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10000;
+    overflow: hidden;
+  }
+  .loading-bar::after {
+    content: '';
+    position: absolute; top: 0; left: -40%;
+    width: 40%; height: 100%;
+    background: var(--accent);
+    animation: loadSlide 1s ease infinite;
+  }
+  @keyframes loadSlide {
+    from { left: -40%; } to { left: 100%; }
+  }
+  .loading-bar.hidden { display: none; }
+
+  /* hour chart labels */
+  .hour-labels {
+    display: flex; justify-content: space-between;
+    padding: 0 2px; margin-top: 4px;
+    font-family: var(--font-mono); font-size: 9px; color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-bar" id="loading-bar"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <div class="logo-text">ROAD<span>X</span></div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:-3px">ADMIN PANEL</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="/" class="nav-btn">Dashboard</a>
+    <a href="/analytics" class="nav-btn active">Analytics</a>
+    <a href="/export" class="nav-btn" style="color:#00ff88;border-color:rgba(0,255,136,0.3)">⬇ Export CSV</a>
+    <a href="/citizen" class="nav-btn" style="color:#bf5af2;border-color:rgba(191,90,242,0.3)" target="_blank">🌐 Citizen Portal</a>
+    <a href="/logout" class="nav-btn" style="color:#ff6b6b;border-color:rgba(255,68,68,0.3)">🔓 Logout</a>
+  </div>
+  <button class="refresh-btn" onclick="loadAll()">
+    <span class="spin">↻</span> Refresh
+  </button>
+</header>
+
+<!-- PAGE -->
+<div class="page">
+
+  <div class="page-title">
+    📊 System Analytics
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color: var(--accent)">
+      <div class="kpi-label">Total Violations</div>
+      <div class="kpi-value" id="kpi-total">—</div>
+      <div class="kpi-sub">All time</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color: var(--yellow)">
+      <div class="kpi-label">Fines Generated</div>
+      <div class="kpi-value" id="kpi-fines">—</div>
+      <div class="kpi-sub">Total Rs.</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color: var(--green)">
+      <div class="kpi-label">Fines Collected</div>
+      <div class="kpi-value" id="kpi-paid-fines">—</div>
+      <div class="kpi-sub" id="kpi-paid-pct">—% paid</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color: var(--red)">
+      <div class="kpi-label">No Helmet</div>
+      <div class="kpi-value" id="kpi-helmet">—</div>
+      <div class="kpi-sub">Sec 129 MV Act</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color: var(--orange)">
+      <div class="kpi-label">Triple Riding</div>
+      <div class="kpi-value" id="kpi-triple">—</div>
+      <div class="kpi-sub">Sec 128 MV Act</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color: var(--purple)">
+      <div class="kpi-label">Wrong Way</div>
+      <div class="kpi-value" id="kpi-wrong">—</div>
+      <div class="kpi-sub">Sec 184 MV Act</div>
+    </div>
+  </div>
+
+  <!-- CHART ROW 1 -->
+  <div class="chart-grid">
+    <!-- Violations by Type (Donut) -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <span><span class="chart-title-dot"></span>Violation Breakdown</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chart-donut"></canvas>
+      </div>
+    </div>
+
+    <!-- Violations per Day (Bar) -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <span><span class="chart-title-dot"></span>Daily Violations — Last 7 Days</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chart-daily"></canvas>
+      </div>
+    </div>
+
+    <!-- Violations by Hour (Bar) -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <span><span class="chart-title-dot"></span>Activity by Hour</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chart-hourly"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHART ROW 2 + TABLE -->
+  <div class="chart-grid-bottom">
+
+    <!-- Fine trend line chart -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <span><span class="chart-title-dot" style="background:var(--yellow);box-shadow:0 0 6px var(--yellow)"></span>Fine Collection Trend — Last 7 Days</span>
+      </div>
+      <div class="chart-wrap chart-wrap-tall">
+        <canvas id="chart-fines"></canvas>
+      </div>
+    </div>
+
+    <!-- Paid vs Unpaid Doughnut -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <span><span class="chart-title-dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></span>Payment Status</span>
+      </div>
+      <div class="chart-wrap chart-wrap-tall">
+        <canvas id="chart-payment"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TOP OFFENDERS TABLE -->
+  <div class="table-card">
+    <div class="table-header">🏴 Top Repeat Offenders</div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Plate</th>
+          <th>Owner</th>
+          <th>Offences</th>
+          <th>Violations</th>
+          <th>Total Fines</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="offenders-table">
+        <tr><td colspan="7">
+          <div class="no-data"><div class="icon">📋</div>Loading...</div>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+// ── CHART DEFAULTS ─────────────────────────────────────────
+Chart.defaults.color          = '#4a5568';
+Chart.defaults.borderColor    = '#1c2a3a';
+Chart.defaults.font.family    = "'Share Tech Mono', monospace";
+Chart.defaults.font.size      = 11;
+
+let charts = {};
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+// ── LOAD ALL ───────────────────────────────────────────────
+async function loadAll() {
+  document.getElementById('loading-bar').classList.remove('hidden');
+  try {
+    const [stats, data] = await Promise.all([
+      fetch('/stats').then(r => r.json()),
+      fetch('/analytics_data').then(r => r.json())
+    ]);
+    renderKPIs(stats, data);
+    renderDonut(data.by_type);
+    renderDaily(data.daily);
+    renderHourly(data.hourly);
+    renderFines(data.daily_fines);
+    renderPayment(stats);
+    renderOffenders(data.top_plates);
+  } catch(e) {
+    console.error('Load error:', e);
+  } finally {
+    document.getElementById('loading-bar').classList.add('hidden');
+  }
+}
+
+// ── KPIs ───────────────────────────────────────────────────
+function renderKPIs(stats, data) {
+  document.getElementById('kpi-total').textContent   = stats.total || 0;
+  document.getElementById('kpi-fines').textContent   = '₹' + (stats.total_fines||0).toLocaleString('en-IN');
+  document.getElementById('kpi-helmet').textContent  = stats.no_helmet || 0;
+  document.getElementById('kpi-triple').textContent  = stats.triple_riding || 0;
+  document.getElementById('kpi-wrong').textContent   = stats.wrong_way || 0;
+
+  const paidFines = data.paid_fines || 0;
+  const pct = stats.total_fines > 0 ? Math.round(paidFines / stats.total_fines * 100) : 0;
+  document.getElementById('kpi-paid-fines').textContent = '₹' + paidFines.toLocaleString('en-IN');
+  document.getElementById('kpi-paid-pct').textContent   = pct + '% paid';
+}
+
+// ── DONUT — Violation Types ────────────────────────────────
+function renderDonut(byType) {
+  destroyChart('donut');
+  const labels = Object.keys(byType);
+  const values = Object.values(byType);
+
+  if (values.every(v => v === 0)) {
+    document.getElementById('chart-donut').closest('.chart-wrap').innerHTML =
+      '<div class="no-data"><div class="icon">📊</div>No data yet</div>';
+    return;
+  }
+
+  const colors = ['#ff2d55','#ffd60a','#bf5af2','#ff9f0a','#00e5ff'];
+  charts.donut = new Chart(document.getElementById('chart-donut'), {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors.slice(0, labels.length).map(c => c + '33'),
+        borderColor:     colors.slice(0, labels.length),
+        borderWidth: 2,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#c9d1d9', padding: 16, font: { size: 11 }, boxWidth: 10 }
+        },
+        tooltip: {
+          backgroundColor: '#0d1117', borderColor: '#1c2a3a', borderWidth: 1,
+          titleColor: '#00e5ff', bodyColor: '#c9d1d9', padding: 10,
+          callbacks: {
+            label: ctx => ` ${ctx.parsed} violations`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── BAR — Daily Violations ─────────────────────────────────
+function renderDaily(daily) {
+  destroyChart('daily');
+  charts.daily = new Chart(document.getElementById('chart-daily'), {
+    type: 'bar',
+    data: {
+      labels: daily.map(d => d.date),
+      datasets: [{
+        label: 'Violations',
+        data: daily.map(d => d.count),
+        backgroundColor: 'rgba(0,229,255,0.15)',
+        borderColor: '#00e5ff',
+        borderWidth: 1.5,
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1117', borderColor: '#1c2a3a', borderWidth: 1,
+          titleColor: '#00e5ff', bodyColor: '#c9d1d9', padding: 10,
+        }
+      },
+      scales: {
+        x: { grid: { color: '#1c2a3a' }, ticks: { color: '#4a5568', font: { size: 10 } } },
+        y: {
+          grid: { color: '#1c2a3a' }, ticks: { color: '#4a5568', stepSize: 1 },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+// ── BAR — Hourly Activity ──────────────────────────────────
+function renderHourly(hourly) {
+  destroyChart('hourly');
+  const labels = Array.from({length: 24}, (_, i) => i + 'h');
+  const data   = Array(24).fill(0);
+  hourly.forEach(h => { data[h.hour] = h.count; });
+
+  charts.hourly = new Chart(document.getElementById('chart-hourly'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Violations',
+        data,
+        backgroundColor: data.map(v => v > 0 ? 'rgba(255,45,85,0.25)' : 'rgba(28,42,58,0.5)'),
+        borderColor:     data.map(v => v > 0 ? '#ff2d55' : '#1c2a3a'),
+        borderWidth: 1,
+        borderRadius: 3,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1117', borderColor: '#1c2a3a', borderWidth: 1,
+          titleColor: '#ff2d55', bodyColor: '#c9d1d9', padding: 10,
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#4a5568', font: { size: 9 }, maxRotation: 0 } },
+        y: { grid: { color: '#1c2a3a' }, ticks: { color: '#4a5568', stepSize: 1 }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+// ── LINE — Fine Collection Trend ───────────────────────────
+function renderFines(dailyFines) {
+  destroyChart('fines');
+  charts.fines = new Chart(document.getElementById('chart-fines'), {
+    type: 'line',
+    data: {
+      labels: dailyFines.map(d => d.date),
+      datasets: [{
+        label: 'Fines (Rs.)',
+        data: dailyFines.map(d => d.total),
+        borderColor: '#ffd60a',
+        backgroundColor: 'rgba(255,214,10,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#ffd60a',
+        pointBorderColor: '#080c10',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+        fill: true,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1117', borderColor: '#1c2a3a', borderWidth: 1,
+          titleColor: '#ffd60a', bodyColor: '#c9d1d9', padding: 10,
+          callbacks: { label: ctx => ` Rs. ${ctx.parsed.y.toLocaleString('en-IN')}` }
+        }
+      },
+      scales: {
+        x: { grid: { color: '#1c2a3a' }, ticks: { color: '#4a5568', font: { size: 10 } } },
+        y: {
+          grid: { color: '#1c2a3a' }, beginAtZero: true,
+          ticks: {
+            color: '#4a5568',
+            callback: v => '₹' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v)
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── DONUT — Payment Status ─────────────────────────────────
+function renderPayment(stats) {
+  destroyChart('payment');
+  const paid    = stats.paid    || 0;
+  const pending = stats.pending || 0;
+
+  charts.payment = new Chart(document.getElementById('chart-payment'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Paid', 'Pending'],
+      datasets: [{
+        data: [paid, pending],
+        backgroundColor: ['rgba(0,255,136,0.2)', 'rgba(255,45,85,0.2)'],
+        borderColor:     ['#00ff88', '#ff2d55'],
+        borderWidth: 2,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#c9d1d9', padding: 20, font: { size: 12 }, boxWidth: 12 }
+        },
+        tooltip: {
+          backgroundColor: '#0d1117', borderColor: '#1c2a3a', borderWidth: 1,
+          titleColor: '#00e5ff', bodyColor: '#c9d1d9', padding: 10,
+          callbacks: { label: ctx => ` ${ctx.parsed} challans` }
+        }
+      }
+    }
+  });
+}
+
+// ── TABLE — Top Offenders ──────────────────────────────────
+function renderOffenders(plates) {
+  const tbody = document.getElementById('offenders-table');
+
+  if (!plates || plates.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7">
+      <div class="no-data"><div class="icon">✅</div>No repeat offenders yet</div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = plates.map((p, i) => {
+    const violations = p.violations.split('+').map(v => v.trim()).map(v => {
+      const cls = v.includes('HELMET') ? 'badge-danger'
+                : v.includes('WRONG')  ? 'badge-warning'
+                : 'badge-info';
+      return `<span class="badge-sm ${cls}">${v}</span>`;
+    }).join(' ');
+
+    const statusBadge = p.count >= 3
+      ? `<span class="badge-sm badge-danger">HABITUAL</span>`
+      : p.count >= 2
+      ? `<span class="badge-sm badge-warning">REPEAT</span>`
+      : `<span class="badge-sm badge-info">1ST</span>`;
+
+    return `<tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td class="plate-cell">${p.plate}</td>
+      <td>${p.owner || 'Unknown'}</td>
+      <td style="color:var(--red);font-weight:700">${p.count}</td>
+      <td>${violations}</td>
+      <td class="fine-cell">₹${(p.total_fine||0).toLocaleString('en-IN')}</td>
+      <td>${statusBadge}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── INIT ───────────────────────────────────────────────────
+loadAll();
+// Auto-refresh every 30s
+setInterval(loadAll, 30000);
+</script>
+</body>
+</html>

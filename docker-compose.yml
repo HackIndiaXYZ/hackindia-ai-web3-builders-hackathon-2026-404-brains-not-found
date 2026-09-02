@@ -1,0 +1,29 @@
+# VehicleTrack — Docker Compose
+# Run with: docker-compose up
+
+version: '3.8'
+
+services:
+  vehicletrack:
+    build: .
+    container_name: vehicletrack_app
+    ports:
+      - "5001:5001"
+    volumes:
+      # These folders are shared between your laptop and the container
+      # so videos you add and challans generated are saved permanently
+      - ./videos:/app/videos
+      - ./static:/app/static
+      - ./violations.db:/app/violations.db
+    environment:
+      # Required — docker-compose will error if these are not set in .env
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY must be set in .env}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set in .env}
+      # Optional — set these to enable real emails/WhatsApp
+      - GMAIL_ADDRESS=${GMAIL_ADDRESS:-}
+      - GMAIL_APP_PASS=${GMAIL_APP_PASS:-}
+      - CITIZEN_EMAIL=${CITIZEN_EMAIL:-}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-}
+      - WA_PHONE_ID=${WA_PHONE_ID:-}
+      - WA_TOKEN=${WA_TOKEN:-}
+    restart: unless-stopped

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }} — Officer Login</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:#0d1117; color:#e6edf3;
+      font-family:'Segoe UI',Arial,sans-serif;
+      min-height:100vh; display:flex;
+      align-items:center; justify-content:center;
+    }
+    .card {
+      background:#161b22; border:1px solid #21262d;
+      border-radius:16px; padding:2.5rem 2rem;
+      width:100%; max-width:380px; text-align:center;
+    }
+    .logo { font-size:2rem; font-weight:800; color:#ff9933; letter-spacing:1px; margin-bottom:0.3rem; }
+    .subtitle { color:#8b949e; font-size:0.85rem; margin-bottom:2rem; }
+    .badge {
+      display:inline-block; background:rgba(255,140,0,0.1);
+      border:1px solid rgba(255,140,0,0.3); color:#ff8c00;
+      font-size:0.75rem; padding:0.25rem 0.75rem;
+      border-radius:20px; margin-bottom:1.5rem; letter-spacing:1px;
+    }
+    input[type=password] {
+      width:100%; background:#0d1117; border:1px solid #21262d;
+      color:#e6edf3; padding:0.75rem 1rem; border-radius:8px;
+      font-size:0.95rem; outline:none; margin-bottom:1rem;
+      transition:border-color 0.2s;
+    }
+    input[type=password]:focus { border-color:#00e5ff; }
+    .btn-login {
+      width:100%; background:#00e5ff; color:#000;
+      border:none; padding:0.75rem; border-radius:8px;
+      font-size:0.95rem; font-weight:700; cursor:pointer;
+      letter-spacing:0.5px; transition:opacity 0.2s;
+    }
+    .btn-login:hover { opacity:0.85; }
+
+    /* ── Demo button ── */
+    .demo-divider {
+      display:flex; align-items:center; gap:0.75rem;
+      margin:1.1rem 0 0.9rem; color:#3d444d; font-size:0.75rem;
+    }
+    .demo-divider::before, .demo-divider::after {
+      content:''; flex:1; height:1px; background:#21262d;
+    }
+    .btn-demo {
+      width:100%; background:transparent;
+      border:1px solid rgba(0,229,255,0.25); color:#00e5ff;
+      padding:0.7rem; border-radius:8px;
+      font-size:0.9rem; font-weight:600; cursor:pointer;
+      letter-spacing:0.5px; transition:all 0.2s;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn-demo:hover { background:rgba(0,229,255,0.08); border-color:#00e5ff; }
+    .demo-note {
+      margin-top:0.6rem; font-size:0.72rem; color:#4a5568;
+      line-height:1.5;
+    }
+
+    .error {
+      background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.3);
+      color:#ff6b6b; padding:0.6rem; border-radius:6px;
+      font-size:0.85rem; margin-bottom:1rem;
+    }
+    .citizen-link {
+      display:block; margin-top:1.5rem; color:#8b949e;
+      font-size:0.82rem; text-decoration:none;
+    }
+    .citizen-link:hover { color:#00e5ff; }
+
+    /* spinner shown while demo login submits */
+    .spin { display:none; width:14px; height:14px; min-width:14px;
+            border:2px solid rgba(0,229,255,0.3);
+            border-top-color:#00e5ff; border-radius:50%; }
+    .spin.active { display:block; animation:spin 0.6s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">✦ {{ app_name }}</div>
+    <div class="subtitle">{{ tagline }} · सत्य and service</div>
+    <div class="badge">🔒 ADMIN ACCESS ONLY</div>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" id="login-form">
+      <input type="password" name="password" id="pw-input"
+             placeholder="Enter admin password" autofocus>
+      <button type="submit" class="btn-login">LOGIN</button>
+    </form>
+
+    {% if demo_enabled %}
+    <div class="demo-divider">or</div>
+
+    <!-- Hidden form that submits the demo password -->
+    <form method="POST" id="demo-form" style="display:none">
+      <input type="hidden" name="password" value="{{ demo_password }}">
+    </form>
+
+    <button class="btn-demo" id="demo-btn" onclick="submitDemo(this)">
+      <span class="spin" id="demo-spin"></span>
+      <span id="demo-label">▶ Try Demo — One Click Access</span>
+    </button>
+    <p class="demo-note">
+      Read-only demo · Pre-loaded with sample violations
+    </p>
+    {% endif %}
+
+    <a class="citizen-link" href="/citizen">← Go to Citizen Portal</a>
+    <div style="color:#8b949e;font-size:.72rem;margin-top:1rem">Powered by {{ author_name }}</div>
+  </div>
+
+  <script>
+    function submitDemo(btn) {
+      btn.disabled = true;
+      document.getElementById('demo-spin').classList.add('active');
+      document.getElementById('demo-label').textContent = 'Logging in...';
+      document.getElementById('demo-form').submit();
+    }
+  </script>
+</body>
+</html>

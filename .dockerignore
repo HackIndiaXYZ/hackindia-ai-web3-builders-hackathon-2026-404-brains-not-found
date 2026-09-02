@@ -1,0 +1,16 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.git
+.gitignore
+violations.db
+datasets/
+images/
+results/
+video_results/
+static/screenshots/
+static/challans/
+models/
