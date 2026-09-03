@@ -1,370 +1,344 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ app_name }} — Citizen Portal</title>
+  <title>{{ app_name }} — Citizen Traffic Portal & E-Challan Settle</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
   <style>
-    :root {
-      --bg:      #071322;
-      --surface: rgba(12, 29, 51, 0.88);
-      --border:  rgba(255, 190, 92, 0.2);
-      --accent:  #ffb454;
-      --orange:  #ff8a3d;
-      --red:     #ff4d5a;
-      --text:    #f6f1e8;
-      --muted:   #aab8c8;
+    .citizen-hero {
+      padding: 48px 24px;
+      text-align: center;
+      background: radial-gradient(circle at 50% 30%, rgba(255, 153, 51, 0.12), transparent 70%);
+      border-bottom: 1px solid var(--border);
     }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background:
-        linear-gradient(180deg, rgba(4, 14, 28, .91), rgba(7, 19, 34, .96)),
-        url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=2200&q=85') center / cover fixed;
-      color:var(--text); font-family:'Segoe UI',Arial,sans-serif; min-height:100vh;
+    .search-box-wrap {
+      max-width: 540px;
+      margin: 24px auto 0;
+      display: flex;
+      gap: 8px;
     }
-
-    nav {
-      background:rgba(7,19,34,.9); border-bottom:1px solid var(--border);
-      padding:0 2rem; display:flex; align-items:center;
-      justify-content:space-between; height:60px; position:sticky; top:0; z-index:100;
+    .search-input {
+      flex: 1;
+      padding: 14px 20px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1.1rem;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color 0.2s;
     }
-    .logo { font-size:1.3rem; font-weight:800; color:var(--accent); text-decoration:none; }
-    .logo span { color:var(--text); }
-    .logo small { font-size:0.6rem; color:var(--muted); display:block; letter-spacing:2px; margin-top:-3px; }
-    .nav-right { display:flex; gap:0.6rem; }
-    .ntab {
-      color:var(--muted); font-size:0.85rem; padding:0.4rem 0.9rem;
-      border-radius:6px; border:1px solid transparent;
-      cursor:pointer; background:none; transition:0.2s;
+    .search-input:focus {
+      border-color: var(--saffron);
     }
-    .ntab:hover, .ntab.active { color:var(--accent); border-color:rgba(255,180,84,.45); background:rgba(255,180,84,.08); }
-
-    .hero {
-      background:linear-gradient(160deg,rgba(7,19,34,.45),rgba(10,32,55,.82) 60%,rgba(7,19,34,.65));
-      border-bottom:1px solid var(--border); padding:3rem 2rem; text-align:center;
+    .portal-container {
+      max-width: 1080px;
+      margin: 30px auto;
+      padding: 0 20px 60px;
     }
-    .hero h1 { font-size:2.4rem; font-weight:800; }
-    .hero h1 span { color:var(--accent); }
-    .hero p { color:var(--muted); font-size:0.95rem; max-width:520px; margin:0.8rem auto 2rem; line-height:1.6; }
-    .steps { display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; }
-    .step { background:var(--surface); border:1px solid var(--border); border-radius:10px;
-            padding:1rem 1.2rem; width:155px; text-align:center; }
-    .step .icon { font-size:1.8rem; margin-bottom:0.4rem; }
-    .step h3 { font-size:0.8rem; color:var(--text); margin-bottom:0.2rem; }
-    .step p  { font-size:0.72rem; color:var(--muted); }
-    .arrow { color:var(--muted); display:flex; align-items:center; font-size:1.2rem; }
-
-    .stats { display:flex; gap:1rem; padding:1.2rem 2rem; flex-wrap:wrap;
-         justify-content:center; border-bottom:1px solid var(--border); background:rgba(12,29,51,.82); }
-    .stat { background:var(--bg); border:1px solid var(--border); border-radius:10px;
-            padding:1rem 1.4rem; text-align:center; flex:1; min-width:120px; max-width:170px; }
-    .stat .val { font-size:1.6rem; font-weight:800; color:var(--accent); }
-    .stat .lbl { font-size:0.7rem; color:var(--muted); margin-top:0.2rem; }
-    .orange { color:var(--orange) !important; }
-    .red    { color:var(--red) !important; }
-
-    .tabs { display:flex; border-bottom:1px solid var(--border);
-            padding:0 2rem; background:var(--surface); }
-    .tab { padding:0.85rem 1.2rem; border:none; background:none; color:var(--muted);
-           font-size:0.88rem; cursor:pointer; border-bottom:2px solid transparent; transition:0.2s; }
-    .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
-    .tab:hover  { color:var(--text); }
-
-    .content { padding:2rem; max-width:1280px; margin:0 auto; }
-    .section  { display:none; }
-    .section.active { display:block; }
-
-    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.2rem; }
-    .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.4rem; }
-    .card .tag { display:inline-block; font-size:0.7rem; padding:0.2rem 0.6rem;
-                 border-radius:12px; margin-bottom:0.8rem; }
-    .tg  { background:rgba(255,180,84,.1); border:1px solid rgba(255,180,84,.28); color:var(--accent); }
-    .to  { background:rgba(255,152,0,0.1);  border:1px solid rgba(255,152,0,0.2);  color:var(--orange); }
-    .card h3 { font-size:0.92rem; color:var(--text); margin-bottom:0.4rem; }
-    .card p  { font-size:0.82rem; color:var(--muted); line-height:1.6; }
-
-    /* dashcam setup box */
-    .setup-box {
-      background:linear-gradient(135deg,rgba(13,42,69,.9),rgba(12,29,51,.88));
-      border:1px solid #2a5c30; border-radius:14px; padding:2rem; margin-bottom:1.5rem;
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 5000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
-    .setup-box h2 { color:var(--accent); margin-bottom:0.5rem; font-size:1.2rem; }
-    .setup-box p  { color:var(--muted); font-size:0.88rem; margin-bottom:1.2rem; }
-    .setup-steps  { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; }
-    .ss { background:rgba(255,180,84,0.05); border:1px solid rgba(255,180,84,0.16);
-          border-radius:10px; padding:1.1rem; }
-    .ss .num { font-size:1.4rem; font-weight:800; color:var(--accent); margin-bottom:0.3rem; }
-    .ss h4   { color:var(--text); font-size:0.85rem; margin-bottom:0.3rem; }
-    .ss p    { color:var(--muted); font-size:0.78rem; }
-
-    /* violations table */
-    .toolbar { display:flex; justify-content:space-between; align-items:center;
-               margin-bottom:1rem; flex-wrap:wrap; gap:0.8rem; }
-    .toolbar h2 { font-size:1rem; }
-    .search { background:var(--surface); border:1px solid var(--border); color:var(--text);
-              padding:0.45rem 0.9rem; border-radius:8px; font-size:0.84rem; width:200px; outline:none; }
-    .search:focus { border-color:var(--accent); }
-    .filters { display:flex; gap:0.4rem; flex-wrap:wrap; }
-    .fbtn { background:var(--surface); border:1px solid var(--border); color:var(--muted);
-            padding:0.3rem 0.7rem; border-radius:5px; cursor:pointer; font-size:0.77rem; transition:0.2s; }
-    .fbtn.active { background:rgba(255,180,84,0.1); border-color:var(--accent); color:var(--accent); }
-
-    .tw { overflow-x:auto; border-radius:10px; border:1px solid var(--border); }
-    table { width:100%; border-collapse:collapse; }
-    th { background:var(--surface); padding:0.7rem 0.9rem; font-size:0.7rem; color:var(--muted);
-         text-align:left; text-transform:uppercase; letter-spacing:0.5px;
-         border-bottom:1px solid var(--border); white-space:nowrap; }
-    td { padding:0.8rem 0.9rem; border-bottom:1px solid var(--border); font-size:0.84rem; }
-    tr:last-child td { border-bottom:none; }
-    tr:hover td { background:rgba(0,230,118,0.02); }
-
-    .cid   { font-family:monospace; font-size:0.76rem; color:var(--accent);
-         background:rgba(255,180,84,0.1); padding:0.15rem 0.45rem; border-radius:3px; }
-    .plate { font-family:monospace; font-weight:700; color:var(--orange); letter-spacing:1px; }
-    .vb    { display:inline-block; font-size:0.7rem; padding:0.15rem 0.45rem; border-radius:4px; margin:1px; white-space:nowrap; }
-    .vnh { background:rgba(255,82,82,0.1); color:#ff6b6b; border:1px solid rgba(255,82,82,0.2); }
-    .vtr { background:rgba(255,152,0,0.1); color:var(--orange); border:1px solid rgba(255,152,0,0.2); }
-    .vww { background:rgba(255,0,100,0.1); color:#ff4081; border:1px solid rgba(255,0,100,0.2); }
-    .sp { color:var(--accent); font-size:0.78rem; font-weight:700; }
-    .sn { color:var(--orange); font-size:0.78rem; }
-    .thumb { width:52px; height:36px; object-fit:cover; border-radius:3px;
-             border:1px solid var(--border); cursor:pointer; }
-    .thumb:hover { border-color:var(--accent); }
-
-    /* earn section */
-    .earn-top { background:linear-gradient(135deg,#102f50,#0c2037);
-                border:1px solid #1e5c28; border-radius:14px; padding:2rem; text-align:center; margin-bottom:1.5rem; }
-    .earn-top h2 { color:var(--accent); font-size:1.4rem; margin-bottom:0.4rem; }
-    .earn-top p  { color:var(--muted); font-size:0.88rem; margin-bottom:1.2rem; }
-    .big { font-size:3.2rem; font-weight:800; color:var(--accent); }
-    .big span { font-size:1.1rem; color:var(--muted); }
-    .earn-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-top:1.5rem; }
-    .eg { background:rgba(255,180,84,0.04); border:1px solid rgba(255,180,84,0.12);
-          border-radius:10px; padding:1.1rem; text-align:center; }
-    .eg .icon { font-size:1.5rem; margin-bottom:0.4rem; }
-    .eg h4 { color:var(--accent); font-size:0.82rem; margin-bottom:0.3rem; }
-    .eg p  { color:var(--muted); font-size:0.75rem; }
-
-    .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88);
-                z-index:999; align-items:center; justify-content:center; }
-    .modal-bg.open { display:flex; }
-    .modal { background:var(--surface); border:1px solid var(--border);
-             border-radius:14px; padding:1.5rem; max-width:480px; width:90%; }
-    .modal img { width:100%; border-radius:8px; margin-top:1rem; }
-    .mc { float:right; background:none; border:none; color:var(--muted); font-size:1.4rem; cursor:pointer; }
-    .mc:hover { color:var(--text); }
-    .empty { text-align:center; padding:3rem; color:var(--muted); font-size:0.9rem; }
+    .modal-backdrop.show {
+      display: flex;
+    }
+    .modal-window {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      max-width: 480px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
   </style>
 </head>
 <body>
 
-<nav>
-  <a class="logo" href="/citizen">✦ {{ app_name }}<small>CITIZEN PORTAL · सत्यमेव जयते</small></a>
-  <div class="nav-right">
-    <button class="ntab active" onclick="show('how',this)">How It Works</button>
-    <button class="ntab" onclick="show('violations',this)">Live Violations</button>
-    <button class="ntab" onclick="show('earn',this)">Earn Rewards</button>
-    <a href="/login" class="ntab" style="color:#ff9800;border:1px solid rgba(255,152,0,0.3);text-decoration:none;padding:0.4rem 0.9rem;border-radius:6px;">🔒 Officer Login</a>
-  </div>
-</nav>
+  <div class="tricolor-stripe"></div>
 
-<div class="hero">
-  <h1>Your Dashcam.<br><span>Safer Roads.</span></h1>
-  <p>Mount a dashcam in your vehicle and connect it to {{ app_name }}. Our AI monitors the live feed and automatically detects violations — you earn a share of every challan issued from your camera.</p>
-  <div class="steps">
-    <div class="step"><div class="icon">📷</div><h3>Mount Dashcam</h3><p>One-time setup in your vehicle</p></div>
-    <div class="arrow">→</div>
-    <div class="step"><div class="icon">📡</div><h3>Stream Live</h3><p>RTSP feed to {{ app_name }} server</p></div>
-    <div class="arrow">→</div>
-    <div class="step"><div class="icon">🤖</div><h3>AI Detects</h3><p>Violations caught automatically</p></div>
-    <div class="arrow">→</div>
-    <div class="step"><div class="icon">💰</div><h3>You Earn 10%</h3><p>Of every challan collected</p></div>
-  </div>
-</div>
-
-<div class="stats">
-  <div class="stat"><div class="val" id="sT">—</div><div class="lbl">Total Violations</div></div>
-  <div class="stat"><div class="val red"  id="sH">—</div><div class="lbl">No Helmet</div></div>
-  <div class="stat"><div class="val orange" id="sTr">—</div><div class="lbl">Triple Riding</div></div>
-  <div class="stat"><div class="val" id="sW">—</div><div class="lbl">Wrong Way</div></div>
-  <div class="stat"><div class="val" id="sC">—</div><div class="lbl">Fines Collected</div></div>
-  <div class="stat"><div class="val orange" id="sI">—</div><div class="lbl">Incentive Pool</div></div>
-</div>
-
-<div class="tabs">
-  <button class="tab active" onclick="show('how',this)">📖 How It Works</button>
-  <button class="tab" onclick="show('violations',this)">🚨 Live Violations</button>
-  <button class="tab" onclick="show('earn',this)">💰 Earn Rewards</button>
-</div>
-
-<div class="content">
-
-  <!-- HOW IT WORKS -->
-  <div id="how" class="section active">
-    <div class="setup-box">
-      <h2>🚗 How to Connect Your Dashcam</h2>
-      <p>Any dashcam with RTSP output works. One-time setup — after that it runs automatically whenever you drive.</p>
-      <div class="setup-steps">
-        <div class="ss"><div class="num">01</div><h4>Buy an RTSP dashcam</h4><p>Any dashcam that supports RTSP streaming. Most modern dashcams support this.</p></div>
-        <div class="ss"><div class="num">02</div><h4>Get your RTSP link</h4><p>From your dashcam app, copy the RTSP stream URL (looks like rtsp://192.168.x.x/...).</p></div>
-        <div class="ss"><div class="num">03</div><h4>Register with {{ app_name }}</h4><p>Submit your RTSP link to a TrafficGuard operator. Your camera gets a unique citizen ID.</p></div>
-        <div class="ss"><div class="num">04</div><h4>Drive normally</h4><p>{{ app_name }} monitors your feed 24/7. Violations caught automatically — nothing else needed.</p></div>
+  <!-- Citizen Topbar -->
+  <header style="background:var(--surface); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span style="font-size:1.6rem;">🏛️</span>
+      <div>
+        <div style="font-weight:800;font-size:1.1rem;color:var(--text);">{{ app_name }} <span style="color:var(--saffron);">CITIZEN SERVICES</span></div>
+        <div style="font-size:0.68rem;color:var(--text-muted);">Ministry of Road Transport & Highways · National E-Challan Portal</div>
       </div>
     </div>
-    <div class="grid">
-      <div class="card"><div class="tag tg">Detection</div><h3>🪖 No Helmet — Rs. 1,000</h3><p>Custom AI model detects motorcyclists without helmets. 20-frame voting prevents false alarms. Section 129 MV Act.</p></div>
-      <div class="card"><div class="tag tg">Detection</div><h3>🏍️ Triple Riding — Rs. 1,000</h3><p>3+ people on a motorcycle. Overlap-based counting — only riders physically on the bike count, not pedestrians. Section 128 MV Act.</p></div>
-      <div class="card"><div class="tag tg">Detection</div><h3>⬅️ Wrong Way — Rs. 5,000</h3><p>Vehicles moving against traffic. ByteTrack trajectory analysis over 15 frames. Highest fine. Section 184 MV Act.</p></div>
-      <div class="card"><div class="tag to">Accuracy</div><h3>🔢 Plate Reading</h3><p>97.6% precision on Indian plates. Handles two-line plates, state code corrections, and OCR errors automatically.</p></div>
-      <div class="card"><div class="tag to">Auto</div><h3>📄 Instant Challan</h3><p>PDF challan generated immediately. QR payment link to parivahan.gov.in. Sent to owner + traffic police simultaneously.</p></div>
-      <div class="card"><div class="tag to">Live</div><h3>📡 Always-On Monitoring</h3><p>Your dashcam feed is monitored 24/7 in real time. No manual review required. You earn while you drive.</p></div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <a href="/login" class="btn btn-outline" style="font-size:0.75rem;">👮 Officer Login</a>
+      <button class="btn btn-outline" onclick="toggleTheme()" style="padding:6px 10px;">🌓</button>
     </div>
-  </div>
+  </header>
 
-  <!-- VIOLATIONS -->
-  <div id="violations" class="section">
-    <div class="toolbar">
-      <h2>Recent Violations <span id="vCnt" style="color:var(--muted);font-weight:400;font-size:0.8rem;"></span></h2>
-      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center;">
-        <input class="search" id="sb" placeholder="Search plate or camera..." oninput="filter()">
-        <div class="filters">
-          <button class="fbtn active" onclick="setF('all',this)">All</button>
-          <button class="fbtn" onclick="setF('NO HELMET',this)">No Helmet</button>
-          <button class="fbtn" onclick="setF('TRIPLE',this)">Triple Riding</button>
-          <button class="fbtn" onclick="setF('WRONG WAY',this)">Wrong Way</button>
+  <!-- Hero Section -->
+  <section class="citizen-hero">
+    <div class="badge badge-orange" style="margin-bottom:12px;">🇮🇳 सत्यमेव जयते · DIGITAL INDIA ROAD SAFETY</div>
+    <h1 style="font-size:clamp(1.8rem, 4vw, 2.8rem); color:var(--text); margin-bottom:8px;">
+      Check & Settle Traffic E-Challans
+    </h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; max-width:620px; margin:auto;">
+      Instant verification against the National Vahan Ledger. Pay via UPI, submit dispute with dashcam proof, or view your Suraksha safe driving score.
+    </p>
+
+    <div class="search-box-wrap">
+      <input type="text" id="citizen-plate-search" placeholder="ENTER VEHICLE NUMBER (e.g. KA03MX4521)" class="search-input">
+      <button class="btn btn-saffron" style="padding:0 24px; font-size:1rem;" onclick="searchCitizenChallans()">Search</button>
+    </div>
+  </section>
+
+  <!-- Main Container -->
+  <main class="portal-container">
+    
+    <!-- Quick Action Cards -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:30px;">
+      <div class="glass-card" style="text-align:center;">
+        <div style="font-size:1.8rem; margin-bottom:6px;">💳</div>
+        <h3 style="font-size:0.95rem;">Instant UPI Settlement</h3>
+        <p style="font-size:0.75rem; color:var(--text-muted);">Zero convenience fee on digital payments with official PDF receipt.</p>
+      </div>
+      <div class="glass-card" style="text-align:center;">
+        <div style="font-size:1.8rem; margin-bottom:6px;">⚖️</div>
+        <h3 style="font-size:0.95rem;">15-Day Dispute Right</h3>
+        <p style="font-size:0.75rem; color:var(--text-muted);">Challenge wrongful infractions directly to the Traffic Review Tribunal.</p>
+      </div>
+      <div class="glass-card" style="text-align:center;">
+        <div style="font-size:1.8rem; margin-bottom:6px;">🏆</div>
+        <h3 style="font-size:0.95rem;">Suraksha Rewards</h3>
+        <p style="font-size:0.75rem; color:var(--text-muted);">Get 10% citizen reward pool payout for reporting traffic violations.</p>
+      </div>
+    </div>
+
+    <!-- Challan Results Area -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:1.2rem;">📋 Recorded Traffic Infractions</h2>
+      <span style="font-size:0.75rem; color:var(--text-muted);" id="result-status-text">Displaying recent records (plates masked for privacy)</span>
+    </div>
+
+    <div id="citizen-challans-list" style="display:flex; flex-direction:column; gap:14px;">
+      <!-- Dynamic Citizen Challan Cards -->
+    </div>
+
+  </main>
+
+  <!-- ── PAYMENT MODAL ── -->
+  <div class="modal-backdrop" id="pay-modal">
+    <div class="modal-window">
+      <h3 style="font-size:1.15rem;margin-bottom:4px;color:var(--text);">💳 Settle Traffic E-Challan</h3>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">Direct Settlement via Razorpay / Unified Payments Interface (UPI)</div>
+
+      <div style="background:rgba(0,0,0,0.2);padding:12px;border-radius:8px;border:1px solid var(--border);margin-bottom:16px;font-size:0.85rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:var(--text-muted);">Challan Reference:</span>
+          <b id="pay-modal-challan">RX-000000</b>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:var(--text-muted);">Vehicle Number:</span>
+          <b id="pay-modal-plate">KA03MX4521</b>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:1.1rem;color:var(--saffron);">
+          <span>Fine Amount:</span>
+          <b id="pay-modal-amount">₹1,000</b>
         </div>
       </div>
-    </div>
-    <div id="vt"><div class="empty">⏳ Loading violations...</div></div>
-  </div>
 
-  <!-- EARN -->
-  <div id="earn" class="section">
-    <div class="earn-top">
-      <h2>🏆 Earn While You Drive</h2>
-      <p>Your dashcam works passively — you earn every time a violation is caught on your feed and the fine is collected.</p>
-      <div class="big">10% <span>of every fine</span></div>
-      <div style="font-size:0.76rem;color:#4a8a5a;margin-top:0.4rem;">Credited after the violator pays</div>
-    </div>
-    <div class="earn-grid">
-      <div class="eg"><div class="icon">📷</div><h4>Mount Once</h4><p>Install your RTSP dashcam and connect to {{ app_name }} once.</p></div>
-      <div class="eg"><div class="icon">🚗</div><h4>Drive Normally</h4><p>No app to open. No button to press. Just drive.</p></div>
-      <div class="eg"><div class="icon">🤖</div><h4>AI Watches</h4><p>Violations detected automatically on your live feed.</p></div>
-      <div class="eg"><div class="icon">💸</div><h4>Earn Passively</h4><p>10% of every challan from your camera.</p></div>
-    </div>
-    <div style="margin-top:1.5rem;">
-      <table>
-        <thead><tr><th>Violation</th><th>Fine</th><th>Your Reward</th></tr></thead>
-        <tbody>
-          <tr><td>No Helmet</td><td style="color:var(--text)">Rs. 1,000</td><td style="color:var(--accent);font-weight:700">Rs. 100</td></tr>
-          <tr><td>Triple Riding</td><td style="color:var(--text)">Rs. 1,000</td><td style="color:var(--accent);font-weight:700">Rs. 100</td></tr>
-          <tr><td>Wrong Way Driving</td><td style="color:var(--text)">Rs. 5,000</td><td style="color:var(--accent);font-weight:700">Rs. 500</td></tr>
-          <tr><td>Repeat Offender (2×)</td><td style="color:var(--text)">Rs. 2,000+</td><td style="color:var(--accent);font-weight:700">Rs. 200+</td></tr>
-        </tbody>
-      </table>
-      <p style="color:var(--muted);font-size:0.78rem;margin-top:1rem;">Check your earnings and camera status on the {{ app_name }} Android app.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+        <label style="font-size:0.75rem;color:var(--text-muted);">Payer Full Name:</label>
+        <input type="text" id="payer-name-input" value="Citizen Motorist" class="btn btn-outline" style="text-align:left;">
+
+        <label style="font-size:0.75rem;color:var(--text-muted);">Payment Channel:</label>
+        <select id="pay-mode-select" class="btn btn-outline">
+          <option value="UPI (Google Pay / PhonePe / Paytm)">UPI (Google Pay / PhonePe / Paytm)</option>
+          <option value="Debit / Credit Card (RuPay / Visa)">Debit / Credit Card (RuPay / Visa)</option>
+          <option value="NetBanking (SBI / HDFC / ICICI)">NetBanking (SBI / HDFC / ICICI)</option>
+        </select>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-success" style="flex:1;" onclick="submitPayment()">✔ Confirm & Pay</button>
+        <button class="btn btn-outline" onclick="closePayModal()">Cancel</button>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="modal-bg" id="modal">
-  <div class="modal">
-    <button class="mc" onclick="closeModal()">✕</button>
-    <h3 id="mT" style="color:var(--text)"></h3>
-    <img id="mI" src="" alt="">
+  <!-- ── DISPUTE MODAL ── -->
+  <div class="modal-backdrop" id="dispute-modal">
+    <div class="modal-window">
+      <h3 style="font-size:1.15rem;margin-bottom:4px;color:var(--text);">⚖️ File Citizen Dispute</h3>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">Submit evidence for Traffic Review Tribunal review</div>
+
+      <input type="hidden" id="dispute-vid-input">
+      <input type="hidden" id="dispute-plate-input">
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px;">
+        <div>
+          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Dispute Category:</label>
+          <select id="dispute-reason-select" class="btn btn-outline" style="width:100%;">
+            <option value="Incorrect Plate Character Recognition">Incorrect Plate Character Recognition</option>
+            <option value="Emergency Vehicle / Medical Exemption">Emergency Vehicle / Medical Exemption</option>
+            <option value="Vehicle Sold / Stolen Prior to Incident">Vehicle Sold / Stolen Prior to Incident</option>
+            <option value="Helmet was Worn (Occlusion by Angle)">Helmet was Worn (Occlusion by Angle)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Explanation & Proof Details:</label>
+          <textarea id="dispute-explanation-input" rows="3" class="btn btn-outline" style="width:100%;text-align:left;" placeholder="Describe what happened and mention dashcam timestamp..."></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-saffron" style="flex:1;" onclick="submitCitizenDispute()">Submit Dispute</button>
+        <button class="btn btn-outline" onclick="closeDisputeModal()">Cancel</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<script>
-  let all = [], activeF = 'all';
+  <!-- ── SCRIPTS ── -->
+  <script>
+    let activePayVid = null;
 
-  function show(id, el) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.tab,.ntab').forEach(t => t.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    document.querySelectorAll('.tab,.ntab').forEach(t => {
-      if ((t.getAttribute('onclick')||'').includes(`'${id}'`)) t.classList.add('active');
+    function toggleTheme() {
+      const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+      const nxt = (cur === 'dark') ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nxt);
+      localStorage.setItem('tg_theme', nxt);
+    }
+    const savedTheme = localStorage.getItem('tg_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    function loadCitizenViolations(plateQuery = '') {
+      const url = plateQuery ? '/citizen/violations?plate=' + encodeURIComponent(plateQuery) : '/citizen/violations';
+      fetch(url).then(r => r.json()).then(rows => {
+        const container = document.getElementById('citizen-challans-list');
+        if (!rows.length) {
+          container.innerHTML = `
+            <div class="glass-card" style="text-align:center;padding:32px;">
+              <div style="font-size:2rem;margin-bottom:8px;">🛡️</div>
+              <h3 style="color:var(--green);">Zero Pending Infractions</h3>
+              <p style="color:var(--text-muted);font-size:0.85rem;">No unpaid traffic violations found for this vehicle. Thank you for safe driving!</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = rows.map(r => `
+          <div class="glass-card" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span class="plate-chip">${r.plate}</span>
+                <span class="badge ${r.paid ? 'badge-green' : 'badge-red'}">${r.paid ? '✅ PAID' : '⏳ UNPAID'}</span>
+                <span style="font-size:0.75rem;color:var(--text-dim);font-family:var(--font-mono);">${r.challan}</span>
+              </div>
+              <div style="font-weight:700;color:var(--text);font-size:0.9rem;margin-top:2px;">${r.violation}</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">${r.timestamp} · Camera: ${r.camera}</div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="text-align:right;">
+                <div style="font-size:0.7rem;color:var(--text-muted);">Statutory Fine</div>
+                <div style="font-size:1.3rem;font-weight:800;color:${r.paid ? 'var(--green)' : 'var(--saffron)'};font-family:var(--font-heading);">
+                  ₹${r.fine.toLocaleString('en-IN')}
+                </div>
+              </div>
+
+              <div style="display:flex;gap:6px;">
+                ${r.paid ? `
+                  <a href="/receipt/${r.id}" target="_blank" class="btn btn-success" style="padding:8px 14px;font-size:0.8rem;">⬇ Receipt</a>
+                ` : `
+                  <button class="btn btn-primary" onclick="openPayModal(${r.id}, '${r.challan}', '${r.plate}', ${r.fine})">💳 Pay Online</button>
+                  <button class="btn btn-outline" onclick="openDisputeModal(${r.id}, '${r.plate}')">⚖️ Dispute</button>
+                `}
+                <a href="/challan/${r.id}" target="_blank" class="btn btn-outline" style="padding:8px 12px;font-size:0.8rem;">PDF</a>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      });
+    }
+
+    function searchCitizenChallans() {
+      const p = document.getElementById('citizen-plate-search').value.trim();
+      document.getElementById('result-status-text').textContent = p ? `Search results for "${p}"` : 'Displaying recent records';
+      loadCitizenViolations(p);
+    }
+
+    // Payment Modal Functions
+    function openPayModal(vid, challan, plate, fine) {
+      activePayVid = vid;
+      document.getElementById('pay-modal-challan').textContent = challan;
+      document.getElementById('pay-modal-plate').textContent = plate;
+      document.getElementById('pay-modal-amount').textContent = '₹' + fine.toLocaleString('en-IN');
+      document.getElementById('pay-modal').classList.add('show');
+    }
+    function closePayModal() {
+      document.getElementById('pay-modal').classList.remove('show');
+    }
+    function submitPayment() {
+      if (!activePayVid) return;
+      const payer = document.getElementById('payer-name-input').value.trim();
+      const mode = document.getElementById('pay-mode-select').value;
+      fetch('/citizen/pay', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          violation_id: activePayVid,
+          payer_name: payer,
+          payment_mode: mode
+        })
+      }).then(r => r.json()).then(d => {
+        closePayModal();
+        alert('Payment Settled Successfully! Challan No: ' + d.challan);
+        searchCitizenChallans();
+        window.open(d.receipt_url, '_blank');
+      });
+    }
+
+    // Dispute Modal Functions
+    function openDisputeModal(vid, plate) {
+      document.getElementById('dispute-vid-input').value = vid;
+      document.getElementById('dispute-plate-input').value = plate;
+      document.getElementById('dispute-modal').classList.add('show');
+    }
+    function closeDisputeModal() {
+      document.getElementById('dispute-modal').classList.remove('show');
+    }
+    function submitCitizenDispute() {
+      const vid = document.getElementById('dispute-vid-input').value;
+      const plate = document.getElementById('dispute-plate-input').value;
+      const reason = document.getElementById('dispute-reason-select').value;
+      const exp = document.getElementById('dispute-explanation-input').value.trim();
+
+      fetch('/citizen/dispute', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          violation_id: parseInt(vid),
+          plate: plate,
+          reason: reason,
+          explanation: exp
+        })
+      }).then(r => r.json()).then(d => {
+        closeDisputeModal();
+        alert('Dispute Ticket #' + d.dispute_id + ' submitted to Traffic Police Review Tribunal.');
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadCitizenViolations();
     });
-    if (id === 'violations' && !all.length) loadV();
-  }
-
-  async function loadStats() {
-    try {
-      const d = await (await fetch('/citizen/stats')).json();
-      document.getElementById('sT').textContent  = d.total_violations;
-      document.getElementById('sH').textContent  = d.no_helmet;
-      document.getElementById('sTr').textContent = d.triple_riding;
-      document.getElementById('sW').textContent  = d.wrong_way;
-      document.getElementById('sC').textContent  = '₹' + d.fines_collected.toLocaleString('en-IN');
-      document.getElementById('sI').textContent  = '₹' + d.incentive_pool.toLocaleString('en-IN');
-    } catch(e) {}
-  }
-
-  async function loadV() {
-    document.getElementById('vt').innerHTML = '<div class="empty">⏳ Loading...</div>';
-    try {
-      all = await (await fetch('/citizen/violations')).json();
-      render(all);
-    } catch(e) {
-      document.getElementById('vt').innerHTML = '<div class="empty">⚠️ Could not load violations</div>';
-    }
-  }
-
-  function render(data) {
-    if (!data.length) {
-      document.getElementById('vt').innerHTML = '<div class="empty">✅ No violations recorded yet</div>';
-      document.getElementById('vCnt').textContent = '';
-      return;
-    }
-    document.getElementById('vCnt').textContent = `(${data.length})`;
-    const rows = data.map(v => {
-      const badges = v.violation.split('+').map(s => {
-        s = s.trim();
-        return `<span class="vb ${s.includes('HELMET')?'vnh':s.includes('TRIPLE')?'vtr':'vww'}">${s}</span>`;
-      }).join('');
-      const thumb = v.screenshot
-        ? `<img class="thumb" src="/static/screenshots/${v.screenshot}" onclick="openM('${v.screenshot}','${v.challan}')">`
-        : '—';
-      return `<tr>
-        <td><span class="cid">${v.challan}</span></td>
-        <td style="color:var(--muted);font-size:0.76rem;white-space:nowrap">${v.timestamp}</td>
-        <td>${badges}</td>
-        <td><span class="plate">${v.plate||'—'}</span></td>
-        <td style="font-weight:700">₹${(v.fine||0).toLocaleString('en-IN')}</td>
-        <td>${v.paid ? '<span class="sp">✅ Paid</span>' : '<span class="sn">⏳ Pending</span>'}</td>
-        <td>${thumb}</td>
-      </tr>`;
-    }).join('');
-    document.getElementById('vt').innerHTML = `
-      <div class="tw"><table>
-        <thead><tr><th>Challan</th><th>Time</th><th>Violation</th><th>Plate</th><th>Fine</th><th>Status</th><th>Evidence</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table></div>`;
-  }
-
-  function setF(f, el) {
-    activeF = f;
-    document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active'); filter();
-  }
-  function filter() {
-    const q = (document.getElementById('sb').value||'').toLowerCase();
-    render(all.filter(v => {
-      const mf = activeF === 'all' || v.violation.includes(activeF);
-      const ms = !q || (v.plate||'').toLowerCase().includes(q) || (v.camera||'').toLowerCase().includes(q);
-      return mf && ms;
-    }));
-  }
-  function openM(s, c) {
-    document.getElementById('mT').textContent = `Evidence — ${c}`;
-    document.getElementById('mI').src = `/static/screenshots/${s}`;
-    document.getElementById('modal').classList.add('open');
-  }
-  function closeModal() { document.getElementById('modal').classList.remove('open'); }
-  document.getElementById('modal').addEventListener('click', e => { if(e.target.id==='modal') closeModal(); });
-
-  loadStats();
-  setInterval(loadStats, 30000);
-</script>
+  </script>
 </body>
 </html>

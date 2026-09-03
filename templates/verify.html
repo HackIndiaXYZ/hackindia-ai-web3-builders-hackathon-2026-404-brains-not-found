@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }} — Official Challan Verification</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+  <style>
+    body {
+      padding: 30px 20px 60px;
+    }
+    .verify-container {
+      max-width: 680px;
+      margin: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .verify-header {
+      padding: 24px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(19, 136, 8, 0.15), transparent);
+      border-bottom: 1px solid var(--border);
+    }
+    .verify-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .verify-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .verify-table td.label {
+      color: var(--text-muted);
+      width: 40%;
+    }
+    .verify-table td.val {
+      font-weight: 600;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="verify-container">
+    <div class="tricolor-stripe"></div>
+
+    <div class="verify-header">
+      <div style="font-size:2rem; margin-bottom:4px;">🏛️</div>
+      <div style="font-weight:700; color:var(--saffron); font-size:0.8rem; letter-spacing:0.05em;">सत्यमेव जयते · GOVERNMENT OF INDIA</div>
+      <h1 style="font-size:1.4rem; color:var(--text); margin:4px 0;">Official E-Challan Verification Record</h1>
+      <div style="font-size:0.75rem; color:var(--text-dim);">National Road Safety & Automated AI Vision Enforcement Ledger</div>
+    </div>
+
+    <div style="padding: 24px;">
+      
+      <!-- Verification Badge -->
+      <div style="background:rgba(19,136,8,0.12); border:1px solid #138808; padding:12px; border-radius:10px; display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+        <span style="font-size:1.6rem;">✅</span>
+        <div>
+          <div style="font-weight:800; color:#00e676; font-size:0.95rem;">OFFICIALLY VERIFIED & REGISTERED</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">This electronic challan is authentic and certified under the Motor Vehicles Act 1988 (Amended 2019).</div>
+        </div>
+      </div>
+
+      <!-- Record Table -->
+      <table class="verify-table">
+        <tr>
+          <td class="label">Challan Reference</td>
+          <td class="val" style="font-family:var(--font-mono); color:var(--saffron);">RX-{{ "%06d"|format(record.id) }}</td>
+        </tr>
+        <tr>
+          <td class="label">Vehicle Registration No</td>
+          <td class="val"><span class="plate-chip">{{ record.plate }}</span></td>
+        </tr>
+        <tr>
+          <td class="label">Registered Owner</td>
+          <td class="val">{{ record.owner_name or 'Citizen' }}</td>
+        </tr>
+        <tr>
+          <td class="label">Violation Committed</td>
+          <td class="val" style="color:#ff6b6b;">{{ record.violation }}</td>
+        </tr>
+        <tr>
+          <td class="label">Detection Timestamp</td>
+          <td class="val">{{ record.timestamp }}</td>
+        </tr>
+        <tr>
+          <td class="label">Interception Camera</td>
+          <td class="val">{{ record.video }}</td>
+        </tr>
+        <tr>
+          <td class="label">Statutory Penalty</td>
+          <td class="val" style="font-size:1.1rem; color:var(--saffron); font-weight:800;">₹{{ "{:,}".format(record.fine) }}</td>
+        </tr>
+        <tr>
+          <td class="label">Settlement Status</td>
+          <td class="val">
+            <span class="badge {{ 'badge-green' if record.paid else 'badge-red' }}">
+              {{ '✅ SETTLED & PAID' if record.paid else '⏳ UNPAID / PENDING' }}
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Evidence Preview -->
+      {% if record.screenshot %}
+      <div style="margin-top:20px;">
+        <h4 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">📷 AI Photographic Evidence Frame:</h4>
+        <div style="border-radius:10px; overflow:hidden; border:1px solid var(--border); max-height:280px; background:#000;">
+          <img src="/static/screenshots/{{ record.screenshot }}" style="width:100%; height:100%; object-fit:contain;" alt="Evidence Screenshot">
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Actions -->
+      <div style="display:flex; gap:10px; margin-top:24px; justify-content:center;">
+        {% if record.paid %}
+        <a href="/receipt/{{ record.id }}" target="_blank" class="btn btn-success">⬇ Download Payment Receipt</a>
+        {% else %}
+        <a href="/citizen?challan=RX-{{ '%06d'|format(record.id) }}" class="btn btn-primary">💳 Settle Penalty Online</a>
+        {% endif %}
+        <a href="/challan/{{ record.id }}" target="_blank" class="btn btn-outline">⬇ Download Challan PDF</a>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

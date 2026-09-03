@@ -1,129 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ app_name }} — Officer Login</title>
+  <title>{{ app_name }} — Officer Command Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      background:#0d1117; color:#e6edf3;
-      font-family:'Segoe UI',Arial,sans-serif;
-      min-height:100vh; display:flex;
-      align-items:center; justify-content:center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
     }
-    .card {
-      background:#161b22; border:1px solid #21262d;
-      border-radius:16px; padding:2.5rem 2rem;
-      width:100%; max-width:380px; text-align:center;
+    .login-container {
+      max-width: 420px;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
-    .logo { font-size:2rem; font-weight:800; color:#ff9933; letter-spacing:1px; margin-bottom:0.3rem; }
-    .subtitle { color:#8b949e; font-size:0.85rem; margin-bottom:2rem; }
-    .badge {
-      display:inline-block; background:rgba(255,140,0,0.1);
-      border:1px solid rgba(255,140,0,0.3); color:#ff8c00;
-      font-size:0.75rem; padding:0.25rem 0.75rem;
-      border-radius:20px; margin-bottom:1.5rem; letter-spacing:1px;
+    .login-header {
+      padding: 28px 24px 20px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(255, 153, 51, 0.1), transparent);
+      border-bottom: 1px solid var(--border);
     }
-    input[type=password] {
-      width:100%; background:#0d1117; border:1px solid #21262d;
-      color:#e6edf3; padding:0.75rem 1rem; border-radius:8px;
-      font-size:0.95rem; outline:none; margin-bottom:1rem;
-      transition:border-color 0.2s;
+    .role-tabs {
+      display: flex;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 8px;
+      padding: 4px;
+      margin: 16px 0 6px;
+      gap: 4px;
     }
-    input[type=password]:focus { border-color:#00e5ff; }
-    .btn-login {
-      width:100%; background:#00e5ff; color:#000;
-      border:none; padding:0.75rem; border-radius:8px;
-      font-size:0.95rem; font-weight:700; cursor:pointer;
-      letter-spacing:0.5px; transition:opacity 0.2s;
+    .role-btn {
+      flex: 1;
+      padding: 6px 4px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .btn-login:hover { opacity:0.85; }
-
-    /* ── Demo button ── */
-    .demo-divider {
-      display:flex; align-items:center; gap:0.75rem;
-      margin:1.1rem 0 0.9rem; color:#3d444d; font-size:0.75rem;
+    .role-btn.active {
+      background: var(--surface-card);
+      color: var(--saffron);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
-    .demo-divider::before, .demo-divider::after {
-      content:''; flex:1; height:1px; background:#21262d;
+    .login-body {
+      padding: 24px;
     }
-    .btn-demo {
-      width:100%; background:transparent;
-      border:1px solid rgba(0,229,255,0.25); color:#00e5ff;
-      padding:0.7rem; border-radius:8px;
-      font-size:0.9rem; font-weight:600; cursor:pointer;
-      letter-spacing:0.5px; transition:all 0.2s;
-      display:flex; align-items:center; justify-content:center; gap:8px;
+    .input-field {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
     }
-    .btn-demo:hover { background:rgba(0,229,255,0.08); border-color:#00e5ff; }
-    .demo-note {
-      margin-top:0.6rem; font-size:0.72rem; color:#4a5568;
-      line-height:1.5;
+    .input-field:focus {
+      border-color: var(--saffron);
     }
-
-    .error {
-      background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.3);
-      color:#ff6b6b; padding:0.6rem; border-radius:6px;
-      font-size:0.85rem; margin-bottom:1rem;
-    }
-    .citizen-link {
-      display:block; margin-top:1.5rem; color:#8b949e;
-      font-size:0.82rem; text-decoration:none;
-    }
-    .citizen-link:hover { color:#00e5ff; }
-
-    /* spinner shown while demo login submits */
-    .spin { display:none; width:14px; height:14px; min-width:14px;
-            border:2px solid rgba(0,229,255,0.3);
-            border-top-color:#00e5ff; border-radius:50%; }
-    .spin.active { display:block; animation:spin 0.6s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="logo">✦ {{ app_name }}</div>
-    <div class="subtitle">{{ tagline }} · सत्य and service</div>
-    <div class="badge">🔒 ADMIN ACCESS ONLY</div>
 
-    {% if error %}
-    <div class="error">{{ error }}</div>
-    {% endif %}
+  <div class="login-container">
+    <div class="tricolor-stripe"></div>
 
-    <form method="POST" id="login-form">
-      <input type="password" name="password" id="pw-input"
-             placeholder="Enter admin password" autofocus>
-      <button type="submit" class="btn-login">LOGIN</button>
-    </form>
+    <div class="login-header">
+      <div style="font-size:2.2rem; margin-bottom:4px;">🏛️</div>
+      <h2 style="font-size:1.3rem; color:var(--text); margin-bottom:2px;">{{ app_name }}</h2>
+      <div style="font-size:0.72rem; color:var(--text-muted); letter-spacing:0.04em;">{{ organization }}</div>
+      <div class="badge badge-orange" style="margin-top:10px;">🔒 AUTHORIZED PERSONNEL ONLY</div>
+    </div>
 
-    {% if demo_enabled %}
-    <div class="demo-divider">or</div>
+    <div class="login-body">
+      {% if error %}
+      <div style="background:rgba(230,28,22,0.15); border:1px solid #e61c16; color:#ff6b6b; padding:10px; border-radius:8px; font-size:0.8rem; margin-bottom:14px; text-align:center;">
+        {{ error }}
+      </div>
+      {% endif %}
 
-    <!-- Hidden form that submits the demo password -->
-    <form method="POST" id="demo-form" style="display:none">
-      <input type="hidden" name="password" value="{{ demo_password }}">
-    </form>
+      <form method="POST" id="login-form">
+        <input type="hidden" name="role" id="selected-role" value="admin">
 
-    <button class="btn-demo" id="demo-btn" onclick="submitDemo(this)">
-      <span class="spin" id="demo-spin"></span>
-      <span id="demo-label">▶ Try Demo — One Click Access</span>
-    </button>
-    <p class="demo-note">
-      Read-only demo · Pre-loaded with sample violations
-    </p>
-    {% endif %}
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Select Police Designation:</label>
+        <div class="role-tabs">
+          <button type="button" class="role-btn active" onclick="setRole('admin', this)">Admin</button>
+          <button type="button" class="role-btn" onclick="setRole('inspector', this)">Inspector</button>
+          <button type="button" class="role-btn" onclick="setRole('superadmin', this)">Superadmin</button>
+        </div>
 
-    <a class="citizen-link" href="/citizen">← Go to Citizen Portal</a>
-    <div style="color:#8b949e;font-size:.72rem;margin-top:1rem">Powered by {{ author_name }}</div>
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; display:block; margin-top:10px; margin-bottom:4px;">Officer Password:</label>
+        <input type="password" name="password" id="pw-input" class="input-field" placeholder="Enter password (e.g. pawan123)" required autofocus>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; padding:12px; font-size:0.95rem; margin-top:4px;">
+          ACCESS COMMAND CENTRE
+        </button>
+      </form>
+
+      <!-- Quick Demo Access -->
+      <div style="margin-top:16px; text-align:center;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; color:var(--text-dim); font-size:0.75rem;">
+          <hr style="flex:1; border:none; border-top:1px solid var(--border);">
+          <span>OR</span>
+          <hr style="flex:1; border:none; border-top:1px solid var(--border);">
+        </div>
+
+        <button class="btn btn-outline" style="width:100%;" onclick="quickDemoLogin()">
+          ▶ 1-Click Hackathon Demo Access
+        </button>
+      </div>
+
+      <div style="margin-top:20px; text-align:center;">
+        <a href="/citizen" style="color:var(--text-muted); font-size:0.8rem; text-decoration:none;">← Go to Citizen Public Portal</a>
+      </div>
+    </div>
   </div>
 
   <script>
-    function submitDemo(btn) {
-      btn.disabled = true;
-      document.getElementById('demo-spin').classList.add('active');
-      document.getElementById('demo-label').textContent = 'Logging in...';
-      document.getElementById('demo-form').submit();
+    function setRole(roleName, btn) {
+      document.getElementById('selected-role').value = roleName;
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function quickDemoLogin() {
+      document.getElementById('pw-input').value = '{{ demo_password }}' || 'demo123';
+      document.getElementById('login-form').submit();
     }
   </script>
 </body>

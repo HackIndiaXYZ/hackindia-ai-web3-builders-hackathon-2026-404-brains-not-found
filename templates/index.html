@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }} — AI Traffic Enforcement Command Centre</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    /* ── DASHBOARD LAYOUT & STYLES ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(14px);
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-emblem {
+      font-size: 1.8rem;
+      filter: drop-shadow(0 0 6px rgba(255, 153, 51, 0.4));
+    }
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    .brand-title span { color: var(--saffron); }
+    .brand-sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .live-clock {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.08);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    /* ── KPI STATS CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      padding: 20px 24px 10px;
+    }
+    .kpi-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+    }
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text);
+      margin: 8px 0 2px;
+      font-family: var(--font-heading);
+    }
+    .kpi-footer {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+
+    /* ── TABS NAVIGATION ── */
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-tab {
+      padding: 12px 18px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-heading);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .nav-tab:hover {
+      color: var(--text);
+    }
+    .nav-tab.active {
+      color: var(--saffron);
+      border-bottom-color: var(--saffron);
+    }
+
+    /* ── TAB PANELS ── */
+    .tab-content {
+      padding: 20px 24px 60px;
+    }
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── VIDEO INTERCEPTOR VIEW ── */
+    .video-view-grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 20px;
+    }
+    @media (max-width: 1024px) {
+      .video-view-grid { grid-template-columns: 1fr; }
+    }
+    .video-viewport {
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 16/9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-viewport img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .video-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* ── VIOLATIONS CARDS GRID ── */
+    .violations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .violation-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s;
+    }
+    .violation-card:hover {
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .vcard-img-wrap {
+      height: 160px;
+      background: #000;
+      position: relative;
+      overflow: hidden;
+    }
+    .vcard-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .vcard-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .vcard-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── NOTIFICATIONS POPUP BELL ── */
+    .notif-menu {
+      position: relative;
+    }
+    .notif-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 120%;
+      width: 340px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      z-index: 2000;
+    }
+    .notif-dropdown.show {
+      display: block;
+    }
+
+    /* ── LEAFLET MAP CONTAINER ── */
+    #heatmap-container {
+      height: 540px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    /* ── CHATBOT & SAARTHI ── */
+    .chat-box {
+      height: 400px;
+      overflow-y: auto;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .chat-msg {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+    .chat-msg.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #0066cc, #0088ff);
+      color: #fff;
+    }
+    .chat-msg.bot {
+      align-self: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Tricolor Stripe -->
+  <div class="tricolor-stripe"></div>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand-group">
+      <div class="brand-emblem">🏛️</div>
+      <div>
+        <div class="brand-title">{{ app_name }} <span>AI COMMAND</span></div>
+        <div class="brand-sub">{{ organization }}</div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="live-clock" id="live-clock">--:--:-- IST</div>
+      <div class="badge badge-green"><span class="pulse-dot"></span> AI ONLINE</div>
+      
+      <!-- Multi-Language Selector -->
+      <select id="lang-select" class="btn btn-outline" onchange="changeLanguage(this.value)" style="padding:4px 8px;font-size:0.75rem;">
+        <option value="en">English (EN)</option>
+        <option value="hi">हिन्दी (HI)</option>
+        <option value="pb">ਪੰਜਾਬੀ (PB)</option>
+      </select>
+
+      <!-- Theme Toggle -->
+      <button class="btn btn-outline" onclick="toggleTheme()" title="Toggle Dark/Light Mode" style="padding:6px 12px;">🌓</button>
+
+      <!-- Notifications Bell -->
+      <div class="notif-menu">
+        <button class="btn btn-outline" onclick="toggleNotifs()" style="padding:6px 12px; position:relative;">
+          🔔 <span id="notif-badge" style="position:absolute;top:-4px;right:-4px;background:#e61c16;color:#fff;font-size:0.65rem;padding:2px 6px;border-radius:10px;">0</span>
+        </button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div style="font-weight:700;font-size:0.85rem;margin-bottom:8px;display:flex;justify-content:space-between;">
+            <span>Live Alerts Broadcast</span>
+            <span style="font-size:0.7rem;color:var(--cyan);">SSE Active</span>
+          </div>
+          <div id="notif-feed-list" style="display:flex;flex-direction:column;gap:8px;">
+            <div style="font-size:0.75rem;color:var(--text-dim);text-align:center;">Monitoring live traffic channels...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Officer Profile -->
+      <div class="badge badge-blue">👮 {{ username }} ({{ user_role|upper }})</div>
+      <a href="/logout" class="btn btn-outline" style="padding:6px 12px; color:#ff6b6b; border-color:rgba(255,107,107,0.3);">Logout</a>
+    </div>
+  </header>
+
+  <!-- KPI Top Stats Cards -->
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span data-i18n="violations_today">Violations Detected</span>
+        <span style="color:var(--traffic-red);">🚨</span>
+      </div>
+      <div class="kpi-value" id="kpi-total">0</div>
+      <div class="kpi-footer">Across all camera feeds</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span data-i18n="total_fines">Fines Imposed</span>
+        <span style="color:var(--saffron);">💰</span>
+      </div>
+      <div class="kpi-value" id="kpi-fines" style="color:var(--saffron);">₹0</div>
+      <div class="kpi-footer" id="kpi-pending">Pending: 0 challans</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span data-i18n="revenue_collected">Revenue Collected</span>
+        <span style="color:var(--green);">✅</span>
+      </div>
+      <div class="kpi-value" id="kpi-collected" style="color:var(--green);">₹0</div>
+      <div class="kpi-footer" id="kpi-recovery">Recovery Rate: 0%</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span data-i18n="active_cameras">Active Interceptors</span>
+        <span style="color:var(--cyan);">📹</span>
+      </div>
+      <div class="kpi-value" id="kpi-cameras" style="color:var(--cyan);">1</div>
+      <div class="kpi-footer">YOLOv8 + ByteTrack 25 FPS</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span data-i18n="blackspots">Accident Blackspots</span>
+        <span style="color:var(--gold);">⚠️</span>
+      </div>
+      <div class="kpi-value" style="color:var(--gold);">5</div>
+      <div class="kpi-footer">High-risk zones tracked</div>
+    </div>
+  </section>
+
+  <!-- Command Navigation Tabs -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('tab-live')">📹 <span data-i18n="tab_live">Live Interceptor</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-violations')">🚨 <span data-i18n="tab_violations">Violations Feed</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-heatmap')">🗺️ <span data-i18n="tab_map">Hotspot Heat Map</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-predictive')">📈 <span data-i18n="tab_predictive">Predictive Analytics</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-officers')">👮 <span data-i18n="tab_officers">Officer Leaderboard</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-disputes')">⚖️ <span data-i18n="tab_disputes">Disputes Queue</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-saarthi')">🤖 <span data-i18n="tab_saarthi">Saarthi AI Bot</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-suraksha')">🏆 <span data-i18n="tab_suraksha">Suraksha Score</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-reports')">📑 <span data-i18n="tab_reports">Reports & Audit</span></button>
+  </nav>
+
+  <!-- Main Content Body -->
+  <main class="tab-content">
+
+    <!-- 1. LIVE INTERCEPTOR TAB -->
+    <div id="tab-live" class="tab-pane active">
+      <div class="video-view-grid">
+        <div>
+          <div class="video-viewport">
+            <img id="live-stream-img" src="/video_feed" alt="Live AI Video Stream">
+          </div>
+          <div class="video-controls">
+            <select id="video-selector" class="btn btn-outline" style="min-width:260px;">
+              {% for v in videos %}
+              <option value="{{ v }}">{{ v }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-primary" onclick="startSelectedVideo()">▶ <span data-i18n="btn_start">Start AI Detection</span></button>
+            <button class="btn btn-outline" onclick="stopVideo()">⏹ <span data-i18n="btn_stop">Stop</span></button>
+            <button class="btn btn-saffron" onclick="openAddCameraModal()">➕ Add RTSP Camera</button>
+          </div>
+        </div>
+
+        <div class="glass-card" style="display:flex; flex-direction:column; gap:14px;">
+          <h3 style="font-size:1rem;color:var(--text);">⚡ Live AI Vision Telemetry</h3>
+          <div style="display:flex; flex-direction:column; gap:8px; font-size:0.82rem;">
+            <div class="vcard-row">
+              <span style="color:var(--text-muted);">YOLOv8 Detection FPS:</span>
+              <span id="tel-fps" style="font-family:var(--font-mono);color:var(--cyan);font-weight:700;">24.8 FPS</span>
+            </div>
+            <div class="vcard-row">
+              <span style="color:var(--text-muted);">Inference Latency:</span>
+              <span id="tel-latency" style="font-family:var(--font-mono);color:var(--green);font-weight:700;">38 ms</span>
+            </div>
+            <div class="vcard-row">
+              <span style="color:var(--text-muted);">EasyOCR Processing:</span>
+              <span id="tel-ocr" style="font-family:var(--font-mono);color:var(--saffron);font-weight:700;">Active</span>
+            </div>
+            <div class="vcard-row">
+              <span style="color:var(--text-muted);">ByteTrack Trajectory:</span>
+              <span style="font-family:var(--font-mono);color:#00e676;font-weight:700;">TRACKING ON</span>
+            </div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border);">
+
+          <h4 style="font-size:0.85rem;color:var(--text);">🎯 Demo Video Library</h4>
+          <div style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;">
+            {% for dv in demo_videos %}
+            <div style="background:rgba(0,0,0,0.2);padding:8px 10px;border-radius:6px;display:flex;align-items:center;justify-content:space-between;font-size:0.75rem;">
+              <div>
+                <div style="font-weight:700;color:var(--text);">{{ dv.display_label }}</div>
+                <div style="color:var(--text-dim);font-size:0.68rem;">{{ dv.video_name[:24] }}...</div>
+              </div>
+              <button class="btn btn-outline" style="padding:4px 8px;font-size:0.7rem;" onclick="playDemoVideo('{{ dv.video_name }}')">Play</button>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. VIOLATIONS FEED TAB -->
+    <div id="tab-violations" class="tab-pane">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <h2 style="font-size:1.2rem;">🚨 Real-Time Interceptions Ledger</h2>
+        <div style="display:flex; gap:10px;">
+          <input type="text" id="filter-plate" placeholder="Search Plate (e.g. KA03MX4521)" class="btn btn-outline" oninput="loadViolationsFeed()">
+          <a href="/export" class="btn btn-saffron">⬇ Export CSV</a>
+        </div>
+      </div>
+      <div class="violations-grid" id="violations-container">
+        <!-- Dynamic Violation Cards -->
+      </div>
+    </div>
+
+    <!-- 3. GEOLOCATION HEAT MAP TAB -->
+    <div id="tab-heatmap" class="tab-pane">
+      <div style="display:grid; grid-template-columns: 1fr 340px; gap:20px;">
+        <div>
+          <div id="heatmap-container"></div>
+        </div>
+        <div class="glass-card">
+          <h3 style="font-size:1rem;margin-bottom:12px;">📍 Top 5 Hazardous Blackspots</h3>
+          <div id="hotspots-list" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- Dynamic Hotspots -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. PREDICTIVE ANALYTICS TAB -->
+    <div id="tab-predictive" class="tab-pane">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+        <div class="glass-card">
+          <h3 style="font-size:1rem;margin-bottom:12px;">⏰ Peak Violation Hours (AI Prediction)</h3>
+          <canvas id="peakHoursChart" style="max-height:260px;"></canvas>
+        </div>
+        <div class="glass-card">
+          <h3 style="font-size:1rem;margin-bottom:12px;">🎯 Tactical Interceptor Directives</h3>
+          <div id="ai-recs-container" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- Dynamic Directives -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. OFFICER LEADERBOARD TAB -->
+    <div id="tab-officers" class="tab-pane">
+      <div class="glass-card">
+        <h2 style="font-size:1.2rem;margin-bottom:16px;">👮 Traffic Police Enforcement Leaderboard</h2>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.85rem;" id="officer-table">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border); text-align:left; color:var(--text-muted);">
+                <th style="padding:10px;">Rank</th>
+                <th style="padding:10px;">Officer Name</th>
+                <th style="padding:10px;">Badge No</th>
+                <th style="padding:10px;">Station / Zone</th>
+                <th style="padding:10px;">Violations Caught</th>
+                <th style="padding:10px;">Revenue Recovered</th>
+                <th style="padding:10px;">Accuracy</th>
+                <th style="padding:10px;">Badges & Honors</th>
+              </tr>
+            </thead>
+            <tbody id="officer-tbody">
+              <!-- Dynamic Officers -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. CITIZEN DISPUTES QUEUE TAB -->
+    <div id="tab-disputes" class="tab-pane">
+      <div class="glass-card">
+        <h2 style="font-size:1.2rem;margin-bottom:16px;">⚖️ Citizen Dispute Resolution Tribunal</h2>
+        <div id="disputes-list" style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Dynamic Disputes -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. SAARTHI AI CHATBOT TAB -->
+    <div id="tab-saarthi" class="tab-pane">
+      <div class="glass-card" style="max-width:800px; margin:auto;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+          <span style="font-size:1.8rem;">🤖</span>
+          <div>
+            <h2 style="font-size:1.15rem;margin:0;">Saarthi AI — Traffic Safety Assistant</h2>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Motor Vehicles Act (1988/2019) Knowledge Engine in Hindi & English</div>
+          </div>
+        </div>
+        <div class="chat-box" id="saarthi-chat-box">
+          <div class="chat-msg bot">
+            Namaste! I am <b>Saarthi AI</b>. Ask me anything about traffic rules, penalty sections under the Motor Vehicles Act, driving license procedures, or challan settlements.
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <input type="text" id="chat-input" placeholder="Ask in Hindi or English (e.g. Helmet ka fine kitna hai?)" class="btn btn-outline" style="flex:1;" onkeypress="if(event.key==='Enter') sendSaarthiMsg()">
+          <button class="btn btn-primary" onclick="sendSaarthiMsg()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. SURAKSHA SCORE TAB -->
+    <div id="tab-suraksha" class="tab-pane">
+      <div class="glass-card" style="max-width:700px; margin:auto;">
+        <h2 style="font-size:1.15rem;margin-bottom:12px;">🏆 Suraksha Safe Driving Compliance Checker</h2>
+        <div style="display:flex; gap:10px; margin-bottom:16px;">
+          <input type="text" id="suraksha-plate-input" placeholder="Enter Registration No (e.g. KA03MX4521)" class="btn btn-outline" style="flex:1;">
+          <button class="btn btn-saffron" onclick="checkSurakshaScore()">Check Score</button>
+        </div>
+        <div id="suraksha-result-box" style="display:none; background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; border:1px solid var(--border);">
+          <!-- Dynamic Score Card -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. REPORTS & AUDIT TAB -->
+    <div id="tab-reports" class="tab-pane">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+        <div class="glass-card">
+          <h3 style="font-size:1rem;margin-bottom:10px;">📑 Traffic Police Headquarters Monthly Report</h3>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;">Official multi-section PDF containing executive KPIs, repeat offender matrices, blackspot risk audits, and strategic deployment directives.</p>
+          <a href="/reports/monthly" target="_blank" class="btn btn-primary">⬇ Download Official PDF Report</a>
+        </div>
+        <div class="glass-card">
+          <h3 style="font-size:1rem;margin-bottom:10px;">⛓️ Cryptographic Blockchain Immutability Ledger</h3>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;">Every e-challan is mathematically locked with SHA-256 block hash chains to guarantee tamper-proof evidentiary integrity.</p>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="bc-challan-input" placeholder="Challan Ref (e.g. RX-000001)" class="btn btn-outline" style="flex:1;">
+            <button class="btn btn-outline" onclick="verifyBlockchainChallan()">Verify Integrity</button>
+          </div>
+          <div id="bc-verify-result" style="margin-top:10px; font-size:0.75rem;"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── SCRIPTS ── -->
+  <script>
+    let currentTheme = localStorage.getItem('tg_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    function toggleTheme() {
+      currentTheme = (currentTheme === 'dark') ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('tg_theme', currentTheme);
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+      if (tabId === 'tab-heatmap' && window.leafletMap) {
+        setTimeout(() => window.leafletMap.invalidateSize(), 200);
+      }
+    }
+
+    // Live IST Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('live-clock').textContent = now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Stats & KPI loader
+    function loadStats() {
+      fetch('/stats').then(r => r.json()).then(d => {
+        document.getElementById('kpi-total').textContent = d.total || 0;
+        document.getElementById('kpi-fines').textContent = '₹' + (d.total_fines || 0).toLocaleString('en-IN');
+        document.getElementById('kpi-collected').textContent = '₹' + (d.fines_collected || 0).toLocaleString('en-IN');
+        document.getElementById('kpi-pending').textContent = 'Pending: ' + (d.pending_challans || 0) + ' challans';
+        const rec = d.total_fines > 0 ? ((d.fines_collected / d.total_fines) * 100).toFixed(1) : 0;
+        document.getElementById('kpi-recovery').textContent = 'Recovery Rate: ' + rec + '%';
+      });
+    }
+
+    // Violations Feed Loader
+    function loadViolationsFeed() {
+      const search = (document.getElementById('filter-plate') ? document.getElementById('filter-plate').value : '').trim();
+      fetch('/violations?limit=40').then(r => r.json()).then(data => {
+        const container = document.getElementById('violations-container');
+        if (!container) return;
+        const filtered = search ? data.filter(v => (v.plate||'').toUpperCase().includes(search.toUpperCase())) : data;
+        container.innerHTML = filtered.map(v => `
+          <div class="violation-card">
+            <div class="vcard-img-wrap">
+              ${v.screenshot ? `<img src="/static/screenshots/${v.screenshot}" onerror="this.src='/static/screenshots/placeholder.jpg'">` : `<div style="color:#666;display:flex;align-items:center;justify-content:center;height:100%;">📷 Evidence Stored in Vault</div>`}
+            </div>
+            <div class="vcard-body">
+              <div class="vcard-row">
+                <span class="plate-chip">${v.plate && v.plate !== 'UNKNOWN' ? v.plate : 'UNRESOLVED'}</span>
+                <span class="badge ${v.paid ? 'badge-green' : 'badge-red'}">${v.paid ? '✅ PAID' : '⏳ UNPAID'}</span>
+              </div>
+              <div style="font-weight:700;color:var(--text);font-size:0.85rem;">${v.violation}</div>
+              <div class="vcard-row" style="font-size:0.75rem;color:var(--text-muted);">
+                <span>👤 ${v.owner_name || 'Citizen'}</span>
+                <span style="font-weight:700;color:var(--saffron);font-size:0.95rem;">₹${(v.fine||0).toLocaleString('en-IN')}</span>
+              </div>
+              <div style="font-size:0.7rem;color:var(--text-dim);">${v.timestamp} · Ref: RX-${String(v.id).padStart(6, '0')}</div>
+              <div style="display:flex;gap:6px;margin-top:6px;">
+                <a href="/challan/${v.id}" target="_blank" class="btn btn-outline" style="flex:1;padding:4px 8px;font-size:0.75rem;">⬇ Challan</a>
+                <a href="/verify/${v.id}" target="_blank" class="btn btn-outline" style="padding:4px 8px;font-size:0.75rem;">🔍 Verify</a>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      });
+    }
+
+    // Video Controls
+    function startSelectedVideo() {
+      const v = document.getElementById('video-selector').value;
+      if (!v) return;
+      fetch('/start/' + encodeURIComponent(v)).then(r => r.json()).then(d => {
+        document.getElementById('live-stream-img').src = '/video_feed?t=' + Date.now();
+      });
+    }
+    function stopVideo() {
+      fetch('/stop').then(r => r.json()).then(() => {
+        document.getElementById('live-stream-img').src = '/video_feed?t=' + Date.now();
+      });
+    }
+    function playDemoVideo(name) {
+      document.getElementById('video-selector').value = name;
+      startSelectedVideo();
+      switchTab('tab-live');
+    }
+
+    // Heatmap Initialization
+    function initHeatmap() {
+      const map = L.map('heatmap-container').setView([12.9716, 77.5946], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+      window.leafletMap = map;
+
+      fetch('/api/blackspots').then(r => r.json()).then(d => {
+        const list = document.getElementById('hotspots-list');
+        list.innerHTML = (d.blackspots || []).map(b => `
+          <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;border-left:4px solid ${b.risk_score > 80 ? '#e61c16' : '#ff9933'};">
+            <div style="font-weight:700;font-size:0.82rem;color:var(--text);">${b.name}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);margin:2px 0;">Risk Score: <b style="color:#ff5252;">${b.risk_score}/100</b> · Peak: ${b.peak_risk_time}</div>
+            <div style="font-size:0.7rem;color:var(--cyan);">${b.recommended_action}</div>
+          </div>
+        `).join('');
+
+        (d.blackspots || []).forEach(b => {
+          L.circleMarker([b.location.lat, b.location.lng], {
+            radius: 12,
+            color: b.risk_score > 80 ? '#e61c16' : '#ff9933',
+            fillColor: b.risk_score > 80 ? '#e61c16' : '#ff9933',
+            fillOpacity: 0.6
+          }).bindPopup(`<b>${b.name}</b><br/>Risk Score: ${b.risk_score}/100<br/>${b.recommended_action}`).addTo(map);
+        });
+      });
+    }
+
+    // Predictive Analytics
+    function initPredictiveCharts() {
+      fetch('/api/predictive/peak-hours').then(r => r.json()).then(d => {
+        const ctx = document.getElementById('peakHoursChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: d.hours,
+            datasets: [{
+              label: 'Predicted Infractions',
+              data: d.counts,
+              backgroundColor: 'rgba(255, 153, 51, 0.7)',
+              borderColor: '#ff9933',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
+          }
+        });
+      });
+
+      fetch('/api/predictive/recommendations').then(r => r.json()).then(recs => {
+        document.getElementById('ai-recs-container').innerHTML = recs.map(rec => `
+          <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;border-left:4px solid ${rec.priority==='CRITICAL'?'#e61c16':'#ff9933'};">
+            <div style="font-weight:700;font-size:0.82rem;color:var(--text);">${rec.icon} ${rec.directive}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);margin:2px 0;">${rec.basis}</div>
+            <div style="font-size:0.7rem;color:var(--green);font-weight:700;">Action: ${rec.action}</div>
+          </div>
+        `).join('');
+      });
+    }
+
+    // Officer Leaderboard
+    function loadOfficerLeaderboard() {
+      fetch('/api/officers/leaderboard').then(r => r.json()).then(officers => {
+        document.getElementById('officer-tbody').innerHTML = officers.map(o => `
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px;font-weight:800;color:${o.rank===1?'#ffd700':o.rank===2?'#c0c0c0':'#cd7f32'};">#${o.rank}</td>
+            <td style="padding:10px;font-weight:700;">${o.name}</td>
+            <td style="padding:10px;font-family:var(--font-mono);">${o.badge}</td>
+            <td style="padding:10px;color:var(--text-muted);">${o.station}</td>
+            <td style="padding:10px;font-weight:700;color:var(--cyan);">${o.violations_intercepted}</td>
+            <td style="padding:10px;font-weight:700;color:var(--green);">₹${o.revenue_generated.toLocaleString('en-IN')}</td>
+            <td style="padding:10px;">${o.accuracy_rate}%</td>
+            <td style="padding:10px;">${o.badges.map(b => `<span class="badge badge-gold" style="margin-right:4px;">${b}</span>`).join('')}</td>
+          </tr>
+        `).join('');
+      });
+    }
+
+    // Disputes Loader
+    function loadDisputes() {
+      fetch('/admin/disputes').then(r => r.json()).then(disputes => {
+        const c = document.getElementById('disputes-list');
+        if (!disputes.length) {
+          c.innerHTML = '<div style="color:var(--text-dim);text-align:center;padding:20px;">No pending citizen disputes.</div>';
+          return;
+        }
+        c.innerHTML = disputes.map(d => `
+          <div style="background:rgba(0,0,0,0.2);padding:14px;border-radius:10px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-weight:700;font-size:0.85rem;">Plate: <span class="plate-chip">${d.plate}</span> | Challan: RX-${String(d.violation_id).padStart(6,'0')}</div>
+              <div style="font-size:0.75rem;color:#ff6b6b;margin:4px 0;">Reason: ${d.reason}</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">${d.explanation || 'Citizen submitted digital proof.'}</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-success" style="padding:6px 12px;font-size:0.75rem;" onclick="resolveDispute(${d.id}, 'ACCEPTED')">Accept & Waive</button>
+              <button class="btn btn-primary" style="padding:6px 12px;font-size:0.75rem;" onclick="resolveDispute(${d.id}, 'REJECTED')">Reject</button>
+            </div>
+          </div>
+        `).join('');
+      });
+    }
+
+    function resolveDispute(id, action) {
+      fetch(`/admin/dispute/${id}/resolve`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action: action})
+      }).then(() => loadDisputes());
+    }
+
+    // Saarthi AI Chat
+    function sendSaarthiMsg() {
+      const inp = document.getElementById('chat-input');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      const box = document.getElementById('saarthi-chat-box');
+      box.innerHTML += `<div class="chat-msg user">${txt}</div>`;
+      inp.value = '';
+      box.scrollTop = box.scrollHeight;
+
+      fetch('/api/chatbot/ask', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({query: txt})
+      }).then(r => r.json()).then(d => {
+        box.innerHTML += `<div class="chat-msg bot">${d.answer.replace(/\\n/g, '<br/>')}</div>`;
+        box.scrollTop = box.scrollHeight;
+      });
+    }
+
+    // Suraksha Score
+    function checkSurakshaScore() {
+      const plate = document.getElementById('suraksha-plate-input').value.trim();
+      if (!plate) return;
+      fetch('/api/suraksha/score/' + encodeURIComponent(plate)).then(r => r.json()).then(d => {
+        const box = document.getElementById('suraksha-result-box');
+        box.style.display = 'block';
+        box.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:1.1rem;font-weight:800;color:var(--text);">${d.owner_name}</div>
+              <div class="plate-chip" style="margin-top:4px;">${d.plate}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:2.2rem;font-weight:800;color:${d.color};font-family:var(--font-heading);">${d.score}/100</div>
+              <div style="font-size:0.75rem;font-weight:700;color:${d.color};">${d.tier} (${d.grade})</div>
+            </div>
+          </div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
+          <div style="font-size:0.75rem;">
+            ${d.bonuses.map(b => `<div style="color:#00e676;">✔ ${b}</div>`).join('')}
+            ${d.deductions.map(dd => `<div style="color:#ff5252;">✖ ${dd}</div>`).join('')}
+          </div>
+        `;
+      });
+    }
+
+    // Blockchain Verification
+    function verifyBlockchainChallan() {
+      const ref = document.getElementById('bc-challan-input').value.trim();
+      if (!ref) return;
+      fetch('/api/blockchain/verify/' + encodeURIComponent(ref)).then(r => r.json()).then(d => {
+        const out = document.getElementById('bc-verify-result');
+        if (d.verified) {
+          out.innerHTML = `<div style="color:#00e676;background:rgba(0,230,118,0.1);padding:10px;border-radius:8px;border:1px solid #00e676;">
+            <b>✅ ${d.status}</b><br/>Block Height: ${d.block_height}<br/>Hash: <code>${d.block_hash.slice(0,32)}...</code><br/>Evidence SHA256: <code>${(d.evidence_sha256||'').slice(0,24)}...</code>
+          </div>`;
+        } else {
+          out.innerHTML = `<div style="color:#ff5252;background:rgba(255,82,82,0.1);padding:10px;border-radius:8px;border:1px solid #ff5252;">${d.message || d.status}</div>`;
+        }
+      });
+    }
+
+    // SSE Real-Time Stream
+    function initSSE() {
+      const evt = new EventSource('/api/events');
+      evt.addEventListener('violation', e => {
+        const data = JSON.parse(e.data);
+        loadStats();
+        loadViolationsFeed();
+        addNotif(`🚨 New violation: ${data.plate} (${data.violation})`);
+      });
+      evt.addEventListener('payment', e => {
+        const data = JSON.parse(e.data);
+        loadStats();
+        addNotif(`💳 Payment received: ₹${data.amount} for ${data.challan}`);
+      });
+    }
+
+    let notifCount = 0;
+    function addNotif(msg) {
+      notifCount++;
+      document.getElementById('notif-badge').textContent = notifCount;
+      const list = document.getElementById('notif-feed-list');
+      const item = document.createElement('div');
+      item.style.cssText = 'padding:6px;background:rgba(0,0,0,0.2);border-radius:6px;font-size:0.75rem;';
+      item.innerHTML = `<div>${msg}</div><div style="font-size:0.65rem;color:var(--text-dim);">${new Date().toLocaleTimeString()}</div>`;
+      list.prepend(item);
+    }
+    function toggleNotifs() {
+      document.getElementById('notif-dropdown').classList.toggle('show');
+      notifCount = 0;
+      document.getElementById('notif-badge').textContent = '0';
+    }
+
+    // Initialize all modules
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStats();
+      loadViolationsFeed();
+      initHeatmap();
+      initPredictiveCharts();
+      loadOfficerLeaderboard();
+      loadDisputes();
+      initSSE();
+      setInterval(loadStats, 5000);
+    });
+  </script>
+</body>
+</html>

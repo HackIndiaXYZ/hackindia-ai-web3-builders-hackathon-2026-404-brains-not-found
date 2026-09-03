@@ -1,210 +1,146 @@
 ---
 title: TrafficGuard Pro
 emoji: 🚦
-colorFrom: blue
-colorTo: indigo
+colorFrom: red
+colorTo: orange
 sdk: docker
-pinned: false
+pinned: true
 ---
 
-# 🚦 TrafficGuard Pro — AI Traffic Enforcement System
+# 🚦 TrafficGuard Pro — AI Traffic Enforcement & Safety Command Grid
+### *सत्यमेव जयते · AI for Road Safety & Transparent Governance*
 
-**TrafficGuard Pro** is an AI-powered Indian traffic enforcement system that analyzes dashcam or RTSP CCTV footage to detect violations, read Indian license plates, look up vehicle owners, generate PDF challans, and send notifications.
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.0.3-black.svg)](https://flask.palletsprojects.com/)
+[![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-orange.svg)](https://ultralytics.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-49%20Passed-brightgreen.svg)]()
 
-**Owner:** Pawan Singh — Founder & Full-Stack Developer. B.Tech CSE, Delhi Technical Campus (DTC), Greater Noida; Guru Gobind Singh Indraprastha University (GGSIPU); CGPA 9.16; expected graduation 2028. [GitHub](https://github.com/pawan00207) · pawan9140582015@gmail.com · LinkedIn: Pawan Singh.
-
-The dashboard carries **Satyameva Jayate (सत्यमेव जयते)**. TrafficGuard Pro adds explainable penalty recommendations, repeat-offender alerts, vehicle comparison hooks, geolocation heat maps, live KPIs, batch status, OCR transparency, WhatsApp-ready notifications, trend analysis, role-ready access, dark mode, monthly PDF reports and QR challan verification. Facial recognition is documented as a future roadmap item only.
----
-
-## Key Features
-
-- Live RTSP stream and video file processing, multi-camera support
-- No helmet detection — Sec 129 MV Act, Rs. 1,000 (20-frame vote window)
-- Triple riding detection — Sec 128 MV Act, Rs. 1,000 (overlap-based, >50% IoU on motorcycle ROI)
-- Wrong-way driving detection — Sec 184 MV Act, Rs. 5,000 (dual-mode ByteTrack trajectory analysis)
-- Indian license plate recognition — 97.6% precision, 95.9% mAP@0.5 (avg across 3 datasets, 438 images)
-- Repeat-offender fine multiplier (1× / 2× / 3×)
-- PDF challan generation with QR payment link (ReportLab)
-- Email notifications with retry logic (3 attempts, 2s delay)
-- Login-protected admin dashboard with live MJPEG feed
-- Public citizen portal — no login required, masked plate numbers
-- Analytics page with 5 Chart.js charts, 6 KPIs
-- CSV export, mark-as-paid, performance metrics API (`/metrics`)
-- AI Safety Intelligence command centre at `/ai-safety`
-- Explainable historical vehicle risk scores (`/api/risk/vehicles`)
-- Track-based near-miss heuristic events (`/api/near-misses`), explicitly not guaranteed accident prediction
-- Heatmap-backed current/emerging blackspots (`/api/blackspots`)
-- Emergency-event API surface with simulated signal integration only (`/api/emergency-events`)
-- Evidence SHA-256 verification (`/api/evidence/<id>/verify`) and confidence-based review workflow (`/api/reviews`)
-- System health, recommendation, weather demo, and what-if simulation panels
-- Demo Video Library with all locally available inputs and Hackathon Demo Mode
-- Dockerized — deployed live on Hugging Face Spaces (CPU, 16GB RAM)
+**TrafficGuard Pro** is an AI-powered Indian traffic enforcement and road safety intelligence command system. Built for smart cities and traffic police divisions, it uses custom-trained **YOLOv8**, **ByteTrack**, and **EasyOCR** to automatically intercept infractions, look up National Vahan records, dispatch multi-channel e-challans (WhatsApp, SMS, Email), compute accident blackspots, and manage dispute resolution tribunals with cryptographic immutability.
 
 ---
 
-## Project Structure
+## 👤 Project Founder & Lead Architect
+**Pawan Singh** — Founder & Full-Stack AI Engineer  
+- **Education:** B.Tech Computer Science & Engineering (CSE), Delhi Technical Campus (DTC), Greater Noida  
+- **University:** Guru Gobind Singh Indraprastha University (GGSIPU)  
+- **Academic Merit:** **9.16 CGPA** | Expected Graduation: **2028**  
+- **Email:** [pawan9140582015@gmail.com](mailto:pawan9140582015@gmail.com)  
+- **GitHub:** [github.com/pawan00207](https://github.com/pawan00207)  
+- **LinkedIn:** Pawan Singh  
 
+---
+
+## 🌟 Hackathon Feature Matrix
+
+| # | Feature Domain | Capability & Specification | Status |
+|---|---|---|:---:|
+| 1 | **Helmet Detection** | YOLOv8 + 20-frame voting window (Sec 129 MV Act, ₹1,000 fine) | ✅ |
+| 2 | **Triple Riding Detection** | IoU overlap > 50% on motorcycle ROI (Sec 128 MV Act, ₹1,000 fine) | ✅ |
+| 3 | **Wrong-Way Detection** | Dual-mode ByteTrack trajectory closing speed (Sec 184 MV Act, ₹5,000) | ✅ |
+| 4 | **Indian ANPR / OCR** | High-precision Indian plate parser across all 36 States/UTs | ✅ |
+| 5 | **Geolocation Heat Map** | Leaflet.js interactive map with Top 5 Hotspots drill-down | ✅ |
+| 6 | **Predictive Analytics** | Hourly violation distribution bar chart & accident risk zones | ✅ |
+| 7 | **Officer Dashboard** | Enforcement leaderboard, accuracy rankings, and badges | ✅ |
+| 8 | **Citizen Public Portal** | Masked plate lookup, 15-day dispute tribunal, instant online pay | ✅ |
+| 9 | **WhatsApp & SMS Alerts** | Meta Cloud API + Twilio WhatsApp & SMS fallback | ✅ |
+| 10 | **Two-Way WhatsApp Bot** | Interactive bot for `STATUS`, `PAY`, `RULES`, `DISPUTE` | ✅ |
+| 11 | **Saarthi AI Chatbot** | Bilingual (Hindi + English) Motor Vehicles Act knowledge engine | ✅ |
+| 12 | **Suraksha Gamification** | 0-100 safe driving score & digital certificate generator | ✅ |
+| 13 | **National Vahan DB** | 50+ pre-seeded vehicles + procedural fallback for ANY plate | ✅ |
+| 14 | **Blockchain Audit** | SHA-256 cryptographic immutability block ledger | ✅ |
+| 15 | **Automated PDF Reports** | Multi-page Monthly & Daily PDF reports for Police HQ | ✅ |
+| 16 | **Role-Based Access (RBAC)** | 4 user roles: Superadmin, Admin, Inspector, Citizen | ✅ |
+| 17 | **Live SSE Push Stream** | Real-time event broadcasting to command centre tabs | ✅ |
+| 18 | **Multi-Language (i18n)** | UI support for English, हिन्दी (Hindi), and ਪੰਜਾਬੀ (Punjabi) | ✅ |
+
+---
+
+## 🏛️ System Architecture
+
+```mermaid
+graph TD
+    A[RTSP CCTV / Dashcam Feed] --> B[YOLOv8 Object Detection]
+    B --> C[ByteTrack Multi-Object Tracking]
+    C --> D[ViolationEngine: Helmet, Triple, Wrong-Way]
+    C --> E[License Plate Crop & EasyOCR]
+    D --> F[(SQLite WAL Database + Indexes)]
+    E --> F
+    F --> G[National Vahan Vehicle Registry]
+    F --> H[Multi-Channel Alerts: WhatsApp / SMS / Email]
+    F --> I[ReportLab PDF E-Challan & Receipt Engine]
+    F --> J[Safety & Predictive Analytics Engine]
+    F --> K[Cryptographic Blockchain Ledger]
+    
+    subgraph Frontend Interfaces
+        L[Command Centre - index.html]
+        M[Citizen Public Portal - citizen.html]
+        N[Geolocation Heat Map - map.html]
+        O[Public QR Verification - verify.html]
+    end
+    
+    F --> L
+    F --> M
+    F --> N
+    F --> O
 ```
-app.py              — Main Flask app + detection pipeline
-violation_engine.py — No-helmet, triple-riding, wrong-way logic
-challan.py          — PDF challan generation (ReportLab)
-notifications.py    — Email / WhatsApp notification system
-vahan.py            — Vehicle owner lookup (mock; real API drop-in ready)
-plate_ocr.py        — Advanced Indian plate OCR (used by detect_video.py)
-detect.py           — Batch image detection script
-detect_video.py     — Batch video processing script
-evaluate_model.py   — Model evaluation (best.pt + Plate.pt)
-seed_db.py          — Seeds violations.db with demo data
-templates/          — Flask HTML templates (login, dashboard, citizen, analytics)
-static/             — Screenshots, challans
-videos/             — Input video files
-models/             — YOLOv8 weights (downloaded at Docker build time)
-safety_intelligence.py — Explainable risk, near-miss, blackspot, evidence and review helpers
-demo_catalog.py     — Metadata catalog for existing and new hackathon demo videos
-Dockerfile          — CPU-only build, pre-downloads models + EasyOCR
-docker-compose.yml  — Local multi-container setup
-```
 
 ---
 
-## Setup (Local)
+## 🚀 Quickstart & Setup Guide
+
+### 1. Local Setup
 
 ```bash
-git clone <repository-url>
-cd VehicleTrack-traffic-enforcement
+# Clone the repository
+git clone https://github.com/pawan00207/RoadX-traffic-enforcement.git
+cd RoadX-traffic-enforcement
 
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+venv\Scripts\activate     # Linux/Mac: source venv/bin/activate
 
+# Install dependencies
 pip install -r requirements.txt
-```
 
-Create a `.env` file in the project root (never commit this):
+# Run test suite
+python -m pytest tests/ -v
 
-```
-SECRET_KEY=your-random-secret-here
-ADMIN_PASSWORD=your-admin-password
-
-# Optional — one-click demo login (separate from admin password)
-DEMO_PASSWORD=
-
-# Optional — email notifications
-GMAIL_ADDRESS=your@gmail.com
-GMAIL_APP_PASS=your-app-password
-CITIZEN_EMAIL=citizen@example.com
-ADMIN_EMAIL=admin@example.com
-
-# Optional — WhatsApp delivery (Twilio or Meta Cloud API)
-TWILIO_ACCOUNT_SID=
-TWILIO_AUTH_TOKEN=
-TWILIO_WHATSAPP_FROM=+14155238886
-
-# Optional — Vahan API
-VAHAN_API_KEY=
-
-# Demo owner details (shown when plate not in mock DB)
-DEMO_NAME=Demo Owner
-DEMO_PHONE=+910000000000
-DEMO_EMAIL=demo@example.com
-```
-
----
-
-## Usage
-
-### Web dashboard (recommended)
-
-```bash
+# Launch application
 python app.py
 ```
 
-Open `http://localhost:5001/citizen` — public citizen portal
-Open `http://localhost:5001/login` — admin login (traffic police)
-Open `http://localhost:5001/ai-safety` — AI Safety Intelligence (after officer login)
+Open your browser:
+- **Officer Command Centre:** `http://localhost:5001/` (Login: `admin` / `pawan123` or click 1-Click Demo)
+- **Citizen Public Portal:** `http://localhost:5001/citizen`
+- **Geolocation Hotspot Map:** `http://localhost:5001/map`
 
-From the admin dashboard, select a video file or enter an RTSP URL and click **▶ ADD**.
-
-### Hackathon demo flow
-
-Open **Demo Videos**, keep **Hackathon Demo Mode** enabled, and run the **Demo Video - No Helmet Detection** input first: video → detection → plate/OCR → evidence → risk → review → challan. Then run **Demo Video - Traffic Intelligence** to show vehicle tracking, traffic density, and location-backed safety analysis. The catalog reports “No instance detected in this video” when the database has no observed event; it never fabricates detections.
-
-### Safety intelligence APIs
-
-All officer APIs require the admin session: `/api/risk/vehicles`, `/api/near-misses`, `/api/blackspots`, `/api/emergency-events`, `/api/reviews`, `/api/recommendations`, and `/api/system-health`. Public challan verification remains available at `/verify/<id>`. Risk and simulation outputs are estimates grounded in available data, not guarantees.
-
-### Batch video processing
+### 2. Docker Deployment
 
 ```bash
-python detect_video.py
+docker build -t trafficguard-pro .
+docker run -p 5001:5001 trafficguard-pro
 ```
-
-Processes all `.mp4 / .avi / .mov / .mkv` files in the `videos/` folder. Annotated output saved to `video_results/`.
-
-### Batch image detection
-
-```bash
-python detect.py
-```
-
-Processes all images in `images/`. Results saved to `results/`.
-
-### Model evaluation
-
-```bash
-python evaluate_model.py
-```
-
-Runs YOLO `val()` on held-out test splits for `best.pt` and `Plate.pt`. Results saved to `results/model_eval/`.
 
 ---
 
-## Models
+## 🔐 Credentials & Default Roles
 
-| Model | Type | Purpose | mAP@0.5 |
+| Role | Username / Selection | Password | Permissions |
 |---|---|---|---|
-| `yolov8s.pt` | COCO pretrained | Vehicle + person detection, ByteTrack | — |
-| `best.pt` | Custom trained | Helmet / no-helmet classification | 76.5% |
-| `Plate.pt` | Custom trained | Indian license plate localisation | 95.9% avg (438 images, 3 datasets) |
-
-Models are downloaded automatically at Docker build time from a public Hugging Face model repo — no Git LFS required.
-
----
-
-## Performance (Apple M4 CPU)
-
-| Step | Latency |
-|---|---|
-| Traffic + helmet detection | ~185ms/frame |
-| Plate OCR | ~43ms/crop |
-| Full pipeline | ~235ms → ~4-6 FPS |
-| PDF + email (background thread) | 3-7s — does not block the feed |
-
-**Multi-camera note:** On CPU, each additional camera reduces per-camera FPS due to the GIL. The deployed version uses frame-skipping to keep video playback smooth on free-tier CPU.
+| **Superadmin** | Superadmin | `superadmin123` | Full access, settings, DB export, audit log |
+| **Admin** | Admin | `pawan123` | Interceptor control, disputes, monthly reports |
+| **Inspector** | Inspector | `inspector123` | Live feeds, review queue, challan management |
+| **Demo Access** | Demo | `demo123` | 1-Click read-only evaluation mode |
+| **Citizen** | Public | No password | Plate search, online payment, dispute filing |
 
 ---
 
-## Deployment
-
-Deployed on **Hugging Face Spaces** (Docker SDK, CPU Basic, 16GB RAM):
-
-- ML models (`yolov8s.pt`, `best.pt`, `Plate.pt`) and EasyOCR weights are downloaded/pre-cached at Docker build time — no runtime download delay
-- SQLite database auto-seeds with demo violations on cold start (container filesystem is ephemeral)
-- Session cookies configured for HF's reverse proxy (`SESSION_COOKIE_SECURE=False`, `ProxyFix`)
-
-### Run locally with Docker
-
-```bash
-docker-compose up
-```
-
-Add videos to `./videos/`, set env vars in `.env`. Challans and screenshots persist in `./static/`.
+## 🔮 Future Roadmap
+- 📡 **Drone Interceptor Integration**: Real-time aerial patrol video analysis for expressway traffic.
+- ⚡ **Automated Green Corridor for Ambulances**: Priority traffic light preemption.
+- 👁️ **Facial Recognition (Future Regulatory Item)**: Documented as a future roadmap item subject to statutory privacy clearance.
 
 ---
 
-## Disclaimer
-
-Educational project. Not for production law enforcement use.
-
----
-
-*Powered by Pawan Singh.*
+**© 2026 TrafficGuard Pro · Developed by Pawan Singh · All Rights Reserved.**

@@ -6,6 +6,10 @@
 violations.db
 *.db
 
+# Logs
+logs/
+*.log
+
 # Placeholder LFS pointers present locally without their source objects
 models/yolov8n.pt
 videos/Combined_Violation.mp4
@@ -17,6 +21,8 @@ videos/Wrong_Way_Violation.mp4
 # Generated outputs — large, not needed in source control
 static/screenshots/
 static/challans/
+static/receipts/
+static/reports/
 video_results/
 results/
 
@@ -26,9 +32,7 @@ __pycache__/
 *.pyo
 .venv/
 venv/
-
-# Models — tracked with Git LFS, not plain Git
-
+.pytest_cache/
 
 # OS
 .DS_Store
@@ -37,5 +41,3 @@ Thumbs.db
 images/
 results/
 datasets/
-static/challans/
-static/screenshots/violations.db

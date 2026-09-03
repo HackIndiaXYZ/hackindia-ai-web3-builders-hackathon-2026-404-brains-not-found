@@ -1,111 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ app_name }} — Geolocation Heat Map</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <style>
-        body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        .sidebar { position: fixed; left: 0; top: 0; width: 300px; height: 100%; 
-                   background: white; z-index: 999; overflow-y: auto; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
-        .sidebar h2 { background: #2c3e50; color: white; padding: 15px; margin: 0; }
-        .sidebar input { width: 85%; padding: 8px; margin: 10px; box-sizing: border-box; }
-        .sidebar button { width: 90%; padding: 10px; margin: 5px; background: #3498db; color: white; border: none; cursor: pointer; }
-        .sidebar button:hover { background: #2980b9; }
-        .trajectory-info { background: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px; }
-        .badge { display: inline-block; padding: 3px 8px; background: #e74c3c; color: white; border-radius: 3px; font-size: 12px; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }} — Geolocation Hotspot Map & Trajectory</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    body { margin: 0; padding: 0; overflow: hidden; }
+    #map { position: absolute; top: 54px; bottom: 0; left: 320px; right: 0; }
+    @media (max-width: 768px) {
+      #map { left: 0; top: 280px; }
+      .sidebar { width: 100% !important; height: 280px !important; }
+    }
+    .top-nav {
+      height: 54px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+    }
+    .sidebar {
+      position: absolute;
+      left: 0; top: 54px; bottom: 0;
+      width: 320px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 16px;
+      overflow-y: auto;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+  </style>
 </head>
 <body>
-<div class="sidebar">
-    <h2>{{ app_name }} Map</h2>
-    <input type="text" id="searchPlate" placeholder="Search plate (XX-00-AB-1234)" />
-    <button onclick="searchTrajectory()">Search Trajectory</button>
-    <button onclick="loadHeatmap()">Show Heatmap</button>
-    <button onclick="loadCameras()">Show Cameras</button>
-    <hr>
-    <div id="results"></div>
-</div>
-<div id="map"></div>
 
-<script>
-const map = L.map('map').setView([28.6139, 77.2090], 12);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-}).addTo(map);
+  <!-- Topbar -->
+  <header class="top-nav">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:1.4rem;">🗺️</span>
+      <div style="font-weight:800; font-size:1rem; color:var(--text);">{{ app_name }} <span style="color:var(--saffron);">GEOLOCATION GRID</span></div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <a href="/" class="btn btn-outline" style="padding:6px 12px; font-size:0.75rem;">← Command Centre</a>
+      <a href="/citizen" class="btn btn-outline" style="padding:6px 12px; font-size:0.75rem;">Citizen Portal</a>
+    </div>
+  </header>
 
-let trajectoryPolyline = null;
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h3 style="font-size:0.95rem; margin-bottom:4px;">Vehicle Trajectory Search</h3>
+    <div style="display:flex; gap:6px;">
+      <input type="text" id="searchPlate" placeholder="Plate (e.g. KA03MX4521)" class="btn btn-outline" style="flex:1; text-align:left; font-size:0.8rem;">
+      <button class="btn btn-saffron" style="padding:6px 12px; font-size:0.8rem;" onclick="searchTrajectory()">Trace</button>
+    </div>
 
-function searchTrajectory() {
-    const plate = document.getElementById('searchPlate').value;
-    if (!plate) { alert('Enter plate'); return; }
-    
-    fetch('/api/trajectory/search?plate=' + plate)
+    <hr style="border:none; border-top:1px solid var(--border);">
+
+    <h3 style="font-size:0.95rem; margin-bottom:4px;">Hazardous Blackspots</h3>
+    <div id="blackspots-sidebar" style="display:flex; flex-direction:column; gap:8px;">
+      <!-- Dynamic blackspots list -->
+    </div>
+  </div>
+
+  <!-- Map Container -->
+  <div id="map"></div>
+
+  <script>
+    const map = L.map('map').setView([12.9716, 77.5946], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    let trajectoryLayer = null;
+
+    function loadBlackspots() {
+      fetch('/api/blackspots').then(r => r.json()).then(d => {
+        const side = document.getElementById('blackspots-sidebar');
+        side.innerHTML = (d.blackspots || []).map(b => `
+          <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; border-left:4px solid ${b.risk_score > 80 ? '#e61c16' : '#ff9933'}; cursor:pointer;" onclick="map.flyTo([${b.location.lat}, ${b.location.lng}], 15)">
+            <div style="font-weight:700; font-size:0.8rem; color:var(--text);">${b.name}</div>
+            <div style="font-size:0.7rem; color:#ff5252;">Risk: ${b.risk_score}/100 · Peak: ${b.peak_risk_time}</div>
+          </div>
+        `).join('');
+
+        (d.blackspots || []).forEach(b => {
+          L.circleMarker([b.location.lat, b.location.lng], {
+            radius: 12,
+            color: b.risk_score > 80 ? '#e61c16' : '#ff9933',
+            fillColor: b.risk_score > 80 ? '#e61c16' : '#ff9933',
+            fillOpacity: 0.6
+          }).bindPopup(`<b>${b.name}</b><br/>Risk Score: ${b.risk_score}/100<br/>${b.recommended_action}`).addTo(map);
+        });
+      });
+    }
+
+    function searchTrajectory() {
+      const p = document.getElementById('searchPlate').value.trim();
+      if (!p) return;
+      fetch('/api/trajectory/search?plate=' + encodeURIComponent(p))
         .then(r => r.json())
         .then(data => {
-            if (!data.trajectory.features || data.trajectory.features.length === 0) {
-                document.getElementById('results').innerHTML = '<p>No sightings found</p>';
-                return;
-            }
-            
-            data.trajectory.features.forEach((feature, idx) => {
-                const [lng, lat] = feature.geometry.coordinates;
-                L.marker([lat, lng])
-                    .bindPopup(feature.properties.camera + '<br>' + feature.properties.time)
-                    .addTo(map);
-            });
-            
-            const coords = data.trajectory.features.map(f => {
-                const [lng, lat] = f.geometry.coordinates;
-                return [lat, lng];
-            });
-            
-            if (trajectoryPolyline) map.removeLayer(trajectoryPolyline);
-            trajectoryPolyline = L.polyline(coords, {color: 'red', weight: 3}).addTo(map);
-            map.fitBounds(trajectoryPolyline.getBounds());
-            
-            document.getElementById('results').innerHTML = 
-                '<div class="trajectory-info"><strong>' + plate + 
-                '</strong><br>Sightings: ' + data.trajectory.features.length + '</div>';
+          if (!data.trajectory || !data.trajectory.features || !data.trajectory.features.length) {
+            alert('No sighting trajectory found for ' + p);
+            return;
+          }
+          if (trajectoryLayer) map.removeLayer(trajectoryLayer);
+          const coords = data.trajectory.features.map(f => [f.geometry.coordinates[1], f.geometry.coordinates[0]]);
+          trajectoryLayer = L.polyline(coords, { color: '#00e5ff', weight: 4 }).addTo(map);
+          map.fitBounds(trajectoryLayer.getBounds());
         });
-}
+    }
 
-function loadCameras() {
-    fetch('/admin/cameras/list')
-        .then(r => r.json())
-        .then(cameras => {
-            cameras.forEach(cam => {
-                L.circleMarker([cam.lat, cam.lng], {
-                    radius: 6, color: 'blue', fillOpacity: 0.7
-                }).bindPopup('Camera: ' + cam.name)
-                 .addTo(map);
-            });
-            document.getElementById('results').innerHTML = 
-                '<p>Cameras loaded: ' + cameras.length + '</p>';
-        });
-}
-
-function loadHeatmap() {
-    fetch('/api/heatmap')
-        .then(r => r.json())
-        .then(cells => {
-            cells.forEach(cell => {
-                const maxCount = Math.max(...cells.map(c => c.vehicle_count));
-                const intensity = cell.vehicle_count / maxCount;
-                const color = intensity > 0.7 ? '#e74c3c' : intensity > 0.4 ? '#f39c12' : '#3498db';
-                
-                L.circle([cell.grid_lat, cell.grid_lng], {
-                    radius: 250, color: color, fillOpacity: 0.5, weight: 0
-                }).bindPopup('Vehicles: ' + cell.vehicle_count)
-                 .addTo(map);
-            });
-            document.getElementById('results').innerHTML = 
-                '<p>Heatmap: ' + cells.length + ' cells</p>';
-        });
-}
-</script>
+    window.addEventListener('DOMContentLoaded', () => {
+      loadBlackspots();
+    });
+  </script>
 </body>
 </html>
