@@ -364,11 +364,17 @@ traffic_model = None
 helmet_model  = None
 plate_model   = None
 reader        = None
+ml_load_lock = threading.Lock()
+ml_loading = False
 
 def _load_ml_models():
-    global ML_AVAILABLE, ML_READY, traffic_model, helmet_model, plate_model, reader
+    global ML_AVAILABLE, ML_READY, ml_loading, traffic_model, helmet_model, plate_model, reader
     if ML_READY or ML_DISABLED:
         return ML_READY
+    with ml_load_lock:
+        if ML_READY or ml_loading:
+            return ML_READY
+        ml_loading = True
     try:
         traffic_model = YOLO("models/yolov8s.pt")
         helmet_model = YOLO("models/best.pt")
@@ -379,6 +385,8 @@ def _load_ml_models():
     except Exception as exc:
         ML_AVAILABLE = False
         logger.warning(f"Model initialization failed: {exc}")
+    finally:
+        ml_loading = False
     return ML_READY
 
 model_lock = threading.Lock()
@@ -782,8 +790,12 @@ def process_source(cam_id):
         state["running"] = True
         state["error"]   = None
 
+    if ML_AVAILABLE and not ML_READY and not ML_DISABLED:
+        threading.Thread(target=_load_ml_models, daemon=True, name="ml-loader").start()
+
     video_fps = cap.get(cv2.CAP_PROP_FPS) or 25
-    process_every = 1 if is_rtsp else max(1, round(video_fps / 6))
+    target_fps = max(2, int(os.environ.get("TRAFFICGUARD_TARGET_FPS", "6")))
+    process_every = max(1, round(video_fps / target_fps))
     raw_idx = 0
 
     reconnect_attempts = 0
@@ -814,11 +826,14 @@ def process_source(cam_id):
         if raw_idx % process_every != 0:
             continue
 
-        try:
-            output_frame = process_frame(frame, state)
-        except Exception as exc:
-            logger.error(f"Frame processing error ({cam_id}): {exc}")
-            continue
+        if not ML_READY:
+            output_frame = frame
+        else:
+            try:
+                output_frame = process_frame(frame, state)
+            except Exception as exc:
+                logger.error(f"Frame processing error ({cam_id}): {exc}")
+                output_frame = frame
 
         ret2, buffer = cv2.imencode('.jpg', output_frame, [cv2.IMWRITE_JPEG_QUALITY, 75])
         if ret2:
