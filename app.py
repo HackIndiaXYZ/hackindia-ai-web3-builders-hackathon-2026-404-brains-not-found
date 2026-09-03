@@ -30,10 +30,15 @@ from flask import (Flask, render_template, Response,
                    jsonify, send_from_directory, send_file,
                    request, session, redirect, url_for, make_response)
 
-try:
-    from ultralytics import YOLO
-except ImportError:
+ML_DISABLED = bool(os.environ.get("VERCEL") or os.environ.get("RENDER") or os.environ.get("TRAFFICGUARD_DISABLE_ML"))
+
+if ML_DISABLED:
     YOLO = None
+else:
+    try:
+        from ultralytics import YOLO
+    except ImportError:
+        YOLO = None
 
 try:
     from dotenv import load_dotenv
@@ -41,10 +46,13 @@ try:
 except ImportError:
     pass
 
-try:
-    import easyocr
-except ImportError:
+if ML_DISABLED:
     easyocr = None
+else:
+    try:
+        import easyocr
+    except ImportError:
+        easyocr = None
 
 # ── IMPORTS FROM INTERNAL MODULES ──────────────────────────────
 from config import (
@@ -355,11 +363,11 @@ reader        = None
 
 try:
     # Model files exceed a serverless function's practical cold-start budget.
-    if YOLO is not None and not os.environ.get("VERCEL"):
+    if YOLO is not None and not ML_DISABLED:
         traffic_model = YOLO("models/yolov8s.pt")
         helmet_model  = YOLO("models/best.pt")
         plate_model   = YOLO("models/Plate.pt")
-    if easyocr is not None and not os.environ.get("VERCEL"):
+    if easyocr is not None and not ML_DISABLED:
         reader = easyocr.Reader(['en'], gpu=False)
     ML_AVAILABLE = bool(traffic_model and helmet_model and plate_model and reader)
     logger.info("YOLOv8 & EasyOCR models successfully loaded." if ML_AVAILABLE else "ML inference disabled for this runtime.")
@@ -984,6 +992,10 @@ def stats_api():
 def citizen_portal():
     _log_visitor('/citizen')
     return render_template('citizen.html')
+
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "ok", "ml_available": ML_AVAILABLE})
 
 @app.route('/citizen/violations')
 def citizen_violations():

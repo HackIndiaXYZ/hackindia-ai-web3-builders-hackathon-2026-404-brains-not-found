@@ -4,9 +4,13 @@ services:
     env: docker
     plan: free
     branch: main
-    healthCheckPath: /citizen
+    healthCheckPath: /health
     autoDeploy: true
     envVars:
+      - key: RENDER
+        value: "1"
+      - key: TRAFFICGUARD_DISABLE_ML
+        value: "1"
       - key: SECRET_KEY
         generateValue: true
       - key: ADMIN_PASSWORD
