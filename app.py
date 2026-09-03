@@ -87,13 +87,21 @@ from camera_routes import bp as camera_bp
 from demo_catalog import build_demo_catalog
 
 # ── LOGGING SETUP ─────────────────────────────────────────────
+class SafeRotatingFileHandler(RotatingFileHandler):
+    def doRollover(self):
+        try:
+            super().doRollover()
+        except PermissionError:
+            self.stream.seek(0, os.SEEK_END)
+
+
 os.makedirs(LOG_DIR, exist_ok=True)
 log_file = os.path.join(LOG_DIR, "trafficguard.log")
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s",
     handlers=[
-        RotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=3, encoding="utf-8"),
+        SafeRotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=3, encoding="utf-8"),
         logging.StreamHandler()
     ]
 )
