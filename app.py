@@ -30,7 +30,7 @@ from flask import (Flask, render_template, Response,
                    jsonify, send_from_directory, send_file,
                    request, session, redirect, url_for, make_response)
 
-ML_DISABLED = bool(os.environ.get("VERCEL") or os.environ.get("RENDER") or os.environ.get("TRAFFICGUARD_DISABLE_ML"))
+ML_DISABLED = bool(os.environ.get("VERCEL") or os.environ.get("TRAFFICGUARD_DISABLE_ML"))
 
 if ML_DISABLED:
     YOLO = None
@@ -355,24 +355,28 @@ def get_stats():
         conn.close()
 
 # ── MODEL LOADING & OPTIMIZATIONS ─────────────────────────────
-ML_AVAILABLE = False
+ML_AVAILABLE = bool(YOLO is not None and easyocr is not None)
+ML_READY = False
 traffic_model = None
 helmet_model  = None
 plate_model   = None
 reader        = None
 
-try:
-    # Model files exceed a serverless function's practical cold-start budget.
-    if YOLO is not None and not ML_DISABLED:
+def _load_ml_models():
+    global ML_AVAILABLE, ML_READY, traffic_model, helmet_model, plate_model, reader
+    if ML_READY or ML_DISABLED:
+        return ML_READY
+    try:
         traffic_model = YOLO("models/yolov8s.pt")
-        helmet_model  = YOLO("models/best.pt")
-        plate_model   = YOLO("models/Plate.pt")
-    if easyocr is not None and not ML_DISABLED:
+        helmet_model = YOLO("models/best.pt")
+        plate_model = YOLO("models/Plate.pt")
         reader = easyocr.Reader(['en'], gpu=False)
-    ML_AVAILABLE = bool(traffic_model and helmet_model and plate_model and reader)
-    logger.info("YOLOv8 & EasyOCR models successfully loaded." if ML_AVAILABLE else "ML inference disabled for this runtime.")
-except Exception as e:
-    logger.warning(f"Model initialization note: {e}")
+        ML_READY = True
+        logger.info("YOLOv8 & EasyOCR models loaded on first detection request.")
+    except Exception as exc:
+        ML_AVAILABLE = False
+        logger.warning(f"Model initialization failed: {exc}")
+    return ML_READY
 
 model_lock = threading.Lock()
 plate_lock = threading.Lock()
@@ -518,7 +522,7 @@ def broadcast_sse(event_type, data):
 
 # ── FRAME PROCESSING PIPELINE ─────────────────────────────────
 def process_frame(frame, state):
-    if not ML_AVAILABLE:
+    if not _load_ml_models():
         return frame
 
     t_frame_start = time.time()
