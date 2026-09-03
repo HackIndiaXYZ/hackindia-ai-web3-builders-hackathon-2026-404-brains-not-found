@@ -30,7 +30,7 @@ from flask import (Flask, render_template, Response,
                    jsonify, send_from_directory, send_file,
                    request, session, redirect, url_for, make_response)
 
-ML_DISABLED = bool(os.environ.get("VERCEL") or os.environ.get("TRAFFICGUARD_DISABLE_ML"))
+ML_DISABLED = bool(os.environ.get("VERCEL"))
 
 if ML_DISABLED:
     YOLO = None
