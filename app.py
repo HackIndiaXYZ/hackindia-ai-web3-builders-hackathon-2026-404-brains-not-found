@@ -518,6 +518,9 @@ def broadcast_sse(event_type, data):
 
 # ── FRAME PROCESSING PIPELINE ─────────────────────────────────
 def process_frame(frame, state):
+    if not ML_AVAILABLE:
+        return frame
+
     t_frame_start = time.time()
     h_f, w_f = frame.shape[:2]
 
