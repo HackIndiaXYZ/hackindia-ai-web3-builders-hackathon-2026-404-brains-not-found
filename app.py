@@ -360,17 +360,21 @@ ML_READY = False
 INFERENCE_SIZE = int(os.environ.get("TRAFFICGUARD_INFERENCE_SIZE", "416"))
 INFERENCE_CONFIDENCE = float(os.environ.get("TRAFFICGUARD_INFERENCE_CONF", "0.30"))
 OCR_INTERVAL = max(3, int(os.environ.get("TRAFFICGUARD_OCR_INTERVAL", "8")))
+MODEL_RETRY_SECONDS = max(5, int(os.environ.get("TRAFFICGUARD_MODEL_RETRY_SECONDS", "15")))
 traffic_model = None
 helmet_model  = None
 plate_model   = None
 reader        = None
 ml_load_lock = threading.Lock()
 ml_loading = False
+ml_last_failure = 0.0
 
 def _load_ml_models():
-    global ML_AVAILABLE, ML_READY, ml_loading, traffic_model, helmet_model, plate_model, reader
+    global ML_AVAILABLE, ML_READY, ml_loading, ml_last_failure, traffic_model, helmet_model, plate_model, reader
     if ML_READY or ML_DISABLED:
         return ML_READY
+    if ml_last_failure and time.time() - ml_last_failure < MODEL_RETRY_SECONDS:
+        return False
     with ml_load_lock:
         if ML_READY or ml_loading:
             return ML_READY
@@ -384,6 +388,7 @@ def _load_ml_models():
         logger.info("YOLOv8 & EasyOCR models loaded on first detection request.")
     except Exception as exc:
         ML_AVAILABLE = False
+        ml_last_failure = time.time()
         logger.warning(f"Model initialization failed: {exc}")
     finally:
         ml_loading = False
@@ -545,6 +550,11 @@ def process_frame(frame, state):
             frame, persist=True, tracker="bytetrack.yaml", imgsz=INFERENCE_SIZE,
             conf=INFERENCE_CONFIDENCE, max_det=80, verbose=False
         )[0]
+        if len(traffic_results.boxes) == 0 and INFERENCE_SIZE < 640:
+            traffic_results = traffic_model.track(
+                frame, persist=True, tracker="bytetrack.yaml", imgsz=640,
+                conf=max(0.20, INFERENCE_CONFIDENCE - 0.10), max_det=80, verbose=False
+            )[0]
         helmet_results = helmet_model(
             frame, imgsz=INFERENCE_SIZE, conf=INFERENCE_CONFIDENCE,
             max_det=40, verbose=False
@@ -790,7 +800,7 @@ def process_source(cam_id):
         state["running"] = True
         state["error"]   = None
 
-    if ML_AVAILABLE and not ML_READY and not ML_DISABLED:
+    if YOLO is not None and easyocr is not None and not ML_READY and not ML_DISABLED:
         threading.Thread(target=_load_ml_models, daemon=True, name="ml-loader").start()
 
     video_fps = cap.get(cv2.CAP_PROP_FPS) or 25
@@ -826,6 +836,10 @@ def process_source(cam_id):
         if raw_idx % process_every != 0:
             continue
 
+        raw_ok, raw_buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 75])
+        if raw_ok:
+            with state["lock"]:
+                state["frame"] = raw_buffer.tobytes()
         if not ML_READY:
             output_frame = frame
         else:

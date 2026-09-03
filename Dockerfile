@@ -7,13 +7,13 @@ RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 libsm6 libxext6 lib
 
 WORKDIR /app
 
-COPY requirements.render.txt .
-RUN pip install --no-cache-dir -r requirements.render.txt
-
 RUN pip install --no-cache-dir \
 	torch==2.2.0+cpu torchvision==0.17.0+cpu \
 	--index-url https://pypi.org/simple \
 	--extra-index-url https://download.pytorch.org/whl/cpu
+
+COPY requirements.render.txt .
+RUN pip install --no-cache-dir -r requirements.render.txt
 
 RUN python -c "import numpy; print('numpy:', numpy.__version__)"
 RUN python -c "import cv2; print('cv2:', cv2.__version__)"
