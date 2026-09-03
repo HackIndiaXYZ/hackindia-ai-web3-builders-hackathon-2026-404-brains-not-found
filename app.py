@@ -357,6 +357,9 @@ def get_stats():
 # ── MODEL LOADING & OPTIMIZATIONS ─────────────────────────────
 ML_AVAILABLE = bool(YOLO is not None and easyocr is not None)
 ML_READY = False
+INFERENCE_SIZE = int(os.environ.get("TRAFFICGUARD_INFERENCE_SIZE", "416"))
+INFERENCE_CONFIDENCE = float(os.environ.get("TRAFFICGUARD_INFERENCE_CONF", "0.30"))
+OCR_INTERVAL = max(3, int(os.environ.get("TRAFFICGUARD_OCR_INTERVAL", "8")))
 traffic_model = None
 helmet_model  = None
 plate_model   = None
@@ -530,8 +533,14 @@ def process_frame(frame, state):
 
     t0 = time.time()
     with model_lock:
-        traffic_results = traffic_model.track(frame, persist=True, tracker="bytetrack.yaml", verbose=False)[0]
-        helmet_results  = helmet_model(frame, verbose=False)[0]
+        traffic_results = traffic_model.track(
+            frame, persist=True, tracker="bytetrack.yaml", imgsz=INFERENCE_SIZE,
+            conf=INFERENCE_CONFIDENCE, max_det=80, verbose=False
+        )[0]
+        helmet_results = helmet_model(
+            frame, imgsz=INFERENCE_SIZE, conf=INFERENCE_CONFIDENCE,
+            max_det=40, verbose=False
+        )[0]
     t_detection_ms = (time.time() - t0) * 1000
 
     traffic_objects  = []
@@ -600,7 +609,7 @@ def process_frame(frame, state):
 
     t_ocr_ms = 0.0
     ocr_needed = bool(violations) or state.get("wrong_way_seen", False)
-    if ocr_needed and motorcycle_boxes and state["frame_count"] % 3 == 0:
+    if ocr_needed and motorcycle_boxes and state["frame_count"] % OCR_INTERVAL == 0:
         t1 = time.time()
         _run_plate_ocr(frame, motorcycle_boxes, state, h_f, w_f)
         t_ocr_ms = (time.time() - t1) * 1000
@@ -645,7 +654,7 @@ def _run_plate_ocr(frame, motorcycle_boxes, state, h_f, w_f):
         if crop.size == 0:
             continue
         with plate_lock:
-            pr = plate_model(crop, verbose=False)[0]
+            pr = plate_model(crop, imgsz=320, conf=0.35, max_det=10, verbose=False)[0]
         cands = []
         for pb in pr.boxes:
             cf = float(pb.conf)
@@ -759,7 +768,9 @@ def process_source(cam_id):
 
     source  = state["source"]
     is_rtsp = any(source.startswith(p) for p in ("rtsp://", "rtmp://", "http"))
-    cap     = cv2.VideoCapture(source)
+    cap = cv2.VideoCapture(source)
+    if is_rtsp:
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
     if not cap.isOpened():
         with state["lock"]:
@@ -775,23 +786,30 @@ def process_source(cam_id):
     process_every = 1 if is_rtsp else max(1, round(video_fps / 6))
     raw_idx = 0
 
+    reconnect_attempts = 0
     while not state["stop_event"].is_set():
         ret, frame = cap.read()
         if not ret:
             if is_rtsp:
                 cap.release()
-                time.sleep(2)
+                reconnect_attempts += 1
+                time.sleep(min(8, reconnect_attempts * 2))
                 cap = cv2.VideoCapture(source)
+                cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
                 if not cap.isOpened():
                     with state["lock"]:
-                        state["error"] = "Stream disconnected"
-                    break
+                        state["error"] = f"Stream reconnecting (attempt {reconnect_attempts})"
+                    continue
+                reconnect_attempts = 0
+                with state["lock"]:
+                    state["error"] = None
                 continue
             else:
                 with state["lock"]:
                     state["running"] = False
                 break
 
+        reconnect_attempts = 0
         raw_idx += 1
         if raw_idx % process_every != 0:
             continue
