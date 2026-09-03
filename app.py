@@ -1323,10 +1323,13 @@ def export_csv():
 def get_heatmap():
     conn = _get_conn()
     c = conn.cursor()
-    cells = c.execute('''
-        SELECT grid_lat, grid_lng, vehicle_count FROM heatmap_cells 
-        WHERE vehicle_count > 0 ORDER BY vehicle_count DESC LIMIT 100
-    ''').fetchall()
+    try:
+        cells = c.execute('''
+            SELECT latitude, longitude, violation_count FROM blackspots
+            WHERE violation_count > 0 ORDER BY violation_count DESC LIMIT 100
+        ''').fetchall()
+    except sqlite3.OperationalError:
+        cells = []
     conn.close()
     if not cells:
         # Pre-seed sample hotspots around Bengaluru / Delhi
