@@ -7,6 +7,7 @@ import csv
 import re
 import io
 import json
+import hashlib
 import logging
 from logging.handlers import RotatingFileHandler
 import os

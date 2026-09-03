@@ -652,7 +652,7 @@
         container.innerHTML = filtered.map(v => `
           <div class="violation-card">
             <div class="vcard-img-wrap">
-              ${v.screenshot ? `<img src="/static/screenshots/${v.screenshot}" onerror="this.src='/static/screenshots/placeholder.jpg'">` : `<div style="color:#666;display:flex;align-items:center;justify-content:center;height:100%;">📷 Evidence Stored in Vault</div>`}
+              ${v.screenshot ? `<img src="/static/screenshots/${v.screenshot}" onerror="this.remove(); this.parentElement.innerHTML='<div style=\"color:#666;display:flex;align-items:center;justify-content:center;height:100%;\">Evidence unavailable</div>'">` : `<div style="color:#666;display:flex;align-items:center;justify-content:center;height:100%;">Evidence Stored in Vault</div>`}
             </div>
             <div class="vcard-body">
               <div class="vcard-row">
