@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: trafficguard-pro
+    env: docker
+    plan: free
+    branch: main
+    healthCheckPath: /citizen
+    autoDeploy: true
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DEMO_PASSWORD
+        sync: false

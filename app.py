@@ -354,14 +354,15 @@ plate_model   = None
 reader        = None
 
 try:
-    if YOLO is not None:
+    # Model files exceed a serverless function's practical cold-start budget.
+    if YOLO is not None and not os.environ.get("VERCEL"):
         traffic_model = YOLO("models/yolov8s.pt")
         helmet_model  = YOLO("models/best.pt")
         plate_model   = YOLO("models/Plate.pt")
-    if easyocr is not None:
+    if easyocr is not None and not os.environ.get("VERCEL"):
         reader = easyocr.Reader(['en'], gpu=False)
     ML_AVAILABLE = bool(traffic_model and helmet_model and plate_model and reader)
-    logger.info("YOLOv8 & EasyOCR models successfully loaded.")
+    logger.info("YOLOv8 & EasyOCR models successfully loaded." if ML_AVAILABLE else "ML inference disabled for this runtime.")
 except Exception as e:
     logger.warning(f"Model initialization note: {e}")
 

@@ -27,4 +27,4 @@ RUN wget -q "https://huggingface.co/i-am-ankush/roadx-models/resolve/main/best.p
 RUN python -c "import easyocr; easyocr.Reader(['en'], gpu=False, model_storage_directory='/app/easyocr_models')" && \
     echo "EasyOCR models downloaded successfully"
 
-CMD gunicorn app:app --bind 0.0.0.0:7860 --workers 1 --threads 4 --timeout 300
+CMD gunicorn app:app --bind 0.0.0.0:${PORT:-7860} --workers 1 --threads 4 --timeout 300
