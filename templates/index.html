@@ -1035,6 +1035,46 @@
         }).catch(() => {});
     }
 
+    // Keep the existing command centre visibly alive when external feeds are unavailable.
+    let commandRealtimeEvents = [];
+    function loadCommandRealtimeData() {
+      fetch('/api/realtime/traffic')
+        .then(r => r.json())
+        .then(snapshot => {
+          const events = (snapshot.violations || []).slice().reverse().map(v => ({
+            event_type: v.type || 'traffic_violation',
+            location_name: snapshot.hotspots.find(h => Math.abs(h.lat - v.lat) < 0.01)?.location || 'Live traffic grid',
+            plate: v.plate,
+            severity: v.severity,
+            icon: v.severity === 'high' ? '🚨' : '📡',
+            timestamp: new Date(v.timestamp).toLocaleTimeString('en-IN')
+          }));
+          commandRealtimeEvents = [...events, ...commandRealtimeEvents].slice(0, 8);
+          renderAiDatasetFeed(commandRealtimeEvents);
+          const live = snapshot.kpis || {};
+          const liveLabel = document.getElementById('kpi-recovery');
+          if (liveLabel) liveLabel.textContent = `Live grid: ${live.total_vehicles || 0} vehicles · ${live.average_speed || 0} km/h`;
+          const cameras = document.getElementById('kpi-cameras');
+          if (cameras) cameras.textContent = snapshot.provider?.camera_feeds || 50;
+          if (window.commandRealtimeMap) {
+            window.commandRealtimeMap.clearLayers();
+            (snapshot.hotspots || []).forEach(h => {
+              const tone = h.congestion >= 60 ? '#e61c16' : h.congestion >= 35 ? '#ff9933' : '#00a8cc';
+              L.circleMarker([h.lat, h.lng], {radius: 9 + Math.round(h.congestion / 15), color:tone, fillColor:tone, fillOpacity:.65})
+                .bindPopup(`<b>${h.location}</b><br>Congestion: ${h.congestion}%<br>Vehicles: ${h.vehicle_count}<br>Speed: ${h.avg_speed} km/h`)
+                .addTo(window.commandRealtimeMap);
+            });
+          }
+          if (snapshot.violations?.length) {
+            const newest = snapshot.violations[snapshot.violations.length - 1];
+            if (newest && newest.id !== window.lastCommandRealtimeViolation) {
+              window.lastCommandRealtimeViolation = newest.id;
+              addNotif(`📡 Live dummy event: ${newest.type} at ${newest.plate}`);
+            }
+          }
+        }).catch(() => {});
+    }
+
     // Violations Feed Loader
     function loadViolationsFeed() {
       const search = (document.getElementById('filter-plate') ? document.getElementById('filter-plate').value : '').trim();
@@ -1196,9 +1236,14 @@
 
     // Heatmap Initialization
     function initHeatmap() {
+      if (typeof L === 'undefined') {
+        document.getElementById('heatmap-container').innerHTML = '<div style="height:100%;display:grid;place-items:center;color:var(--text-muted);text-align:center;padding:20px;">Map tiles are offline.<br>Live hotspot data remains available in the panel.</div>';
+        return;
+      }
       const map = L.map('heatmap-container').setView([12.9716, 77.5946], 12);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
       window.leafletMap = map;
+      window.commandRealtimeMap = L.layerGroup().addTo(map);
 
       fetch('/api/blackspots').then(r => r.json()).then(d => {
         const list = document.getElementById('hotspots-list');
@@ -1219,6 +1264,7 @@
           }).bindPopup(`<b>${b.name}</b><br/>Risk Score: ${b.risk_score}/100<br/>${b.recommended_action}`).addTo(map);
         });
       });
+      loadCommandRealtimeData();
     }
 
     // Predictive Analytics
@@ -1594,6 +1640,8 @@
       setInterval(loadStats, 5000);
       loadAiDatasetFeed();
       setInterval(loadAiDatasetFeed, 5000);
+      loadCommandRealtimeData();
+      setInterval(loadCommandRealtimeData, 1000);
     });
   </script>
 
