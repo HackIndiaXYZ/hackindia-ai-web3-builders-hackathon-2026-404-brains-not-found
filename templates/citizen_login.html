@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }} - Citizen Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+    .login-card { width:100%; max-width:420px; padding:28px; background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); }
+    .login-card input { width:100%; box-sizing:border-box; padding:12px 14px; margin:6px 0 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); }
+    .error { margin-bottom:14px; padding:10px; border:1px solid #e61c16; border-radius:8px; color:#ff6b6b; background:rgba(230,28,22,.15); text-align:center; font-size:.85rem; }
+    .demo { margin-top:18px; padding:12px; border:1px dashed var(--border); border-radius:8px; color:var(--text-muted); font-size:.78rem; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="tricolor-stripe" style="margin:-28px -28px 24px;"></div>
+    <div style="text-align:center; font-size:2.2rem;">🏛️</div>
+    <h2 style="text-align:center; margin:8px 0 4px;">Citizen Services Login</h2>
+    <p style="text-align:center; color:var(--text-muted); font-size:.82rem; margin-bottom:22px;">Access your e-challans, payments and disputes.</p>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="POST">
+      <label style="font-size:.78rem; color:var(--text-muted);">Citizen username</label>
+      <input type="text" name="username" value="{{ citizen_username }}" autocomplete="username" required autofocus>
+      <label style="font-size:.78rem; color:var(--text-muted);">Password</label>
+      <input type="password" name="password" autocomplete="current-password" required>
+      <button type="submit" class="btn btn-saffron" style="width:100%; padding:12px;">ACCESS CITIZEN PORTAL</button>
+    </form>
+    <div class="demo">Demo credentials: <strong>{{ citizen_username }}</strong> / <strong>{{ citizen_password }}</strong></div>
+    <div style="text-align:center; margin-top:18px;"><a href="/login" style="color:var(--text-muted); font-size:.8rem;">Officer Login</a></div>
+  </div>
+</body>
+</html>

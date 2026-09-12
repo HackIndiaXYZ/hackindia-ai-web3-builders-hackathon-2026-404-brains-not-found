@@ -52,7 +52,8 @@ from config import (
     BASE_DIR, APP_NAME, TAGLINE, ORGANIZATION, MOTTO, AUTHOR_NAME, AUTHOR_ROLE, AUTHOR_EMAIL,
     AUTHOR_GITHUB, AUTHOR_LINKEDIN, EDUCATION, UNIVERSITY, CGPA,
     EXPECTED_GRADUATION, SECRET_KEY, ADMIN_PASSWORD, SUPERADMIN_PASSWORD,
-    INSPECTOR_PASSWORD, OFFICER_PASSWORD, DEMO_PASSWORD, REPORT_DIR,
+    INSPECTOR_PASSWORD, OFFICER_PASSWORD, DEMO_PASSWORD, CITIZEN_USERNAME,
+    CITIZEN_PASSWORD, REPORT_DIR,
     SCREENSHOT_DIR, CHALLAN_DIR, RECEIPT_DIR, VIDEO_FOLDER, LOG_DIR,
     CITIZEN_EMAIL, ADMIN_EMAIL, CITIZEN_WA_NUMBER, ADMIN_WA_NUMBER,
     RAZORPAY_KEY_ID
@@ -253,6 +254,15 @@ def require_role_api(allowed_roles=['admin', 'superadmin', 'inspector']):
 # Convenience aliases
 require_admin = require_role(['admin', 'superadmin', 'inspector'])
 require_admin_api = require_role_api(['admin', 'superadmin', 'inspector'])
+
+def require_citizen(f):
+    """Require an authenticated citizen or an authorized officer session."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not (session.get('is_citizen') or session.get('is_admin')):
+            return redirect(url_for('citizen_login', next=request.path))
+        return f(*args, **kwargs)
+    return decorated
 
 # ── INTELLIGENCE COMMAND RBAC ──────────────────────────────────
 INTEL_ALLOWED_ROLES = ['INTELLIGENCE_OPERATOR', 'admin', 'superadmin', 'inspector']
@@ -1313,7 +1323,36 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect('/citizen')
+    return redirect('/login')
+
+@app.route('/citizen/login', methods=['GET', 'POST'])
+def citizen_login():
+    _log_visitor('/citizen/login')
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        valid = username.lower() == CITIZEN_USERNAME.lower() and password == CITIZEN_PASSWORD
+        if valid:
+            session.clear()
+            session['is_citizen'] = True
+            session['user_role'] = 'citizen'
+            session['username'] = CITIZEN_USERNAME
+            next_url = request.args.get('next', '/citizen')
+            return redirect(next_url if next_url.startswith('/') else '/citizen')
+        error = 'Invalid citizen credentials.'
+
+    return render_template(
+        'citizen_login.html',
+        error=error,
+        citizen_username=CITIZEN_USERNAME,
+        citizen_password=CITIZEN_PASSWORD
+    )
+
+@app.route('/citizen/logout')
+def citizen_logout():
+    session.clear()
+    return redirect('/citizen/login')
 
 # ── INTELLIGENCE COMMAND DASHBOARD & AUTH ROUTES ───────────────
 @app.route('/intelligence/login', methods=['GET', 'POST'])
@@ -1673,11 +1712,14 @@ def stats_api():
     return jsonify(get_stats())
 
 # ── CITIZEN PORTAL & PUBLIC ACCESS ────────────────────────────
+@app.route('/citizen')
+@require_citizen
 def citizen_portal():
     _log_visitor('/citizen')
     return render_template('citizen.html')
 
 @app.route('/citizen/violations')
+@require_citizen
 def citizen_violations():
     plate_query = request.args.get('plate', '').strip().upper().replace(" ", "").replace("-", "")
     conn = _get_conn()
@@ -1714,10 +1756,12 @@ def citizen_violations():
     } for r in rows])
 
 @app.route('/citizen/stats')
+@require_citizen
 def citizen_stats():
     return jsonify(get_stats())
 
 @app.route('/citizen/pay', methods=['POST'])
+@require_citizen
 def citizen_pay():
     data = request.json or {}
     violation_id = data.get('violation_id')
@@ -1790,6 +1834,7 @@ def verify_challan_page(vid):
 
 # ── DISPUTE MANAGEMENT ────────────────────────────────────────
 @app.route('/citizen/dispute', methods=['POST'])
+@require_citizen
 def citizen_file_dispute():
     data = request.json or {}
     vid = data.get('violation_id')
