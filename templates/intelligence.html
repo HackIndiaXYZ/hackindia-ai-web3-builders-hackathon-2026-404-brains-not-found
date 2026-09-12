@@ -9,18 +9,21 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    /* ── INTELLIGENCE COMMAND GRID THEME ── */
+    /* ── INTELLIGENCE COMMAND GRID THEME (Godly & Watermelon Aesthetics) ── */
     :root {
-      --intel-bg: #090d16;
-      --intel-surface: #101624;
-      --intel-card: #151d30;
-      --intel-border: rgba(0, 229, 255, 0.18);
+      --intel-bg: #06090f;
+      --intel-surface: rgba(13, 19, 33, 0.85);
+      --intel-card: rgba(18, 26, 45, 0.65);
+      --intel-border: rgba(0, 229, 255, 0.16);
+      --intel-border-bright: rgba(0, 229, 255, 0.4);
       --intel-cyan: #00e5ff;
+      --intel-cyan-glow: rgba(0, 229, 255, 0.35);
       --intel-gold: #ffd700;
       --intel-red: #ff334b;
       --intel-green: #00e676;
     }
-    body {
+
+    body.intelligence-shell {
       background: var(--intel-bg);
       color: var(--text);
       margin: 0;
@@ -28,48 +31,86 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(6, 9, 15, 0.8);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 229, 255, 0.25);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 229, 255, 0.5);
     }
 
     /* ── TOPBAR ── */
     .intel-topbar {
       background: var(--intel-surface);
       border-bottom: 1px solid var(--intel-border);
-      padding: 10px 24px;
+      padding: 12px 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 1000;
-      backdrop-filter: blur(16px);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
     }
     .intel-brand-group {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
     .intel-brand-title {
       font-family: var(--font-heading);
-      font-size: 1.25rem;
+      font-size: 1.28rem;
       font-weight: 800;
+      letter-spacing: -0.01em;
       color: #fff;
     }
-    .intel-brand-title span { color: var(--intel-cyan); }
-    .intel-badge-live {
-      background: rgba(0, 229, 255, 0.12);
-      border: 1px solid var(--intel-cyan);
+    .intel-brand-title span {
       color: var(--intel-cyan);
-      font-size: 0.7rem;
+    }
+    .intel-badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 229, 255, 0.08);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      color: var(--intel-cyan);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
       font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      letter-spacing: 0.06em;
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.15);
+    }
+    .intel-clock-badge {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--intel-cyan);
+      background: rgba(0, 229, 255, 0.07);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      padding: 5px 12px;
+      border-radius: 8px;
       letter-spacing: 0.05em;
     }
 
     /* ── LAYOUT (SIDEBAR + MAIN CONTENT) ── */
     .intel-layout {
       display: grid;
-      grid-template-columns: 260px 1fr;
+      grid-template-columns: 280px 1fr;
       min-height: calc(100vh - 65px);
     }
     @media (max-width: 1024px) {
@@ -79,29 +120,32 @@
 
     /* ── SIDEBAR NAVIGATION ── */
     .intel-sidebar {
-      background: var(--intel-surface);
+      background: rgba(10, 15, 26, 0.95);
       border-right: 1px solid var(--intel-border);
-      padding: 18px 12px;
+      padding: 20px 14px;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      backdrop-filter: blur(16px);
+      box-shadow: inset -1px 0 0 0 rgba(255, 255, 255, 0.03);
     }
     .sidebar-header {
+      font-family: var(--font-mono);
       font-size: 0.68rem;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-dim);
-      padding: 8px 12px 4px;
+      letter-spacing: 0.1em;
+      color: rgba(255, 255, 255, 0.4);
+      padding: 12px 14px 6px;
     }
     .sidebar-btn {
       width: 100%;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       padding: 10px 14px;
-      border-radius: 8px;
-      border: none;
+      border-radius: 10px;
+      border: 1px solid transparent;
       background: transparent;
       color: var(--text-muted);
       font-family: var(--font-sans);
@@ -109,160 +153,312 @@
       font-weight: 600;
       cursor: pointer;
       text-align: left;
-      transition: all 0.2s;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
     }
     .sidebar-btn:hover {
       background: rgba(255, 255, 255, 0.04);
       color: #fff;
+      transform: translateX(3px);
+      border-color: rgba(255, 255, 255, 0.06);
     }
     .sidebar-btn.active {
-      background: linear-gradient(90deg, rgba(0, 229, 255, 0.16), rgba(0, 229, 255, 0.04));
-      color: var(--intel-cyan);
-      border-left: 3px solid var(--intel-cyan);
+      background: rgba(0, 229, 255, 0.12);
+      color: #ffffff;
+      border: 1px solid rgba(0, 229, 255, 0.4);
       font-weight: 700;
+      box-shadow: 0 4px 14px rgba(0, 229, 255, 0.15);
     }
 
     /* ── MAIN CONTENT AREA ── */
     .intel-content {
-      padding: 24px;
+      padding: 28px;
       overflow-y: auto;
+      max-height: calc(100vh - 65px);
     }
     .intel-pane {
       display: none;
     }
     .intel-pane.active {
       display: block;
-      animation: fadeIn 0.2s ease-in-out;
+      animation: paneSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
+    @keyframes paneSlideUp {
+      from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── KPI & CARD GRIDS ── */
+    /* ── KPI & CARD GRIDS (Bento Spec) ── */
     .intel-kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .intel-card {
       background: var(--intel-card);
       border: 1px solid var(--intel-border);
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       position: relative;
       overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .intel-card:hover {
+      border-color: var(--intel-border-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 229, 255, 0.08);
     }
     .intel-card-title {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       color: var(--text-muted);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .intel-card-value {
-      font-size: 1.8rem;
+      font-size: 2rem;
       font-weight: 800;
       color: #fff;
       font-family: var(--font-heading);
-      margin: 8px 0 2px;
+      letter-spacing: -0.02em;
+      margin: 10px 0 4px;
     }
     .intel-card-sub {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--text-dim);
     }
 
-    /* ── SIMULATION LABELS ── */
+    /* ── SIMULATION & STATUS BADGES ── */
     .sim-badge {
-      background: rgba(255, 153, 51, 0.15);
-      border: 1px solid var(--saffron);
+      background: rgba(255, 153, 51, 0.12);
+      border: 1px solid rgba(255, 153, 51, 0.5);
       color: var(--saffron);
+      font-family: var(--font-mono);
       font-size: 0.68rem;
       font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 4px;
-      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.06em;
+      box-shadow: 0 0 10px rgba(255, 153, 51, 0.15);
     }
     .obs-badge {
-      background: rgba(0, 230, 118, 0.15);
-      border: 1px solid var(--intel-green);
+      background: rgba(0, 230, 118, 0.12);
+      border: 1px solid rgba(0, 230, 118, 0.5);
       color: var(--intel-green);
+      font-family: var(--font-mono);
       font-size: 0.68rem;
       font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 4px;
-      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.06em;
+      box-shadow: 0 0 10px rgba(0, 230, 118, 0.15);
     }
 
     /* ── JOURNEY NODES ── */
     .journey-sequence {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       flex-wrap: wrap;
     }
     .seq-node {
-      background: rgba(0, 229, 255, 0.12);
-      border: 1px solid rgba(0, 229, 255, 0.4);
+      background: rgba(0, 229, 255, 0.1);
+      border: 1px solid rgba(0, 229, 255, 0.35);
       color: var(--intel-cyan);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .seq-node:hover {
+      background: rgba(0, 229, 255, 0.2);
+      border-color: var(--intel-cyan);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
     }
     .seq-arrow {
-      color: var(--text-dim);
-      font-size: 0.8rem;
+      color: rgba(0, 229, 255, 0.5);
+      font-size: 0.85rem;
+      font-weight: bold;
     }
 
-    /* ── COPILOT TERMINAL ── */
+    /* ── COPILOT TERMINAL (Godly Aesthetics) ── */
     .copilot-terminal {
-      background: rgba(8, 12, 20, 0.95);
+      background: rgba(6, 10, 18, 0.88);
       border: 1px solid var(--intel-border);
-      border-radius: 12px;
-      height: 480px;
+      border-radius: 16px;
+      height: 520px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(24px);
+    }
+    .copilot-terminal-header {
+      background: rgba(13, 19, 33, 0.9);
+      border-bottom: 1px solid var(--intel-border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .terminal-dot.red { background: #ff5f56; }
+    .terminal-dot.yellow { background: #ffbd2e; }
+    .terminal-dot.green { background: #27c93f; }
+    .terminal-title {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
     }
     .copilot-messages {
       flex: 1;
-      padding: 16px;
+      padding: 20px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
     .copilot-msg {
       max-width: 85%;
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      line-height: 1.5;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-size: 0.86rem;
+      line-height: 1.6;
+      position: relative;
+      animation: fadeSlideUp 0.3s ease;
     }
     .copilot-msg.user {
       align-self: flex-end;
-      background: linear-gradient(135deg, #0077cc, #00aaff);
+      background: linear-gradient(135deg, #0052cc 0%, #0088ff 100%);
       color: #fff;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 20px rgba(0, 136, 255, 0.3);
     }
     .copilot-msg.bot {
       align-self: flex-start;
-      background: var(--intel-card);
+      background: rgba(18, 26, 45, 0.85);
       border: 1px solid var(--intel-border);
-      color: var(--text);
+      color: #e2e8f0;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    .copilot-msg code {
+      background: rgba(0, 229, 255, 0.12);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      color: var(--intel-cyan);
+      font-family: var(--font-mono);
+      font-size: 0.8em;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .copilot-msg ul {
+      margin: 6px 0;
+      padding-left: 20px;
+    }
+    .copilot-msg li {
+      margin-bottom: 4px;
+    }
+    .copilot-hotkey-chip {
+      background: rgba(14, 22, 38, 0.8);
+      border: 1px solid var(--intel-border);
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .copilot-hotkey-chip:hover {
+      background: rgba(0, 229, 255, 0.1);
+      border-color: var(--intel-cyan);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .hotkey-badge {
+      background: rgba(0, 229, 255, 0.15);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      color: var(--intel-cyan);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    .copilot-typing {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 12px 18px;
+      background: rgba(18, 26, 45, 0.7);
+      border: 1px solid var(--intel-border);
+      border-radius: 12px;
+      width: fit-content;
+      animation: fadeIn 0.2s ease;
+    }
+    .copilot-typing span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--intel-cyan);
+      opacity: 0.4;
+      animation: pulseDot 1.2s infinite ease-in-out;
+    }
+    .copilot-typing span:nth-child(2) { animation-delay: 0.2s; }
+    .copilot-typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 0.3; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.15); }
     }
     .copilot-input-bar {
-      padding: 12px;
+      padding: 14px 16px;
       border-top: 1px solid var(--intel-border);
-      background: var(--intel-surface);
+      background: rgba(10, 15, 26, 0.8);
       display: flex;
-      gap: 10px;
+      gap: 12px;
+    }
+    .copilot-input-bar input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.5) !important;
+      border: 1px solid var(--intel-border) !important;
+      border-radius: 10px;
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 0.86rem;
+      transition: all 0.25s;
+    }
+    .copilot-input-bar input:focus {
+      outline: none;
+      border-color: var(--intel-cyan) !important;
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.3);
+    }
+
+    /* Modern Table Hover */
+    .intel-table tbody tr {
+      transition: background 0.2s;
+    }
+    .intel-table tbody tr:hover {
+      background: rgba(0, 229, 255, 0.05);
     }
   </style>
 </head>
@@ -628,15 +824,37 @@
           <div style="font-size:0.75rem; color:var(--text-muted);">Grounded operational query parser answering priority command questions strictly from live SQLite records</div>
         </div>
 
-        <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
-          <button class="btn btn-outline" style="font-size:0.75rem;" onclick="askCopilot('Which location needs attention right now?')">📍 Which location needs attention?</button>
-          <button class="btn btn-outline" style="font-size:0.75rem;" onclick="askCopilot('Which incidents are critical?')">🚨 Which incidents are critical?</button>
-          <button class="btn btn-outline" style="font-size:0.75rem;" onclick="askCopilot('Why is vehicle DL09WR6392 high risk?')">🔍 Why is DL09WR6392 high risk?</button>
-          <button class="btn btn-outline" style="font-size:0.75rem;" onclick="askCopilot('What violations increased today?')">📊 What violations increased today?</button>
-          <button class="btn btn-outline" style="font-size:0.75rem;" onclick="askCopilot('What should I prioritize?')">⚡ What should I prioritize?</button>
+        <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">Tactile Hotkeys:</span>
+          <button class="copilot-hotkey-chip" onclick="askCopilot('Which location needs attention right now?')">
+            <span class="hotkey-badge">1</span> 📍 Which location needs attention?
+          </button>
+          <button class="copilot-hotkey-chip" onclick="askCopilot('Which incidents are critical?')">
+            <span class="hotkey-badge">2</span> 🚨 Which incidents are critical?
+          </button>
+          <button class="copilot-hotkey-chip" onclick="askCopilot('Why is vehicle DL09WR6392 high risk?')">
+            <span class="hotkey-badge">3</span> 🔍 Why is DL09WR6392 high risk?
+          </button>
+          <button class="copilot-hotkey-chip" onclick="askCopilot('What violations increased today?')">
+            <span class="hotkey-badge">4</span> 📊 What violations increased today?
+          </button>
+          <button class="copilot-hotkey-chip" onclick="askCopilot('What should I prioritize?')">
+            <span class="hotkey-badge">5</span> ⚡ What should I prioritize?
+          </button>
         </div>
 
         <div class="copilot-terminal">
+          <div class="copilot-terminal-header">
+            <div class="terminal-dots">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+            </div>
+            <div class="terminal-title">TRAFFICGUARD-COPILOT-CORE // v2.4-GROUNDED</div>
+            <div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--intel-cyan); display:flex; align-items:center; gap:5px;">
+              <span class="pulse-dot"></span> LIVE PARSER READY
+            </div>
+          </div>
           <div class="copilot-messages" id="copilot-msg-box">
             <div class="copilot-msg bot">
               <b>🤖 TrafficGuard Copilot Online.</b><br/>
@@ -845,7 +1063,7 @@
         const c = document.getElementById('incidents-container');
         if (!c) return;
         c.innerHTML = (d.incidents || []).map(inc => `
-          <div class="intel-card" style="border-left:4px solid ${inc.severity==='CRITICAL'?'#ff334b':'#ff9933'};">
+          <div class="intel-card" style="border-color:${inc.severity==='CRITICAL'?'rgba(255,51,75,0.45)':'rgba(255,153,51,0.4)'};">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span class="badge ${inc.severity==='CRITICAL'?'badge-red':'badge-orange'}">${inc.severity} (${inc.risk_score}/100)</span>
@@ -1023,9 +1241,20 @@
       });
     }
 
-    // ── TRAFFICGUARD COPILOT ──
+    // ── TRAFFICGUARD COPILOT ENHANCEMENTS ──
+    function formatCopilotMarkdown(raw) {
+      if (!raw) return '';
+      let s = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      s = s.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+      s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+      s = s.replace(/(?:^|\n)[-*]\s+(.+)/g, '<br/>• $1');
+      s = s.replace(/\n/g, '<br/>');
+      return s;
+    }
+
     function askCopilot(queryText) {
-      document.getElementById('copilot-input').value = queryText;
+      const inp = document.getElementById('copilot-input');
+      inp.value = queryText;
       sendCopilotQuery();
     }
 
@@ -1035,8 +1264,18 @@
       if (!text) return;
 
       const box = document.getElementById('copilot-msg-box');
-      box.innerHTML += `<div class="copilot-msg user">${text}</div>`;
+      box.innerHTML += `<div class="copilot-msg user">${text.replace(/</g,'&lt;')}</div>`;
       inp.value = '';
+      box.scrollTop = box.scrollHeight;
+
+      // Real-time typing indicator
+      const typingId = 'copilot-typing-' + Date.now();
+      box.innerHTML += `
+        <div class="copilot-typing" id="${typingId}">
+          <span></span><span></span><span></span>
+          <span style="font-size:0.7rem; color:var(--text-muted); font-family:var(--font-mono); margin-left:6px;">PARSING SQL RECORDS...</span>
+        </div>
+      `;
       box.scrollTop = box.scrollHeight;
 
       fetch('/api/intelligence/copilot', {
@@ -1044,18 +1283,49 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({query: text})
       }).then(r => r.json()).then(d => {
-        const formatted = d.answer.replace(/\n/g, '<br/>');
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+
+        const formatted = formatCopilotMarkdown(d.answer || 'No response generated.');
         box.innerHTML += `
           <div class="copilot-msg bot">
-            ${formatted}
-            <div style="font-size:0.68rem; color:var(--intel-cyan); margin-top:8px; border-top:1px solid var(--intel-border); padding-top:4px;">
-              Grounded Basis: ${d.basis}
+            <div>${formatted}</div>
+            <div style="font-size:0.68rem; color:var(--intel-cyan); margin-top:8px; border-top:1px solid var(--intel-border); padding-top:4px; font-family:var(--font-mono); display:flex; justify-content:space-between; align-items:center;">
+              <span>Grounded Basis: ${d.basis || 'Live SQLite Records'}</span>
+              <span style="color:var(--text-dim);">Copilot Core v2.4</span>
             </div>
           </div>
         `;
         box.scrollTop = box.scrollHeight;
+      }).catch(err => {
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+        box.innerHTML += `<div class="copilot-msg bot" style="border-color:#ff334b; color:#ff6b6b;">Copilot communication error: ${err.message}</div>`;
+        box.scrollTop = box.scrollHeight;
       });
     }
+
+    // Keyboard Shortcuts for Copilot Hotkeys
+    window.addEventListener('keydown', (e) => {
+      const activeTab = document.querySelector('.intel-pane.active');
+      if (!activeTab || activeTab.id !== 'tab-copilot') return;
+
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) {
+        return;
+      }
+
+      if (e.key === '1') { e.preventDefault(); askCopilot('Which location needs attention right now?'); }
+      else if (e.key === '2') { e.preventDefault(); askCopilot('Which incidents are critical?'); }
+      else if (e.key === '3') { e.preventDefault(); askCopilot('Why is vehicle DL09WR6392 high risk?'); }
+      else if (e.key === '4') { e.preventDefault(); askCopilot('What violations increased today?'); }
+      else if (e.key === '5') { e.preventDefault(); askCopilot('What should I prioritize?'); }
+      else if (e.key === '/') {
+        e.preventDefault();
+        const inp = document.getElementById('copilot-input');
+        if (inp) inp.focus();
+      }
+    });
 
     // ── EVIDENCE & BLOCKCHAIN ──
     function verifyEvidenceSha() {

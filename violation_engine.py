@@ -49,13 +49,23 @@ class ViolationEngine:
             return traffic_objects.count("person") >= 3
         for (mx1,my1,mx2,my2) in motorcycle_boxes:
             mw=mx2-mx1; mh=my2-my1
-            ex1 = max(0, mx1 - int(mw*0.10))
-            ey1 = max(0, my1 - int(mh*0.80))
-            ex2 = min(frame_w if frame_w else mx2+mw, mx2 + int(mw*0.10))
-            ey2 = min(frame_h if frame_h else my2+mh, my2 + int(mh*0.05))
-            count = sum(1 for (px1,py1,px2,py2) in person_boxes
-                        if self._overlap((px1,py1,px2,py2),(ex1,ey1,ex2,ey2)) > 0.30)
-            if count >= 3: return True
+            # Expand motorcycle box to cover riders (more generous on top and back)
+            ex1 = max(0, mx1 - int(mw*0.15))
+            ey1 = max(0, my1 - int(mh*0.85))
+            ex2 = min(frame_w if frame_w else mx2+mw, mx2 + int(mw*0.20))
+            ey2 = min(frame_h if frame_h else my2+mh, my2 + int(mh*0.10))
+            
+            rider_count = 0
+            for (px1,py1,px2,py2) in person_boxes:
+                # Filter out clearly false person boxes based on aspect ratio (people are usually taller than they are wide)
+                pw = px2 - px1; ph = py2 - py1
+                if ph > 0 and (pw / ph) > 1.8: continue
+                
+                # Check overlap of person box with expanded motorcycle region
+                if self._overlap((px1,py1,px2,py2),(ex1,ey1,ex2,ey2)) > 0.35:
+                    rider_count += 1
+            if rider_count >= 3: 
+                return True
         return False
 
     @staticmethod

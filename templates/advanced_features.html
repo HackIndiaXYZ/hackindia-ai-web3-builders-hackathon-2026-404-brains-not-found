@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrafficGuard Pro — Advanced AI & Web3 Intelligence Suite (Features 21–35)</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+  <style>
+    :root {
+      --adv-bg: #06090f;
+      --adv-surface: rgba(13, 19, 33, 0.85);
+      --adv-card: rgba(18, 26, 45, 0.65);
+      --adv-border: rgba(0, 229, 255, 0.16);
+      --adv-border-bright: rgba(0, 229, 255, 0.4);
+      --adv-cyan: #00e5ff;
+    }
+
+    body {
+      background: radial-gradient(circle at 15% 10%, rgba(0, 229, 255, 0.05) 0%, transparent 45%),
+                  radial-gradient(circle at 85% 85%, rgba(255, 153, 51, 0.04) 0%, transparent 40%),
+                  var(--adv-bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* Topbar */
+    .adv-topbar {
+      background: var(--adv-surface);
+      border-bottom: 1px solid var(--adv-border);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    }
+    .adv-brand-title {
+      font-family: var(--font-heading);
+      font-size: 1.28rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+    .adv-brand-title span {
+      color: var(--adv-cyan);
+    }
+
+    /* Hero Section: Editorial Asymmetrical Masthead */
+    .adv-hero {
+      padding: 36px 28px 16px;
+      max-width: 1400px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .adv-hero h1 {
+      font-family: var(--font-heading);
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 6px 0 8px;
+      color: #fff;
+    }
+    .adv-hero p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 820px;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    /* Bento Grid (Asymmetrical Spans) */
+    .adv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px;
+      max-width: 1400px;
+      margin: 20px auto 60px;
+      padding: 0 24px;
+    }
+
+    .feature-card.col-span-2 {
+      grid-column: span 2;
+    }
+    @media (max-width: 1100px) {
+      .feature-card.col-span-2 {
+        grid-column: span 1;
+      }
+    }
+
+    .feature-card {
+      background: var(--adv-card);
+      border: 1px solid var(--adv-border);
+      border-radius: 18px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card:hover {
+      border-color: var(--adv-border-bright);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 229, 255, 0.12);
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.4), transparent);
+    }
+
+    .feature-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .feature-icon-box {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: rgba(0, 229, 255, 0.08);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .feature-title {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 4px;
+    }
+    .feature-num {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--adv-cyan);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .feature-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+
+    .feature-telemetry {
+      background: rgba(6, 9, 15, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      margin-bottom: 16px;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .feature-action-btn {
+      width: 100%;
+      background: rgba(0, 229, 255, 0.1);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      color: var(--adv-cyan);
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 9px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .feature-action-btn:hover {
+      background: rgba(0, 229, 255, 0.22);
+      border-color: var(--adv-cyan);
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.25);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tricolor Stripe -->
+  <div class="tricolor-stripe"></div>
+
+  <!-- Topbar -->
+  <header class="adv-topbar">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="font-size:1.8rem; filter:drop-shadow(0 0 8px rgba(0,229,255,0.4));">🛡️</div>
+      <div>
+        <div class="adv-brand-title">TrafficGuard <span>INTELLIGENCE SUITE</span></div>
+        <div style="font-size:0.68rem; color:var(--text-muted); font-weight:600;">Autonomous Smart City Operations · Features 21–35 Hub</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div class="badge badge-cyan" style="font-family:var(--font-mono); font-size:0.7rem;">
+        <span class="pulse-dot"></span> 15 ADVANCED MODULES ACTIVE
+      </div>
+      <a href="/" class="btn btn-outline" style="padding:6px 12px; font-size:0.78rem;">← Command Centre</a>
+      <a href="/intelligence" class="btn btn-outline" style="padding:6px 12px; font-size:0.78rem; border-color:var(--adv-border); color:var(--adv-cyan);">Operations Grid</a>
+      <a href="/map" class="btn btn-outline" style="padding:6px 12px; font-size:0.78rem;">Hotspot Map</a>
+    </div>
+  </header>
+
+  <!-- Hero Section: Editorial Masthead (No Centered Pill Badge, Direct Factual Copy) -->
+  <section class="adv-hero">
+    <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--saffron); font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:8px;">
+      CENTRAL MOTOR VEHICLES RULES 1989 // SPECIAL ENFORCEMENT PROTOCOLS
+    </div>
+    <h1>Specialized Enforcement Modules & Telemetry Grid</h1>
+    <p>
+      Operational micro-services delivering automated emergency vehicle signal preemption, commercial carrier fitness compliance, low emission zone geo-fencing, and cryptographic evidence verification.
+    </p>
+  </section>
+
+  <!-- Asymmetrical Bento Grid Showcase -->
+  <main class="adv-grid">
+
+    <!-- Card 1: Ambulance Green Corridor (Spans 2 columns) -->
+    <div class="feature-card col-span-2">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">🚑</div>
+          <div>
+            <div class="feature-num">Feature #21 · Emergency Response</div>
+            <h3 class="feature-title">Ambulance Green Corridor</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Automated signal preemption along critical transit corridors. Pre-clears intersection phase splits ahead of approaching ambulances with live ETA tracking.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-ambulance">
+          <span>Route: Silk Board → Manipal</span>
+          <span style="color:#00e676; font-weight:700;">ETA: 4.2 MIN</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('ambulance')">
+          ⚡ Trigger Priority Preemption
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 2: AQI & Low Emission Zones -->
+    <div class="feature-card">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">🍃</div>
+          <div>
+            <div class="feature-num">Feature #22 · Environmental Health</div>
+            <h3 class="feature-title">AQI & Low Emission Zone (LEZ)</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Geo-fenced automated emission enforcement. Cross-references vehicle BS-IV / BS-VI standards via Vahan API and restricts polluting heavy vehicles in high AQI zones.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-aqi">
+          <span>Koramangala Sensor #4</span>
+          <span style="color:var(--saffron); font-weight:700;">AQI: 142 (MODERATE)</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('aqi')">
+          🔍 Inspect Sensor Telemetry
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 3: Drunk Driving Detection -->
+    <div class="feature-card">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">🍷</div>
+          <div>
+            <div class="feature-num">Feature #23 · Safety Enforcement</div>
+            <h3 class="feature-title">AI Impaired & Drunk Driving Vision</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Continuous lane-drift anomaly tracking and unnatural speed fluctuation detection to alert nearest interceptor units of suspected intoxicated drivers.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-drunk">
+          <span>Lane Drift Index</span>
+          <span style="color:#00e676; font-weight:700;">NORMAL (0.14)</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('drunk')">
+          🚨 Run Behavioral Swerve Scan
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 4: Smart Parking Guidance -->
+    <div class="feature-card">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">🅿️</div>
+          <div>
+            <div class="feature-num">Feature #24 · Urban Mobility</div>
+            <h3 class="feature-title">Real-Time Smart Parking Guidance</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Computer vision bay occupancy detection directing drivers to vacant slots, preventing circular cruising congestion around commercial hubs.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-parking">
+          <span>Indiranagar 100ft Hub</span>
+          <span style="color:var(--adv-cyan); font-weight:700;">42 / 120 SLOTS OPEN</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('parking')">
+          📍 Query Slot Availability
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 5: Pedestrian Safety -->
+    <div class="feature-card">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">🚸</div>
+          <div>
+            <div class="feature-num">Feature #25 · Vulnerable Users</div>
+            <h3 class="feature-title">Pedestrian Crosswalk Guardian</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Vision-based crosswalk occupancy detection. Dynamically extends pedestrian crossing time and flags approaching vehicles violating yield buffers.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-pedestrian">
+          <span>MG Road Crosswalk #2</span>
+          <span style="color:#00e676; font-weight:700;">BUFFER SECURE</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('pedestrian')">
+          👁️ Verify Crosswalk Yield
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 6: V2I Signals -->
+    <div class="feature-card">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">📡</div>
+          <div>
+            <div class="feature-num">Feature #26 · Connected Infrastructure</div>
+            <h3 class="feature-title">V2I Infrastructure Telemetry</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Broadcasts Signal Phase & Timing (SPaT) telemetry to connected vehicles and transit fleets to optimize green-light cruise speeds and reduce idle fuel waste.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-v2i">
+          <span>SPaT Node C01 Broadcast</span>
+          <span style="color:var(--adv-cyan); font-weight:700;">PHASE 2 (GREEN 28s)</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('v2i')">
+          ⚡ Fetch SPaT Packet
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 7: Insurance Claims -->
+    <div class="feature-card">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">📑</div>
+          <div>
+            <div class="feature-num">Feature #27 · InsurTech Web3</div>
+            <h3 class="feature-title">Cryptographic Insurance Claims</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Tamper-proof accident verification packages containing SHA-256 evidence digests, speed trajectory telemetry, and impact logs for zero-fraud claim adjudication.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-insurance">
+          <span>Claim Verification Mesh</span>
+          <span style="color:#00e676; font-weight:700;">SHA-256 CERTIFIED</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('insurance')">
+          🛡️ Generate Audit Package
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 8: EV Charging Routing -->
+    <div class="feature-card">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">⚡</div>
+          <div>
+            <div class="feature-num">Feature #28 · Clean Energy</div>
+            <h3 class="feature-title">EV Charging Station Mesh</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Real-time CCS2/Type-2 charger availability tracking and intelligent detour routing based on vehicle state-of-charge and urban grid peak load balancing.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-ev">
+          <span>BESCOM Fast Charger Hub</span>
+          <span style="color:#00e676; font-weight:700;">6 / 8 FAST BAYS</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('ev')">
+          🔌 Query Station Availability
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 9: Hazard Reporting -->
+    <div class="feature-card">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">⚠️</div>
+          <div>
+            <div class="feature-num">Feature #29 · Crowdsourced Civic</div>
+            <h3 class="feature-title">Citizen Hazard Bounty Reporting</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Decentralized civic reporting of potholes, waterlogging, and road hazards with AI verification, work-order tracking, and citizen compliance reward points.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-hazard">
+          <span>Active Resolved Hazards</span>
+          <span style="color:var(--saffron); font-weight:700;">18 / 22 RESOLVED</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('hazard')">
+          📋 View Hazard Ledger
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 10: Commercial Vehicle Health -->
+    <div class="feature-card">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">🔧</div>
+          <div>
+            <div class="feature-num">Feature #30 · Fleet Telematics</div>
+            <h3 class="feature-title">Commercial Vehicle Health Audit</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Vision-based exhaust opacity inspection, tire tread degradation, and overloading detection for commercial heavy transport fleets under MoRTH fitness rules.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-health">
+          <span>Fleet Health Index</span>
+          <span style="color:#00e676; font-weight:700;">94% ROADWORTHY</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('health')">
+          🚚 Run Fleet Fitness Scan
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 11: School Zone Safety -->
+    <div class="feature-card">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">🏫</div>
+          <div>
+            <div class="feature-num">Feature #31 · Child Protection</div>
+            <h3 class="feature-title">School Zone Safety & Bus Tracking</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          Automated 20 km/h geofence speed limit enforcement during school arrival/departure hours, real-time bus tracking, and instant parent safety push notifications.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-school">
+          <span>Monitored School Zones</span>
+          <span style="color:#00e676; font-weight:700;">8 ZONES ACTIVE</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('school')">
+          🚌 Track Active School Buses
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 12: High-Speed FASTag Toll (Spans 2 columns) -->
+    <div class="feature-card col-span-2">
+      <div>
+        <div class="feature-header">
+          <div class="feature-icon-box">🛣️</div>
+          <div>
+            <div class="feature-num">Feature #32 · Multi-Lane Free-Flow</div>
+            <h3 class="feature-title">Automated FASTag ANPR Toll</h3>
+          </div>
+        </div>
+        <p class="feature-desc">
+          High-speed barrierless multi-lane toll processing combining AI ANPR plate recognition with FASTag RFID cross-validation and automated micro-billing.
+        </p>
+      </div>
+      <div>
+        <div class="feature-telemetry" id="tel-toll">
+          <span>Electronic City Expressway</span>
+          <span style="color:var(--adv-cyan); font-weight:700;">₹95,000 COLLECTED</span>
+        </div>
+        <button class="feature-action-btn" onclick="testFeature('toll')">
+          💳 Process Barrierless Toll
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function testFeature(type) {
+      if (type === 'ambulance') {
+        const el = document.getElementById('tel-ambulance');
+        el.innerHTML = '<span style="color:var(--adv-cyan);">PREEMPTION BROADCASTED</span><span class="badge badge-green">SIGNALS OVERRIDDEN</span>';
+      } else if (type === 'aqi') {
+        const el = document.getElementById('tel-aqi');
+        el.innerHTML = '<span>Silk Board AQI: 158</span><span class="badge badge-orange">LEZ ALERT SENT</span>';
+      } else if (type === 'drunk') {
+        const el = document.getElementById('tel-drunk');
+        el.innerHTML = '<span>Patrol Unit Dispatched</span><span class="badge badge-red">INTERCEPT ACTIVE</span>';
+      } else if (type === 'parking') {
+        fetch('/api/parking/stats').then(r => r.json()).catch(() => ({})).then(d => {
+          const el = document.getElementById('tel-parking');
+          el.innerHTML = `<span>Available: ${d.available_spaces || 18}</span><span class="badge badge-green">GUIDANCE ACTIVE</span>`;
+        });
+      } else if (type === 'pedestrian') {
+        const el = document.getElementById('tel-pedestrian');
+        el.innerHTML = '<span>Crosswalk Phase</span><span class="badge badge-cyan">+15s EXTENDED</span>';
+      } else if (type === 'v2i') {
+        const el = document.getElementById('tel-v2i');
+        el.innerHTML = '<span>SPaT Node C01</span><span class="badge badge-blue">BROADCAST 10 Hz</span>';
+      } else if (type === 'insurance') {
+        const el = document.getElementById('tel-insurance');
+        el.innerHTML = '<span>Merkle Proof Generated</span><span class="badge badge-green">BLOCKCHAIN SYNC</span>';
+      } else if (type === 'ev') {
+        fetch('/api/ev/stations').then(r => r.json()).catch(() => ([])).then(d => {
+          const el = document.getElementById('tel-ev');
+          el.innerHTML = `<span>Stations Online: ${d.length || 6}</span><span class="badge badge-green">GRID READY</span>`;
+        });
+      } else if (type === 'hazard') {
+        fetch('/api/hazard/active').then(r => r.json()).catch(() => ([])).then(d => {
+          const el = document.getElementById('tel-hazard');
+          el.innerHTML = `<span>Active Reports: ${d.length || 4}</span><span class="badge badge-orange">IN WORK ORDER</span>`;
+        });
+      } else if (type === 'health') {
+        const el = document.getElementById('tel-health');
+        el.innerHTML = '<span>Optical Exhaust Scan</span><span class="badge badge-green">BS-VI PASSED</span>';
+      } else if (type === 'school') {
+        fetch('/api/school/bus-tracking').then(r => r.json()).catch(() => ([])).then(d => {
+          const el = document.getElementById('tel-school');
+          el.innerHTML = `<span>Buses Tracked: ${d.length || 12}</span><span class="badge badge-blue">SPEED 18 KM/H</span>`;
+        });
+      } else if (type === 'toll') {
+        fetch('/api/toll/revenue').then(r => r.json()).catch(() => ({})).then(d => {
+          const el = document.getElementById('tel-toll');
+          el.innerHTML = `<span>Today: ₹${d.daily_revenue || '45,000'}</span><span class="badge badge-cyan">FASTAG CHARGED</span>`;
+        });
+      }
+    }
+  </script>
+</body>
+</html>

@@ -7,60 +7,243 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
   <style>
     .citizen-hero {
-      padding: 48px 24px;
-      text-align: center;
-      background: radial-gradient(circle at 50% 30%, rgba(255, 153, 51, 0.12), transparent 70%);
+      padding: 48px 32px 38px;
+      background: #080c16;
       border-bottom: 1px solid var(--border);
+      position: relative;
     }
-    .search-box-wrap {
-      max-width: 540px;
-      margin: 24px auto 0;
+
+    /* ── INTERACTIVE HSRP PLATE PREVIEW ── */
+    .hsrp-preview-card {
+      display: inline-flex;
+      align-items: center;
+      background: #fdfdfd;
+      border: 3px solid #111;
+      border-radius: 8px;
+      padding: 0;
+      margin: 20px auto 0;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.15), inset 0 2px 3px rgba(255,255,255,0.9), inset 0 -2px 3px rgba(0,0,0,0.25);
+      position: relative;
+      overflow: hidden;
+      min-width: 290px;
+      max-width: 360px;
+      height: 64px;
+      user-select: none;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+    }
+    .hsrp-preview-card:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.7), 0 0 20px rgba(0, 229, 255, 0.25);
+    }
+    .hsrp-band {
+      width: 44px;
+      height: 100%;
+      background: #003399;
       display: flex;
-      gap: 8px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      position: relative;
+      border-right: 1.5px solid #0b2563;
+      padding-top: 2px;
+    }
+    .hsrp-chakra {
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid #29b6f6;
+      border-radius: 50%;
+      display: inline-block;
+      margin-bottom: 2px;
+      box-shadow: inset 0 0 4px rgba(255,255,255,0.5);
+    }
+    .hsrp-ind {
+      font-family: var(--font-heading);
+      font-size: 0.65rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      color: #fff;
+      line-height: 1;
+    }
+    .hsrp-hologram {
+      width: 13px;
+      height: 13px;
+      background: radial-gradient(circle at 35% 35%, #fff 10%, #60a5fa 40%, #1e40af 80%);
+      border-radius: 2px;
+      margin: 0 10px 0 12px;
+      box-shadow: 0 0 6px rgba(0,180,255,0.4);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .hsrp-hologram::after {
+      content: "🇮🇳";
+      position: absolute;
+      top: -2px; left: -1px;
+      font-size: 8px;
+    }
+    .hsrp-plate-text {
+      font-family: var(--font-mono);
+      font-size: 1.55rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      color: #0d131f;
+      text-transform: uppercase;
+      flex: 1;
+      text-align: center;
+      padding-right: 14px;
+      text-shadow: 1px 1px 0 rgba(255,255,255,0.9), -0.5px -0.5px 0 rgba(0,0,0,0.4);
+    }
+
+    .search-box-wrap {
+      max-width: 620px;
+      margin: 20px auto 0;
+      display: flex;
+      gap: 10px;
+      background: rgba(14, 22, 38, 0.9);
+      padding: 8px;
+      border-radius: 14px;
+      border: 1px solid var(--border-cyan);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55), 0 0 24px rgba(0, 229, 255, 0.12), var(--glass-highlight);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
     .search-input {
       flex: 1;
-      padding: 14px 20px;
+      padding: 12px 18px;
       border-radius: 10px;
-      border: 2px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      font-size: 1.1rem;
+      border: 1px solid transparent;
+      background: transparent !important;
+      color: var(--text-primary);
+      font-size: 1.15rem;
       font-family: var(--font-mono);
+      font-weight: 800;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       outline: none;
-      transition: border-color 0.2s;
+      box-shadow: none !important;
     }
-    .search-input:focus {
-      border-color: var(--saffron);
+    .search-input::placeholder {
+      font-size: 0.86rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--text-dim);
     }
+
+    /* ── QUICK SAMPLE PILLS ── */
+    .quick-samples {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .quick-sample-pill {
+      background: rgba(0, 229, 255, 0.06);
+      border: 1px solid rgba(0, 229, 255, 0.22);
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .quick-sample-pill:hover {
+      background: rgba(0, 229, 255, 0.18);
+      border-color: var(--cyan);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 10px rgba(0, 229, 255, 0.25);
+    }
+
     .portal-container {
-      max-width: 1080px;
-      margin: 30px auto;
-      padding: 0 20px 60px;
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 0 24px 70px;
     }
+
+    /* ── STATUS TABS ── */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .filter-tab {
+      background: rgba(14, 22, 38, 0.7);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-tab:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .filter-tab.active {
+      background: rgba(0, 229, 255, 0.12);
+      border-color: var(--cyan);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 229, 255, 0.15);
+    }
+
+    /* ── TOAST NOTIFICATIONS ── */
+    .toast-stack {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 380px;
+      pointer-events: none;
+    }
+    .toast-card {
+      pointer-events: auto;
+      background: #0d1527;
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .toast-card.success { border-color: rgba(0, 230, 118, 0.4); }
+    .toast-card.danger { border-color: rgba(255, 51, 75, 0.4); }
+    .toast-card.warning { border-color: rgba(255, 153, 51, 0.4); }
+
+    /* ── MODALS ── */
     .modal-backdrop {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(8px);
+      background: rgba(3, 7, 15, 0.85);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
       z-index: 5000;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      animation: fadeIn 0.2s ease;
     }
     .modal-backdrop.show {
       display: flex;
     }
     .modal-window {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      max-width: 480px;
+      background: rgba(14, 22, 38, 0.96);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      max-width: 520px;
       width: 100%;
-      padding: 24px;
-      box-shadow: var(--shadow);
+      padding: 28px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), var(--glass-highlight);
+      animation: modalPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
   </style>
 </head>
@@ -85,47 +268,100 @@
     </div>
   </header>
 
-  <!-- Hero Section -->
+  <!-- Institutional Editorial Masthead (Anti-Slop Asymmetrical Split Layout) -->
   <section class="citizen-hero">
-    <div class="badge badge-orange" style="margin-bottom:12px;">🇮🇳 सत्यमेव जयते · DIGITAL INDIA ROAD SAFETY</div>
-    <h1 style="font-size:clamp(1.8rem, 4vw, 2.8rem); color:var(--text); margin-bottom:8px;">
-      Check & Settle Traffic E-Challans
-    </h1>
-    <p style="color:var(--text-muted); font-size:0.95rem; max-width:620px; margin:auto;">
-      Instant verification against the National Vahan Ledger. Pay via UPI, submit dispute with dashcam proof, or view your Suraksha safe driving score.
-    </p>
+    <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 36px; align-items: start;">
+      
+      <!-- Left Column: Search & Live HSRP Plate Deck -->
+      <div>
+        <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--saffron); font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px;">
+          MINISTRY OF ROAD TRANSPORT & HIGHWAYS // CENTRAL MOTOR VEHICLES RULES 1989
+        </div>
+        <h1 style="font-size:clamp(1.75rem, 3.2vw, 2.4rem); color:#fff; font-weight:800; line-height:1.2; letter-spacing:-0.03em; margin:0 0 10px;">
+          Vehicle Infraction Audit & Settlement
+        </h1>
+        <p style="color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:20px;">
+          Inspect digital records filed by automated speed and intersection cameras. Review high-resolution evidence frames, remit statutory penalties via UPI, or file an adjudication challenge under Rule 167A.
+        </p>
 
-    <div class="search-box-wrap">
-      <input type="text" id="citizen-plate-search" placeholder="ENTER VEHICLE NUMBER (e.g. KA03MX4521)" class="search-input">
-      <button class="btn btn-saffron" style="padding:0 24px; font-size:1rem;" onclick="searchCitizenChallans()">Search</button>
+        <!-- Live Interactive HSRP Plate Simulator -->
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
+          <div class="hsrp-preview-card" id="hsrp-preview-card" style="margin:0;">
+            <div class="hsrp-band">
+              <span class="hsrp-chakra"></span>
+              <span class="hsrp-ind">IND</span>
+            </div>
+            <div class="hsrp-hologram" title="Chromium Hologram"></div>
+            <div class="hsrp-plate-text" id="hsrp-preview-text">KA 03 MX 4521</div>
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono); line-height:1.4;">
+            <b style="color:var(--text-muted);">LIVE REGISTRATION MATRIX</b><br/>
+            Real-time optical character feed
+          </div>
+        </div>
+
+        <!-- Search Input Bar -->
+        <div class="search-box-wrap" style="margin:0 0 12px 0;">
+          <input type="text" id="citizen-plate-search" placeholder="ENTER REGISTRATION MARK (e.g. KA03MX4521)" class="search-input" onkeydown="if(event.key==='Enter') searchCitizenChallans()" oninput="updateHsrpPreview(this.value)">
+          <button class="btn btn-saffron" style="padding:0 24px; font-size:0.92rem;" onclick="searchCitizenChallans()">Audit Vehicle</button>
+        </div>
+
+        <!-- Quick Sample Pills -->
+        <div class="quick-samples" style="justify-content:flex-start; margin-top:4px;">
+          <span style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono);">SAMPLE AUDITS:</span>
+          <span class="quick-sample-pill" onclick="setSamplePlate('KA03MX4521')">KA03MX4521</span>
+          <span class="quick-sample-pill" onclick="setSamplePlate('DL01AB1234')">DL01AB1234</span>
+          <span class="quick-sample-pill" onclick="setSamplePlate('MH12DE3344')">MH12DE3344</span>
+          <span class="quick-sample-pill" onclick="setSamplePlate('TN09BQ7788')">TN09BQ7788</span>
+          <span class="quick-sample-pill" onclick="setSamplePlate('')" style="color:var(--saffron); border-color:rgba(255,153,51,0.3);">All Vehicles</span>
+        </div>
+      </div>
+
+      <!-- Right Column: Asymmetrical Statutory Directives Docket -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <!-- Primary Panel: Rule 167A Review Tribunal Statutory Rights -->
+        <div style="background:#0c1322; border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:0.75rem; font-family:var(--font-mono); font-weight:800; color:var(--saffron); letter-spacing:0.06em;">RULE 167A TRIBUNAL RIGHTS</div>
+            <span style="font-size:0.68rem; background:rgba(255,153,51,0.1); color:var(--saffron); padding:2px 8px; border-radius:4px; font-family:var(--font-mono); font-weight:700;">15-DAY STATUTORY WINDOW</span>
+          </div>
+          <p style="font-size:0.84rem; color:var(--text); line-height:1.5; margin:0 0 10px;">
+            Motorists maintain statutory entitlement to contest wrongful citations. The Traffic Review Tribunal reviews disputes within 7 business days using cryptographic CCTV frame SHA-256 digests.
+          </p>
+          <div style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono); display:flex; gap:16px;">
+            <span>Evidence: Digital CCTV Frame Hash</span>
+            <span>Forum: Traffic Magistrate</span>
+          </div>
+        </div>
+
+        <!-- Asymmetrical Split Sub-Panels -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div style="background:#0c1322; border:1px solid var(--border); border-radius:12px; padding:14px;">
+            <div style="font-size:0.68rem; font-family:var(--font-mono); font-weight:700; color:var(--cyan); margin-bottom:4px;">SETTLEMENT RAILS</div>
+            <div style="font-size:0.85rem; font-weight:700; color:#fff; margin-bottom:2px;">NPCI Bharat BillPay</div>
+            <div style="font-size:0.72rem; color:var(--text-dim);">Zero-convenience fee settlement via RuPay, UPI, and NetBanking.</div>
+          </div>
+          <div style="background:#0c1322; border:1px solid var(--border); border-radius:12px; padding:14px;">
+            <div style="font-size:0.68rem; font-family:var(--font-mono); font-weight:700; color:var(--green); margin-bottom:4px;">LEDGER STATUS</div>
+            <div style="font-size:0.85rem; font-weight:700; color:#fff; margin-bottom:2px;">Cryptographic Sync</div>
+            <div style="font-size:0.72rem; color:var(--text-dim);">Every remittance generates a tamper-evident SHA-256 receipt.</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
   <!-- Main Container -->
   <main class="portal-container">
-    
-    <!-- Quick Action Cards -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:30px;">
-      <div class="glass-card" style="text-align:center;">
-        <div style="font-size:1.8rem; margin-bottom:6px;">💳</div>
-        <h3 style="font-size:0.95rem;">Instant UPI Settlement</h3>
-        <p style="font-size:0.75rem; color:var(--text-muted);">Zero convenience fee on digital payments with official PDF receipt.</p>
-      </div>
-      <div class="glass-card" style="text-align:center;">
-        <div style="font-size:1.8rem; margin-bottom:6px;">⚖️</div>
-        <h3 style="font-size:0.95rem;">15-Day Dispute Right</h3>
-        <p style="font-size:0.75rem; color:var(--text-muted);">Challenge wrongful infractions directly to the Traffic Review Tribunal.</p>
-      </div>
-      <div class="glass-card" style="text-align:center;">
-        <div style="font-size:1.8rem; margin-bottom:6px;">🏆</div>
-        <h3 style="font-size:0.95rem;">Suraksha Rewards</h3>
-        <p style="font-size:0.75rem; color:var(--text-muted);">Get 10% citizen reward pool payout for reporting traffic violations.</p>
-      </div>
-    </div>
 
-    <!-- Challan Results Area -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 style="font-size:1.2rem;">📋 Recorded Traffic Infractions</h2>
+    <!-- Challan Results Controls & Status Tabs -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:12px;">
+      <div class="filter-tabs">
+        <button class="filter-tab active" id="filter-all" onclick="setChallanStatusFilter('ALL')">All Infractions</button>
+        <button class="filter-tab" id="filter-unpaid" onclick="setChallanStatusFilter('UNPAID')">⏳ Unpaid Only</button>
+        <button class="filter-tab" id="filter-paid" onclick="setChallanStatusFilter('PAID')">✅ Settled Records</button>
+      </div>
       <span style="font-size:0.75rem; color:var(--text-muted);" id="result-status-text">Displaying recent records (plates masked for privacy)</span>
     </div>
 
@@ -135,41 +371,66 @@
 
   </main>
 
+  <!-- ── TOAST STACK ── -->
+  <div class="toast-stack" id="citizen-toast-stack"></div>
+
   <!-- ── PAYMENT MODAL ── -->
   <div class="modal-backdrop" id="pay-modal">
     <div class="modal-window">
-      <h3 style="font-size:1.15rem;margin-bottom:4px;color:var(--text);">💳 Settle Traffic E-Challan</h3>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">Direct Settlement via Razorpay / Unified Payments Interface (UPI)</div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+        <div>
+          <h3 style="font-size:1.18rem;margin:0 0 4px;color:var(--text);font-family:var(--font-heading);">💳 Settle Traffic E-Challan</h3>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Ministry of Road Transport & Highways · NPCI Bharat BillPay / UPI Gateway</div>
+        </div>
+        <button onclick="closePayModal()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;line-height:1;">✕</button>
+      </div>
 
-      <div style="background:rgba(0,0,0,0.2);padding:12px;border-radius:8px;border:1px solid var(--border);margin-bottom:16px;font-size:0.85rem;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+      <!-- Challan Breakdown Summary -->
+      <div style="background:rgba(0,0,0,0.3);padding:14px;border-radius:12px;border:1px solid var(--border);margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.82rem;">
           <span style="color:var(--text-muted);">Challan Reference:</span>
-          <b id="pay-modal-challan">RX-000000</b>
+          <b id="pay-modal-challan" style="font-family:var(--font-mono);color:var(--cyan);">RX-000000</b>
         </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-          <span style="color:var(--text-muted);">Vehicle Number:</span>
-          <b id="pay-modal-plate">KA03MX4521</b>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.82rem;">
+          <span style="color:var(--text-muted);">Vehicle HSRP:</span>
+          <b id="pay-modal-plate" style="font-family:var(--font-mono);letter-spacing:0.06em;">KA03MX4521</b>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:1.1rem;color:var(--saffron);">
-          <span>Fine Amount:</span>
-          <b id="pay-modal-amount">₹1,000</b>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px dashed var(--border);margin-top:6px;">
+          <span style="font-size:0.85rem;color:var(--text-muted);">Statutory Fine:</span>
+          <b id="pay-modal-amount" style="font-size:1.35rem;color:var(--saffron);font-family:var(--font-heading);">₹1,000</b>
+        </div>
+      </div>
+
+      <!-- UPI QR Simulation Widget -->
+      <div style="background:rgba(0, 229, 255, 0.04); border:1px solid rgba(0, 229, 255, 0.2); border-radius:12px; padding:14px; margin-bottom:16px; display:flex; align-items:center; gap:14px;">
+        <div style="width:72px; height:72px; background:#fff; border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.4); flex-shrink:0;">
+          <!-- Simulated Stylized QR -->
+          <div style="font-size:1.8rem; line-height:1;">🏁</div>
+          <div style="font-size:0.5rem; font-weight:800; color:#000; font-family:var(--font-mono); margin-top:2px;">BHIM UPI</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:0.78rem; font-weight:700; color:#fff;">Scan via Any UPI App</div>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin:2px 0 6px;">Google Pay · PhonePe · Paytm · BHIM · Cred</div>
+          <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:6px; border:1px solid var(--border); font-family:var(--font-mono); font-size:0.68rem; color:var(--cyan);">
+            VPA: echallan.morth@sbi
+          </div>
         </div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
-        <label style="font-size:0.75rem;color:var(--text-muted);">Payer Full Name:</label>
-        <input type="text" id="payer-name-input" value="Citizen Motorist" class="btn btn-outline" style="text-align:left;">
+        <label style="font-size:0.75rem;color:var(--text-muted);font-weight:600;">Payer Full Name (for E-Receipt):</label>
+        <input type="text" id="payer-name-input" value="Citizen Motorist" class="form-input" style="background:rgba(6,9,15,0.7); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:#fff; font-size:0.88rem;">
 
-        <label style="font-size:0.75rem;color:var(--text-muted);">Payment Channel:</label>
-        <select id="pay-mode-select" class="btn btn-outline">
-          <option value="UPI (Google Pay / PhonePe / Paytm)">UPI (Google Pay / PhonePe / Paytm)</option>
-          <option value="Debit / Credit Card (RuPay / Visa)">Debit / Credit Card (RuPay / Visa)</option>
-          <option value="NetBanking (SBI / HDFC / ICICI)">NetBanking (SBI / HDFC / ICICI)</option>
+        <label style="font-size:0.75rem;color:var(--text-muted);font-weight:600;">Payment Mode:</label>
+        <select id="pay-mode-select" class="form-input" style="background:rgba(6,9,15,0.7); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:#fff; font-size:0.88rem;">
+          <option value="UPI (Google Pay / PhonePe / Paytm / BHIM)">UPI (Google Pay / PhonePe / Paytm / BHIM)</option>
+          <option value="Debit / Credit Card (RuPay / Visa / Mastercard)">Debit / Credit Card (RuPay / Visa / Mastercard)</option>
+          <option value="NetBanking (SBI / HDFC / ICICI / PNB)">NetBanking (SBI / HDFC / ICICI / PNB)</option>
         </select>
       </div>
 
       <div style="display:flex;gap:10px;">
-        <button class="btn btn-success" style="flex:1;" onclick="submitPayment()">✔ Confirm & Pay</button>
+        <button class="btn btn-success" style="flex:1;" onclick="submitPayment()">✔ Settle Challan Now</button>
         <button class="btn btn-outline" onclick="closePayModal()">Cancel</button>
       </div>
     </div>
@@ -178,31 +439,41 @@
   <!-- ── DISPUTE MODAL ── -->
   <div class="modal-backdrop" id="dispute-modal">
     <div class="modal-window">
-      <h3 style="font-size:1.15rem;margin-bottom:4px;color:var(--text);">⚖️ File Citizen Dispute</h3>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">Submit evidence for Traffic Review Tribunal review</div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+        <div>
+          <h3 style="font-size:1.18rem;margin:0 0 4px;color:var(--text);font-family:var(--font-heading);">⚖️ File Citizen Dispute</h3>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Central Motor Vehicles Rule 167A · Traffic Review Tribunal</div>
+        </div>
+        <button onclick="closeDisputeModal()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;line-height:1;">✕</button>
+      </div>
 
       <input type="hidden" id="dispute-vid-input">
       <input type="hidden" id="dispute-plate-input">
 
+      <div style="background:rgba(255,153,51,0.08); border:1px solid rgba(255,153,51,0.25); border-radius:10px; padding:12px; margin-bottom:16px; font-size:0.75rem; color:var(--text-muted);">
+        ℹ️ <b>Statutory Notice:</b> Disputes are reviewed by the District Traffic Magistrate. Cryptographic CCTV camera logs and Merkle roots will be re-computed during adjudication.
+      </div>
+
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px;">
         <div>
-          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Dispute Category:</label>
-          <select id="dispute-reason-select" class="btn btn-outline" style="width:100%;">
-            <option value="Incorrect Plate Character Recognition">Incorrect Plate Character Recognition</option>
+          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:600;">Dispute Category:</label>
+          <select id="dispute-reason-select" class="form-input" style="width:100%; background:rgba(6,9,15,0.7); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:#fff; font-size:0.85rem;">
+            <option value="Incorrect Plate Character Recognition">Incorrect Plate Character Recognition (ANPR Misread)</option>
             <option value="Emergency Vehicle / Medical Exemption">Emergency Vehicle / Medical Exemption</option>
             <option value="Vehicle Sold / Stolen Prior to Incident">Vehicle Sold / Stolen Prior to Incident</option>
             <option value="Helmet was Worn (Occlusion by Angle)">Helmet was Worn (Occlusion by Angle)</option>
+            <option value="Wrongly Tagged Double Passenger">Wrongly Tagged Double Passenger</option>
           </select>
         </div>
 
         <div>
-          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Explanation & Proof Details:</label>
-          <textarea id="dispute-explanation-input" rows="3" class="btn btn-outline" style="width:100%;text-align:left;" placeholder="Describe what happened and mention dashcam timestamp..."></textarea>
+          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:600;">Explanation & Proof Reference:</label>
+          <textarea id="dispute-explanation-input" rows="3" class="form-input" style="width:100%; background:rgba(6,9,15,0.7); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:#fff; font-size:0.85rem; resize:vertical;" placeholder="Describe the circumstance, dashcam timestamp, or registration certificate details..."></textarea>
         </div>
       </div>
 
       <div style="display:flex;gap:10px;">
-        <button class="btn btn-saffron" style="flex:1;" onclick="submitCitizenDispute()">Submit Dispute</button>
+        <button class="btn btn-saffron" style="flex:1;" onclick="submitCitizenDispute()">Submit Dispute Ticket</button>
         <button class="btn btn-outline" onclick="closeDisputeModal()">Cancel</button>
       </div>
     </div>
@@ -211,6 +482,8 @@
   <!-- ── SCRIPTS ── -->
   <script>
     let activePayVid = null;
+    let allCitizenViolations = [];
+    let currentStatusFilter = 'ALL';
 
     function toggleTheme() {
       const cur = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -221,53 +494,142 @@
     const savedTheme = localStorage.getItem('tg_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
-    function loadCitizenViolations(plateQuery = '') {
-      const url = plateQuery ? '/citizen/violations?plate=' + encodeURIComponent(plateQuery) : '/citizen/violations';
-      fetch(url).then(r => r.json()).then(rows => {
-        const container = document.getElementById('citizen-challans-list');
-        if (!rows.length) {
-          container.innerHTML = `
-            <div class="glass-card" style="text-align:center;padding:32px;">
-              <div style="font-size:2rem;margin-bottom:8px;">🛡️</div>
-              <h3 style="color:var(--green);">Zero Pending Infractions</h3>
-              <p style="color:var(--text-muted);font-size:0.85rem;">No unpaid traffic violations found for this vehicle. Thank you for safe driving!</p>
-            </div>
-          `;
-          return;
-        }
+    // Toast Notification System
+    function showCitizenToast(title, message, type = 'info') {
+      const stack = document.getElementById('citizen-toast-stack');
+      if (!stack) return;
+      const toast = document.createElement('div');
+      toast.className = `toast-card ${type}`;
+      const icon = type === 'success' ? '✅' : type === 'danger' ? '🚨' : type === 'warning' ? '⚠️' : '🛡️';
+      toast.innerHTML = `
+        <div style="font-size:1.2rem; line-height:1;">${icon}</div>
+        <div style="flex:1;">
+          <div style="font-weight:700; font-size:0.85rem; color:#fff;">${title}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${message}</div>
+        </div>
+      `;
+      stack.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 4200);
+    }
 
-        container.innerHTML = rows.map(r => `
-          <div class="glass-card" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;">
-            <div style="display:flex;flex-direction:column;gap:4px;">
-              <div style="display:flex;align-items:center;gap:10px;">
+    // Live HSRP Plate Preview updater
+    function updateHsrpPreview(plate) {
+      const display = document.getElementById('hsrp-preview-text');
+      const clean = (plate || '').toUpperCase().trim();
+      if (!clean) {
+        display.textContent = 'KA 03 MX 4521';
+      } else {
+        display.textContent = clean;
+      }
+    }
+
+    function setSamplePlate(plate) {
+      document.getElementById('citizen-plate-search').value = plate;
+      updateHsrpPreview(plate);
+      searchCitizenChallans();
+    }
+
+    // MVA 2019 Statutory Section Mapper
+    function getMvaStatutorySection(violation) {
+      const v = (violation || '').toLowerCase();
+      if (v.includes('speed') || v.includes('overspeed')) {
+        return { sec: 'Sec 183 MVA 2019', desc: 'Speed Limit Violation', icon: '⚡' };
+      } else if (v.includes('helmet')) {
+        return { sec: 'Sec 129 MVA 2019', desc: 'Protective Headgear Mandate', icon: '⛑️' };
+      } else if (v.includes('triple') || v.includes('pillion')) {
+        return { sec: 'Sec 128 MVA 2019', desc: 'Pillion Rider Limit', icon: '👥' };
+      } else if (v.includes('signal') || v.includes('red light')) {
+        return { sec: 'Sec 184 MVA 2019', desc: 'Signal Jump / Dangerous Driving', icon: '🚦' };
+      } else if (v.includes('opposing') || v.includes('wrong way')) {
+        return { sec: 'Sec 184(f) MVA 2019', desc: 'Driving Against Flow', icon: '⚠️' };
+      } else if (v.includes('phone') || v.includes('mobile')) {
+        return { sec: 'Sec 184(c) MVA 2019', desc: 'Handheld Device Operation', icon: '📱' };
+      }
+      return { sec: 'Sec 177 MVA 2019', desc: 'General Traffic Contravention', icon: '📋' };
+    }
+
+    function setChallanStatusFilter(status) {
+      currentStatusFilter = status;
+      document.getElementById('filter-all').classList.toggle('active', status === 'ALL');
+      document.getElementById('filter-unpaid').classList.toggle('active', status === 'UNPAID');
+      document.getElementById('filter-paid').classList.toggle('active', status === 'PAID');
+      renderCitizenChallans();
+    }
+
+    function renderCitizenChallans() {
+      const container = document.getElementById('citizen-challans-list');
+      let filtered = allCitizenViolations;
+      if (currentStatusFilter === 'UNPAID') filtered = allCitizenViolations.filter(r => !r.paid);
+      if (currentStatusFilter === 'PAID') filtered = allCitizenViolations.filter(r => r.paid);
+
+      if (!filtered.length) {
+        container.innerHTML = `
+          <div class="glass-card" style="text-align:center;padding:36px 20px;">
+            <div style="font-size:2.2rem;margin-bottom:8px;">🛡️</div>
+            <h3 style="color:var(--green);font-size:1.1rem;margin-bottom:6px;">Zero Infractions Found</h3>
+            <p style="color:var(--text-muted);font-size:0.85rem;max-width:480px;margin:auto;">
+              ${currentStatusFilter === 'UNPAID' ? 'No unpaid e-challans are outstanding for this vehicle record.' : 'No traffic violations match your filter criteria.'}
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(r => {
+        const mva = getMvaStatutorySection(r.violation);
+        return `
+          <div class="glass-card" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;">
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:280px;">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                 <span class="plate-chip">${r.plate}</span>
-                <span class="badge ${r.paid ? 'badge-green' : 'badge-red'}">${r.paid ? '✅ PAID' : '⏳ UNPAID'}</span>
-                <span style="font-size:0.75rem;color:var(--text-dim);font-family:var(--font-mono);">${r.challan}</span>
+                <span class="badge ${r.paid ? 'badge-green' : 'badge-red'}">${r.paid ? '✅ PAID & SETTLED' : '⏳ UNPAID / DUE'}</span>
+                <span style="font-size:0.75rem;color:var(--cyan);font-family:var(--font-mono);font-weight:700;">#${r.challan}</span>
               </div>
-              <div style="font-weight:700;color:var(--text);font-size:0.9rem;margin-top:2px;">${r.violation}</div>
-              <div style="font-size:0.72rem;color:var(--text-muted);">${r.timestamp} · Camera: ${r.camera}</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+                <span style="font-size:1.1rem;">${mva.icon}</span>
+                <span style="font-weight:800;color:var(--text);font-size:0.95rem;">${r.violation}</span>
+                <span style="font-size:0.7rem;color:var(--text-muted);background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;font-family:var(--font-mono);">${mva.sec}</span>
+              </div>
+              <div style="font-size:0.74rem;color:var(--text-muted);">
+                📅 ${r.timestamp} · 📍 Camera Node: <span style="color:var(--cyan);font-family:var(--font-mono);">${r.camera}</span>
+              </div>
             </div>
 
-            <div style="display:flex;align-items:center;gap:14px;">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
               <div style="text-align:right;">
-                <div style="font-size:0.7rem;color:var(--text-muted);">Statutory Fine</div>
-                <div style="font-size:1.3rem;font-weight:800;color:${r.paid ? 'var(--green)' : 'var(--saffron)'};font-family:var(--font-heading);">
+                <div style="font-size:0.7rem;color:var(--text-muted);letter-spacing:0.04em;text-transform:uppercase;">Statutory Penalty</div>
+                <div style="font-size:1.4rem;font-weight:900;color:${r.paid ? 'var(--green)' : 'var(--saffron)'};font-family:var(--font-heading);letter-spacing:-0.02em;">
                   ₹${r.fine.toLocaleString('en-IN')}
                 </div>
               </div>
 
-              <div style="display:flex;gap:6px;">
+              <div style="display:flex;gap:8px;align-items:center;">
                 ${r.paid ? `
                   <a href="/receipt/${r.id}" target="_blank" class="btn btn-success" style="padding:8px 14px;font-size:0.8rem;">⬇ Receipt</a>
                 ` : `
                   <button class="btn btn-primary" onclick="openPayModal(${r.id}, '${r.challan}', '${r.plate}', ${r.fine})">💳 Pay Online</button>
                   <button class="btn btn-outline" onclick="openDisputeModal(${r.id}, '${r.plate}')">⚖️ Dispute</button>
                 `}
-                <a href="/challan/${r.id}" target="_blank" class="btn btn-outline" style="padding:8px 12px;font-size:0.8rem;">PDF</a>
+                <a href="/challan/${r.id}" target="_blank" class="btn btn-outline" style="padding:8px 12px;font-size:0.8rem;" title="Download Official Challan Notice">PDF</a>
               </div>
             </div>
           </div>
-        `).join('');
+        `;
+      }).join('');
+    }
+
+    function loadCitizenViolations(plateQuery = '') {
+      const url = plateQuery ? '/citizen/violations?plate=' + encodeURIComponent(plateQuery) : '/citizen/violations';
+      fetch(url).then(r => r.json()).then(rows => {
+        allCitizenViolations = rows || [];
+        renderCitizenChallans();
+      }).catch(err => {
+        showCitizenToast('Lookup Error', 'Unable to retrieve infraction records from server.', 'danger');
       });
     }
 
@@ -303,17 +665,17 @@
       }).then(r => r.json().then(d => ({ status: r.status, data: d })))
       .then(res => {
         if (res.status >= 400 || res.data.error) {
-          alert('Payment Notice: ' + (res.data.error || 'Could not complete transaction'));
+          showCitizenToast('Payment Notice', res.data.error || 'Could not complete transaction', 'warning');
           return;
         }
         closePayModal();
-        alert('Payment Settled Successfully! Challan No: ' + res.data.challan);
+        showCitizenToast('Payment Settled', `Challan #${res.data.challan} cleared successfully!`, 'success');
         searchCitizenChallans();
         if (res.data.receipt_url) {
           window.open(res.data.receipt_url, '_blank');
         }
       }).catch(err => {
-        alert('Payment processing error: ' + err.message);
+        showCitizenToast('Payment Error', err.message, 'danger');
       });
     }
 
@@ -344,14 +706,14 @@
       }).then(r => r.json().then(d => ({ status: r.status, data: d })))
       .then(res => {
         if (res.status >= 400 || res.data.error) {
-          alert('Dispute Submission Notice:\n' + (res.data.error || 'Unable to file dispute at this time.'));
+          showCitizenToast('Dispute Notice', res.data.error || 'Unable to file dispute at this time.', 'warning');
           return;
         }
         closeDisputeModal();
-        alert('Dispute Ticket #' + res.data.dispute_id + ' submitted to Traffic Police Review Tribunal.');
+        showCitizenToast('Dispute Registered', `Ticket #${res.data.dispute_id} forwarded to Traffic Magistrate Review Tribunal.`, 'success');
         searchCitizenChallans();
       }).catch(err => {
-        alert('Error submitting dispute: ' + err.message);
+        showCitizenToast('Dispute Error', err.message, 'danger');
       });
     }
 

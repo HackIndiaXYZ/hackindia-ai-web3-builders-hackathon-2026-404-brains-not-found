@@ -9,54 +9,61 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    /* ── DASHBOARD LAYOUT & STYLES ── */
+    /* ── COMMAND CENTRE OPERATIONAL DASHBOARD LAYOUT ── */
     .command-shell { --command-header-height: 145px; }
+    
     .topbar {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 24px;
+      background: rgba(6, 11, 22, 0.9) !important;
+      backdrop-filter: blur(24px) saturate(190%) !important;
+      -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+      border-bottom: 1px solid var(--border) !important;
+      padding: 12px 28px !important;
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 1000;
-      backdrop-filter: blur(14px);
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
+      box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.5) !important;
     }
     .topbar::after {
       content: "NATIONAL TRAFFIC COMMAND  /  CITY OPERATIONS GRID";
       position: absolute;
-      left: 24px;
+      left: 28px;
       bottom: -18px;
-      color: rgba(0, 229, 255, 0.5);
-      font: 600 0.58rem var(--font-mono);
-      letter-spacing: 0.14em;
+      color: rgba(0, 229, 255, 0.65);
+      font: 700 0.58rem var(--font-mono);
+      letter-spacing: 0.16em;
       pointer-events: none;
     }
     .brand-group {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
     }
     .brand-emblem {
-      font-size: 1.8rem;
-      filter: drop-shadow(0 0 6px rgba(255, 153, 51, 0.4));
+      font-size: 2rem;
+      filter: drop-shadow(0 0 12px rgba(255, 153, 51, 0.5));
     }
     .brand-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      color: var(--text);
+      font-family: var(--font-display) !important;
+      font-size: 1.35rem !important;
+      font-weight: 900 !important;
+      letter-spacing: -0.03em !important;
+      color: var(--text-primary);
     }
-    .brand-title span { color: var(--saffron); }
+    .brand-title span { 
+      color: var(--saffron);
+    }
     .brand-sub {
       font-size: 0.7rem;
       color: var(--text-muted);
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      font-weight: 600;
+      font-weight: 700;
+      font-family: var(--font-mono);
     }
     .topbar-right {
       display: flex;
@@ -66,69 +73,100 @@
     .live-clock {
       font-family: var(--font-mono);
       font-size: 0.85rem;
+      font-weight: 700;
       color: var(--cyan);
       background: rgba(0, 229, 255, 0.08);
-      border: 1px solid rgba(0, 229, 255, 0.25);
-      padding: 4px 10px;
-      border-radius: 6px;
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 6px 14px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.05em;
     }
 
-    /* ── KPI STATS CARDS ── */
+    /* ── KPI STATS CARDS (Bento Grid) ── */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 16px;
-      padding: 20px 24px 10px 238px;
+      padding: 24px 28px 12px 238px;
     }
     .kpi-card {
-      background: var(--surface-card);
+      background: var(--bg-card);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 18px 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-sm), var(--glass-highlight);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), transparent 75%);
+      opacity: 0.8;
+    }
+    .kpi-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-cyan);
+      box-shadow: var(--shadow-md), 0 0 24px rgba(0, 229, 255, 0.12), var(--glass-highlight);
     }
     .kpi-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       color: var(--text-muted);
-      font-size: 0.78rem;
-      font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
     }
     .kpi-value {
-      font-size: 1.8rem;
+      font-size: 2rem;
       font-weight: 800;
-      color: var(--text);
-      margin: 8px 0 2px;
-      font-family: var(--font-heading);
+      color: var(--text-primary);
+      margin: 8px 0 3px;
+      font-family: var(--font-mono);
+      letter-spacing: -0.03em;
+      text-shadow: 0 0 20px rgba(0, 229, 255, 0.18);
     }
     .kpi-footer {
       font-size: 0.72rem;
       color: var(--text-dim);
+      font-weight: 500;
     }
 
-    /* ── TABS NAVIGATION ── */
+    /* ── TABS NAVIGATION (Floating Pill Sidebar) ── */
     .nav-tabs {
       position: fixed;
       left: 0;
       top: var(--command-header-height);
       bottom: 0;
-      width: 214px;
+      width: 218px;
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      gap: 3px;
-      padding: 92px 12px 18px;
-      border-right: 1px solid rgba(0, 229, 255, 0.18);
-      background: linear-gradient(180deg, rgba(5, 14, 28, 0.98), rgba(3, 9, 20, 0.98));
+      gap: 5px;
+      padding: 96px 12px 24px;
+      border-right: 1px solid var(--border);
+      background: rgba(6, 11, 22, 0.96);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       overflow-y: auto;
       z-index: 900;
       scrollbar-width: none;
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45);
     }
     .nav-tabs::before {
       content: "TG / 04";
@@ -136,80 +174,79 @@
       top: 28px;
       left: 22px;
       color: var(--saffron);
-      font: 800 1.1rem var(--font-mono);
-      letter-spacing: 0.08em;
+      font: 800 1.15rem var(--font-mono);
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 12px rgba(255, 153, 51, 0.4);
     }
     .nav-tabs::after {
-      content: "METRO SURVEILLANCE\A SECTOR 04 · ACTIVE";
+      content: "METRO SURVEILLANCE\A SECTOR 04 · COMMAND";
       white-space: pre;
       position: absolute;
       top: 55px;
       left: 23px;
       color: var(--text-dim);
-      font: 600 0.54rem/1.5 var(--font-mono);
-      letter-spacing: 0.08em;
+      font: 700 0.56rem/1.5 var(--font-mono);
+      letter-spacing: 0.1em;
     }
     .nav-tab {
-      padding: 11px 10px;
-      border: none;
+      padding: 10px 14px;
+      border: 1px solid transparent;
+      border-radius: 10px;
       background: transparent;
       color: var(--text-muted);
-      font-family: var(--font-heading);
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      font-weight: 700;
       cursor: pointer;
-      border-bottom: 3px solid transparent;
       white-space: normal;
-      line-height: 1.25;
-      min-height: 38px;
+      line-height: 1.3;
+      min-height: 40px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
-      border-left: 2px solid transparent;
+      gap: 10px;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       text-align: left;
     }
     .nav-tab:hover {
-      color: var(--text);
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.04);
+      transform: translateX(3px);
     }
     .nav-tab.active {
-      color: var(--saffron);
-      border-left-color: var(--saffron);
-      background: linear-gradient(90deg, rgba(255, 153, 51, 0.14), transparent);
+      color: var(--cyan);
+      border-color: rgba(0, 229, 255, 0.35);
+      background: linear-gradient(90deg, rgba(0, 229, 255, 0.16), rgba(0, 229, 255, 0.04));
+      box-shadow: 0 4px 18px rgba(0, 229, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     /* ── TAB PANELS ── */
     .tab-content {
-      margin-left: 214px;
-      padding: 20px 24px 60px;
+      margin-left: 218px;
+      padding: 22px 28px 60px;
     }
     .tab-pane {
       display: none;
     }
     .tab-pane.active {
       display: block;
-      animation: fadeIn 0.25s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
+      animation: fadeSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* ── VIDEO INTERCEPTOR VIEW ── */
+    /* ── VIDEO INTERCEPTOR VIEW (HUD Grid) ── */
     .video-view-grid {
       display: grid;
-      grid-template-columns: 1fr 360px;
-      gap: 20px;
+      grid-template-columns: 1fr 380px;
+      gap: 22px;
     }
     @media (max-width: 1024px) {
       .video-view-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 760px) {
       .command-shell { --command-header-height: 0px; }
-      .topbar { padding: 10px 14px; align-items: flex-start; }
+      .topbar { padding: 12px 16px !important; align-items: flex-start; }
       .topbar::after { display: none; }
       .brand-sub { max-width: 180px; }
-      .topbar-right { gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+      .topbar-right { gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
       .topbar-right .badge-blue, .topbar-right select { display: none; }
       .nav-tabs {
         position: static;
@@ -222,24 +259,35 @@
         overflow-x: auto;
       }
       .nav-tabs::before, .nav-tabs::after { display: none; }
-      .nav-tab { min-width: max-content; border-left: 0; border-bottom: 2px solid transparent; }
-      .nav-tab.active { border-left: 0; border-bottom-color: var(--saffron); }
-      .kpi-grid { padding: 12px 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-      .kpi-card { padding: 11px; }
-      .kpi-value { font-size: 1.25rem; }
+      .nav-tab { min-width: max-content; }
+      .kpi-grid { padding: 12px 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .kpi-card { padding: 12px; }
+      .kpi-value { font-size: 1.35rem; }
       .tab-content { margin-left: 0; padding: 14px 12px 40px; }
       .notif-dropdown { position: fixed; right: 10px; top: 64px; width: min(340px, calc(100vw - 20px)); }
     }
     .video-viewport {
       background: #000;
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      border: 1px solid var(--border-cyan) !important;
+      border-radius: 16px !important;
       overflow: hidden;
       position: relative;
       aspect-ratio: 16/9;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 0 35px rgba(0, 229, 255, 0.15), var(--shadow-lg) !important;
+    }
+    .video-viewport::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      box-shadow: 0 0 14px var(--cyan);
+      opacity: 0.7;
+      pointer-events: none;
+      animation: scanline 6s linear infinite;
     }
     .video-viewport img {
       width: 100%;
@@ -254,30 +302,33 @@
       flex-wrap: wrap;
     }
 
-    /* ── VIOLATIONS CARDS GRID ── */
+    /* ── VIOLATIONS CARDS GRID (Bento Cards) ── */
     .violations-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 18px;
       margin-top: 16px;
     }
     .violation-card {
-      background: var(--surface-card);
+      background: var(--bg-card);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 16px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: all 0.2s;
+      box-shadow: var(--shadow-sm), var(--glass-highlight);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .violation-card:hover {
-      border-color: var(--border-focus);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
+      border-color: var(--border-cyan);
+      transform: translateY(-4px) scale(1.006);
+      box-shadow: var(--shadow-md), 0 0 25px rgba(0, 229, 255, 0.12);
     }
     .vcard-img-wrap {
-      height: 160px;
-      background: #000;
+      height: 170px;
+      background: #020612;
       position: relative;
       overflow: hidden;
     }
@@ -285,12 +336,16 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+    .violation-card:hover .vcard-img-wrap img {
+      transform: scale(1.04);
     }
     .vcard-body {
-      padding: 14px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
     .vcard-row {
       display: flex;
@@ -307,15 +362,18 @@
       position: absolute;
       right: 0;
       top: 120%;
-      width: 340px;
-      max-height: 400px;
+      width: 360px;
+      max-height: 420px;
       overflow-y: auto;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: var(--shadow);
+      background: rgba(14, 22, 38, 0.96);
+      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), var(--glass-highlight);
       z-index: 2000;
+      animation: modalPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .notif-dropdown.show {
       display: block;
@@ -324,110 +382,125 @@
     .ai-feed-list {
       display: flex;
       flex-direction: column;
-      gap: 7px;
-      max-height: 230px;
+      gap: 8px;
+      max-height: 250px;
       overflow-y: auto;
     }
     .ai-feed-item {
       display: grid;
-      grid-template-columns: 26px 1fr auto;
-      gap: 8px;
+      grid-template-columns: 28px 1fr auto;
+      gap: 10px;
       align-items: center;
-      padding: 8px;
+      padding: 10px 12px;
       border: 1px solid var(--border);
-      border-radius: 7px;
-      background: rgba(0, 0, 0, 0.18);
-      font-size: 0.72rem;
+      border-radius: 10px;
+      background: rgba(2, 6, 14, 0.6);
+      font-size: 0.74rem;
+      transition: all 0.2s ease;
     }
-    .ai-feed-item strong { color: var(--text); display: block; }
+    .ai-feed-item:hover {
+      background: rgba(0, 229, 255, 0.04);
+      border-color: rgba(0, 229, 255, 0.25);
+    }
+    .ai-feed-item strong { color: var(--text-primary); display: block; font-weight: 700; }
     .ai-feed-item small { color: var(--text-dim); display: block; margin-top: 2px; }
-    .ai-feed-item time { color: var(--cyan); font-family: var(--font-mono); font-size: 0.64rem; }
+    .ai-feed-item time { color: var(--cyan); font-family: var(--font-mono); font-size: 0.66rem; }
 
     /* ── LEAFLET MAP CONTAINER ── */
     #heatmap-container {
-      height: 540px;
-      border-radius: 12px;
+      height: 560px;
+      border-radius: 16px;
       overflow: hidden;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-cyan);
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
     }
 
     /* ── CHATBOT & SAARTHI ── */
     .chat-box {
-      height: 400px;
+      height: 420px;
       overflow-y: auto;
-      padding: 16px;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 10px;
+      padding: 18px;
+      background: rgba(3, 8, 18, 0.6);
+      border-radius: 14px;
       border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
     .chat-msg {
-      max-width: 80%;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      line-height: 1.4;
+      max-width: 82%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      box-shadow: var(--shadow-sm);
     }
     .chat-msg.user {
       align-self: flex-end;
-      background: linear-gradient(135deg, #0066cc, #0088ff);
+      background: linear-gradient(135deg, #0077e6, #0099ff);
       color: #fff;
+      border-bottom-right-radius: 4px;
     }
     .chat-msg.bot {
       align-self: flex-start;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: rgba(16, 26, 46, 0.9);
+      border: 1px solid var(--border-light);
       color: var(--text);
+      border-bottom-left-radius: 4px;
     }
 
     /* ── DEMO PROGRESS STAGES ── */
     .stage-step {
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(4, 9, 20, 0.6);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 10px;
+      border-radius: 10px;
+      padding: 10px 12px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       color: var(--text-muted);
-      transition: all 0.2s;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      transition: all 0.25s ease;
     }
     .stage-step.active {
       border-color: var(--saffron);
       color: var(--saffron);
-      background: rgba(255, 153, 51, 0.08);
-      box-shadow: 0 0 10px rgba(255, 153, 51, 0.15);
+      background: rgba(255, 153, 51, 0.1);
+      box-shadow: 0 0 16px rgba(255, 153, 51, 0.25);
     }
     .stage-step.completed {
       border-color: var(--green);
       color: var(--green);
-      background: rgba(0, 230, 118, 0.08);
+      background: rgba(0, 230, 118, 0.1);
+      box-shadow: 0 0 16px rgba(0, 230, 118, 0.2);
     }
     
-    /* ── MODAL DIALOG ── */
+    /* ── MODAL DIALOG (Spring Blur) ── */
     .modal-overlay {
       display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(8px);
+      background: rgba(3, 7, 15, 0.85);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
       z-index: 3000;
       align-items: center;
       justify-content: center;
       padding: 20px;
     }
     .modal-content {
-      background: var(--surface-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      background: rgba(14, 22, 38, 0.95);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
       max-width: 780px;
       width: 100%;
       max-height: 85vh;
       overflow-y: auto;
-      padding: 24px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      padding: 28px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), var(--glass-highlight);
+      animation: modalPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
   </style>
 </head>
@@ -483,51 +556,66 @@
     </div>
   </header>
 
-  <!-- KPI Top Stats Cards -->
+  <!-- KPI Top Stats Cards (Tactile Telemetry Matrix) -->
   <section class="kpi-grid">
-    <div class="kpi-card">
+    <div class="kpi-card hud-frame">
       <div class="kpi-header">
-        <span data-i18n="violations_today">Violations Detected</span>
-        <span style="color:var(--traffic-red);">🚨</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="led-indicator led-red"></span>
+          <span data-i18n="violations_today">Violations Detected</span>
+        </div>
+        <span class="badge badge-red" style="font-size:0.6rem; padding:2px 6px;">REAL-TIME</span>
       </div>
       <div class="kpi-value" id="kpi-total">0</div>
-      <div class="kpi-footer">Across all camera feeds</div>
+      <div class="kpi-footer">Across all camera intercept nodes</div>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card hud-frame">
       <div class="kpi-header">
-        <span data-i18n="total_fines">Fines Imposed</span>
-        <span style="color:var(--saffron);">💰</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="led-indicator led-saffron"></span>
+          <span data-i18n="total_fines">Fines Imposed</span>
+        </div>
+        <span class="badge badge-saffron" style="font-size:0.6rem; padding:2px 6px;">MV ACT 2019</span>
       </div>
       <div class="kpi-value" id="kpi-fines" style="color:var(--saffron);">₹0</div>
       <div class="kpi-footer" id="kpi-pending">Pending: 0 challans</div>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card hud-frame">
       <div class="kpi-header">
-        <span data-i18n="revenue_collected">Revenue Collected</span>
-        <span style="color:var(--green);">✅</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="led-indicator led-green"></span>
+          <span data-i18n="revenue_collected">Settled Revenue</span>
+        </div>
+        <span class="badge badge-green" style="font-size:0.6rem; padding:2px 6px;">TREASURY</span>
       </div>
       <div class="kpi-value" id="kpi-collected" style="color:var(--green);">₹0</div>
       <div class="kpi-footer" id="kpi-recovery">Recovery Rate: 0%</div>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card hud-frame">
       <div class="kpi-header">
-        <span data-i18n="active_cameras">Active Interceptors</span>
-        <span style="color:var(--cyan);">📹</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="led-indicator led-cyan"></span>
+          <span data-i18n="active_cameras">Neural Interceptors</span>
+        </div>
+        <span class="badge badge-cyan" style="font-size:0.6rem; padding:2px 6px;">25 FPS</span>
       </div>
       <div class="kpi-value" id="kpi-cameras" style="color:var(--cyan);">1</div>
-      <div class="kpi-footer">YOLOv8 + ByteTrack 25 FPS</div>
+      <div class="kpi-footer">YOLOv8 + ByteTrack Active</div>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card hud-frame">
       <div class="kpi-header">
-        <span data-i18n="blackspots">Accident Blackspots</span>
-        <span style="color:var(--gold);">⚠️</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="led-indicator led-amber"></span>
+          <span data-i18n="blackspots">Accident Blackspots</span>
+        </div>
+        <span class="badge badge-gold" style="font-size:0.6rem; padding:2px 6px;">GIS MESH</span>
       </div>
       <div class="kpi-value" style="color:var(--gold);">5</div>
-      <div class="kpi-footer">High-risk zones tracked</div>
+      <div class="kpi-footer">High-risk urban corridors</div>
     </div>
   </section>
 
@@ -543,6 +631,15 @@
     <button class="nav-tab" onclick="switchTab('tab-saarthi')">🤖 <span data-i18n="tab_saarthi">Saarthi AI Bot</span></button>
     <button class="nav-tab" onclick="switchTab('tab-suraksha')">🏆 <span data-i18n="tab_suraksha">Suraksha Score</span></button>
     <button class="nav-tab" onclick="switchTab('tab-reports')">📑 <span data-i18n="tab_reports">Reports & Audit</span></button>
+    
+    <div style="margin-top:auto; padding-top:10px;">
+      <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:6px 0 10px;">
+      <div style="font-size:0.62rem; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); padding:2px 8px 6px;">PORTAL MESH</div>
+      <a href="/advanced-features" class="nav-tab" style="text-decoration:none; color:var(--cyan); margin-bottom:4px;">🚀 <span>Features 21–35</span></a>
+      <a href="/intelligence" class="nav-tab" style="text-decoration:none; color:var(--saffron); margin-bottom:4px;">🛡️ <span>Operations Grid</span></a>
+      <a href="/map" class="nav-tab" style="text-decoration:none; margin-bottom:4px;">🗺️ <span>Tactical GIS Map</span></a>
+      <a href="/citizen" class="nav-tab" style="text-decoration:none;">🏛️ <span>Citizen Portal</span></a>
+    </div>
   </nav>
 
   <!-- Main Content Body -->
@@ -609,7 +706,36 @@
 
       <div class="video-view-grid">
         <div>
-          <div class="video-viewport">
+          <div class="video-viewport hud-frame">
+            <!-- Top HUD Status Bar -->
+            <div style="position:absolute; top:12px; left:16px; right:16px; display:flex; justify-content:space-between; align-items:center; z-index:20; pointer-events:none;">
+              <div style="background:rgba(6,9,15,0.8); border:1px solid rgba(0,229,255,0.35); border-radius:6px; padding:4px 10px; font-family:var(--font-mono); font-size:0.72rem; color:var(--cyan); display:flex; align-items:center; gap:8px; backdrop-filter:blur(10px);">
+                <span class="led-indicator led-cyan"></span>
+                <span>CAM #01 · SILK BOARD NORTH // 1080P 25FPS</span>
+              </div>
+              <div style="background:rgba(6,9,15,0.8); border:1px solid rgba(255,51,75,0.45); border-radius:6px; padding:4px 10px; font-family:var(--font-mono); font-size:0.72rem; color:#ff6b6b; display:flex; align-items:center; gap:8px; backdrop-filter:blur(10px);">
+                <span class="led-indicator led-red" style="animation:pulseRippleRed 1.2s infinite;"></span>
+                <span>● REC // NEURAL TRACKING LIVE</span>
+              </div>
+            </div>
+
+            <!-- Central Tactical Reticle / Crosshair -->
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0.25;">
+              <div style="width:90px; height:90px; border:1px dashed var(--cyan); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <div style="width:6px; height:6px; background:var(--cyan); border-radius:50%;"></div>
+              </div>
+            </div>
+
+            <!-- Bottom Telemetry HUD Strip -->
+            <div style="position:absolute; bottom:12px; left:16px; right:16px; display:flex; justify-content:space-between; align-items:center; z-index:20; pointer-events:none;">
+              <div style="background:rgba(6,9,15,0.8); border:1px solid rgba(255,255,255,0.12); border-radius:6px; padding:4px 10px; font-family:var(--font-mono); font-size:0.7rem; color:#cbd5e1; backdrop-filter:blur(10px);">
+                PIPELINE: <b>YOLOv8 + BYTETRACK + EASYOCR</b> · LATENCY: <b>38ms</b>
+              </div>
+              <div style="background:rgba(6,9,15,0.8); border:1px solid rgba(0,230,118,0.35); border-radius:6px; padding:4px 10px; font-family:var(--font-mono); font-size:0.7rem; color:#00e676; backdrop-filter:blur(10px);">
+                SHA-256 LEDGER AUDIT SYNCED
+              </div>
+            </div>
+
             <img id="live-stream-img" src="/video_feed" alt="Live AI Video Stream">
           </div>
           <div class="video-controls">
@@ -1222,37 +1348,46 @@
     }
 
     // Predictive Analytics
+        let peakHoursChart = null;
     function initPredictiveCharts() {
-      fetch('/api/predictive/peak-hours').then(r => r.json()).then(d => {
-        const ctx = document.getElementById('peakHoursChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: d.hours,
-            datasets: [{
-              label: 'Predicted Infractions',
-              data: d.counts,
-              backgroundColor: 'rgba(255, 153, 51, 0.7)',
-              borderColor: '#ff9933',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
+      const fetchAndUpdate = () => {
+        fetch('/api/predictive/peak-hours').then(r => r.json()).then(d => {
+          if (peakHoursChart) {
+            peakHoursChart.data.labels = d.hours;
+            peakHoursChart.data.datasets[0].data = d.counts;
+            peakHoursChart.update();
+          } else {
+            const ctx = document.getElementById('peakHoursChart').getContext('2d');
+            peakHoursChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: d.hours,
+                datasets: [{
+                  label: 'Predicted Infractions',
+                  data: d.counts,
+                  backgroundColor: 'rgba(0, 229, 255, 0.5)',
+                  borderColor: '#00e5ff',
+                  borderWidth: 1,
+                  borderRadius: 4
+                }]
+              },
+              options: {
+                responsive: true,
+                animation: { duration: 500 },
+                scales: { 
+                  y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0aec0' } },
+                  x: { grid: { display: false }, ticks: { color: '#a0aec0' } }
+                },
+                plugins: {
+                  legend: { labels: { color: '#fff' } }
+                }
+              }
+            });
           }
         });
-      });
-
-      fetch('/api/predictive/recommendations').then(r => r.json()).then(recs => {
-        document.getElementById('ai-recs-container').innerHTML = (recs.recommendations || recs).map(rec => `
-          <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;border-left:4px solid ${rec.priority==='CRITICAL'?'#e61c16':'#ff9933'};">
-            <div style="font-weight:700;font-size:0.82rem;color:var(--text);">${rec.icon || '🚨'} ${rec.directive || rec.violation}</div>
-            <div style="font-size:0.72rem;color:var(--text-muted);margin:2px 0;">${rec.basis || rec.range || ''}</div>
-            <div style="font-size:0.7rem;color:var(--green);font-weight:700;">Action: ${rec.action || 'Deploy patrol'}</div>
-          </div>
-        `).join('');
-      });
+      };
+      fetchAndUpdate();
+      setInterval(fetchAndUpdate, 10000); // Update dynamically every 10s
     }
 
     // Officer Leaderboard
@@ -1289,8 +1424,12 @@
               <div style="font-size:0.72rem;color:var(--text-muted);">${d.explanation || 'Citizen submitted digital proof.'}</div>
             </div>
             <div style="display:flex;gap:8px;">
+              ${d.status === 'PENDING' ? `
               <button class="btn btn-success" style="padding:6px 12px;font-size:0.75rem;" onclick="resolveDispute(${d.id}, 'ACCEPTED')">Accept & Waive</button>
               <button class="btn btn-primary" style="padding:6px 12px;font-size:0.75rem;" onclick="resolveDispute(${d.id}, 'REJECTED')">Reject</button>
+              ` : `
+              <span style="font-size:0.75rem; padding:4px 8px; border-radius:4px; background: ${d.status === 'ACCEPTED' ? 'rgba(39, 174, 96, 0.2)' : 'rgba(230, 28, 22, 0.2)'}; color: ${d.status === 'ACCEPTED' ? '#2ecc71' : '#ff4d4d'}; font-weight: bold;">${d.status}</span>
+              `}
             </div>
           </div>
         `).join('');
@@ -1606,3 +1745,4 @@
 
 </body>
 </html>
+

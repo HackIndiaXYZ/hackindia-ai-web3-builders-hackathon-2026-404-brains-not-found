@@ -3,32 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ app_name }} - Citizen Login</title>
+  <title>{{ app_name }} — Citizen Portal Authentication</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
   <style>
-    body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
-    .login-card { width:100%; max-width:420px; padding:28px; background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); }
-    .login-card input { width:100%; box-sizing:border-box; padding:12px 14px; margin:6px 0 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); }
-    .error { margin-bottom:14px; padding:10px; border:1px solid #e61c16; border-radius:8px; color:#ff6b6b; background:rgba(230,28,22,.15); text-align:center; font-size:.85rem; }
-    .demo { margin-top:18px; padding:12px; border:1px dashed var(--border); border-radius:8px; color:var(--text-muted); font-size:.78rem; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      margin: 0;
+      background: var(--bg-dark);
+      font-family: var(--font-sans);
+    }
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(13, 19, 33, 0.75);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      overflow: hidden;
+      animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .login-header {
+      padding: 32px 24px 22px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(0, 229, 255, 0.1) 0%, transparent 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .login-body {
+      padding: 28px;
+    }
+    .login-body input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 16px;
+      margin: 6px 0 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      background: rgba(6, 9, 15, 0.6);
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+    .login-body input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.25);
+    }
+    .error {
+      margin-bottom: 16px;
+      padding: 12px;
+      border: 1px solid #ff334b;
+      border-radius: 10px;
+      color: #ff6b6b;
+      background: rgba(255, 51, 75, 0.12);
+      text-align: center;
+      font-size: 0.82rem;
+    }
+    .demo-box {
+      margin-top: 18px;
+      padding: 14px;
+      background: rgba(0, 229, 255, 0.05);
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="login-card">
-    <div class="tricolor-stripe" style="margin:-28px -28px 24px;"></div>
-    <div style="text-align:center; font-size:2.2rem;">🏛️</div>
-    <h2 style="text-align:center; margin:8px 0 4px;">Citizen Services Login</h2>
-    <p style="text-align:center; color:var(--text-muted); font-size:.82rem; margin-bottom:22px;">Access your e-challans, payments and disputes.</p>
-    {% if error %}<div class="error">{{ error }}</div>{% endif %}
-    <form method="POST">
-      <label style="font-size:.78rem; color:var(--text-muted);">Citizen username</label>
-      <input type="text" name="username" value="{{ citizen_username }}" autocomplete="username" required autofocus>
-      <label style="font-size:.78rem; color:var(--text-muted);">Password</label>
-      <input type="password" name="password" autocomplete="current-password" required>
-      <button type="submit" class="btn btn-saffron" style="width:100%; padding:12px;">ACCESS CITIZEN PORTAL</button>
-    </form>
-    <div class="demo">Demo credentials: <strong>{{ citizen_username }}</strong> / <strong>{{ citizen_password }}</strong></div>
-    <div style="text-align:center; margin-top:18px;"><a href="/login" style="color:var(--text-muted); font-size:.8rem;">Officer Login</a></div>
+    <div class="tricolor-stripe"></div>
+    <div class="login-header">
+      <div style="font-size:2.4rem; margin-bottom:8px; filter:drop-shadow(0 0 12px rgba(0,229,255,0.3));">🏛️</div>
+      <h2 style="font-family:var(--font-heading); font-size:1.38rem; color:#fff; margin:0 0 4px; letter-spacing:-0.01em;">Citizen Services Portal</h2>
+      <div style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">Parivahan / MoRTH Connected Services</div>
+      <div class="badge badge-cyan" style="margin-top:12px; font-size:0.68rem; font-weight:700;">
+        <span class="pulse-dot"></span> CITIZEN E-CHALLAN & DISPUTES
+      </div>
+    </div>
+
+    <div class="login-body">
+      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+      <form method="POST" id="citizen-form">
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Citizen Username / Mobile</label>
+        <input type="text" name="username" id="c-user" value="{{ citizen_username }}" autocomplete="username" required autofocus>
+        
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Password</label>
+        <input type="password" name="password" id="c-pass" autocomplete="current-password" placeholder="••••••••••••" required>
+        
+        <button type="submit" class="btn btn-saffron" style="width:100%; padding:14px; font-size:0.92rem; font-weight:800; letter-spacing:0.03em;">
+          ENTER CITIZEN SERVICES
+        </button>
+      </form>
+
+      <div class="demo-box">
+        <div style="font-weight:700; color:var(--cyan); margin-bottom:4px;">Hackathon Demo Credentials:</div>
+        <div>User: <b>{{ citizen_username }}</b> · Pass: <b>{{ citizen_password }}</b></div>
+        <button type="button" class="btn btn-outline" style="width:100%; margin-top:8px; padding:6px; font-size:0.74rem;" onclick="fillCitizenDemo()">
+          ⚡ Auto-fill Demo Citizen
+        </button>
+      </div>
+
+      <div style="text-align:center; margin-top:20px; display:flex; justify-content:center; gap:16px;">
+        <a href="/citizen" style="color:var(--text-muted); font-size:0.78rem; text-decoration:none;">← Public Challan Search</a>
+        <span style="color:rgba(255,255,255,0.2);">·</span>
+        <a href="/login" style="color:var(--saffron); font-size:0.78rem; text-decoration:none;">Officer Login →</a>
+      </div>
+    </div>
   </div>
+
+  <script>
+    function fillCitizenDemo() {
+      document.getElementById('c-user').value = '{{ citizen_username }}';
+      document.getElementById('c-pass').value = '{{ citizen_password }}';
+      document.getElementById('citizen-form').submit();
+    }
+  </script>
 </body>
 </html>

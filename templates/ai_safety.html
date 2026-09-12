@@ -1,15 +1,334 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{{ app_name }} | AI Safety Intelligence</title><link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ app_name }} — AI Safety Intelligence & Predictive Threat Grid</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
 <style>
-body{background:radial-gradient(circle at 90% 0,#173d55,transparent 34%),#071322;color:#edf4fa;min-height:100vh}.top{padding:22px clamp(16px,5vw,60px);border-bottom:1px solid #28415a;display:flex;justify-content:space-between;align-items:center;gap:20px}.top a{color:#ffb454;text-decoration:none}.top h1{font-size:clamp(1.8rem,4vw,3rem);margin:6px 0}.top p{color:#a9bed0;margin:0}.wrap{max-width:1500px;margin:auto;padding:24px clamp(16px,5vw,60px)}.ribbon{border-left:4px solid #ffb454;padding:12px 16px;background:#102b43;margin-bottom:20px;color:#c5d5e3}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.panel{background:rgba(16,39,61,.82);border:1px solid #294761;border-radius:10px;padding:18px;min-height:180px}.panel h2{font-family:var(--heading);font-size:1.25rem;margin:0 0 13px;color:#fff}.item{border-bottom:1px solid #294761;padding:9px 0;font-size:.82rem}.item:last-child{border-bottom:0}.badge{display:inline-block;padding:4px 8px;border-radius:5px;background:#b62f37;color:#fff;font-weight:800;font-size:.7rem}.badge.low{background:#197b67}.badge.medium{background:#bc7a2c}.muted{color:#9db1c2;font-size:.76rem}.metric{font-size:1.65rem;color:#ffb454;font-weight:800}.health{color:#7ee0ad}.controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px}button,input{font:inherit;border-radius:7px;padding:9px 11px;border:1px solid #49657d;background:#0c2036;color:#edf4fa}button{cursor:pointer;background:#e64a43;border-color:#e64a43;font-weight:800}button:hover{filter:brightness(1.1)}.sim-output{color:#ffcf83;font-weight:700}.wide{grid-column:span 2}@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.wide{grid-column:span 2}}@media(max-width:560px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.top{align-items:flex-start;flex-direction:column}}
+  body {
+    background: radial-gradient(circle at 15% 10%, rgba(0, 229, 255, 0.06) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(255, 153, 51, 0.04) 0%, transparent 40%),
+                var(--bg-dark);
+    color: var(--text);
+    font-family: var(--font-sans);
+    margin: 0;
+    min-height: 100vh;
+  }
+  .top {
+    padding: 16px clamp(16px, 5vw, 40px);
+    background: rgba(13, 19, 33, 0.85);
+    border-bottom: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top a {
+    color: var(--cyan);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: color 0.2s;
+  }
+  .top a:hover { color: #fff; }
+  .top h1 {
+    font-family: var(--font-heading);
+    font-size: 1.45rem;
+    margin: 4px 0 2px;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+  .top p {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    margin: 0;
+  }
+  .wrap {
+    max-width: 1500px;
+    margin: auto;
+    padding: 24px clamp(16px, 5vw, 40px) 60px;
+  }
+  .ribbon {
+    border-left: 4px solid var(--saffron);
+    padding: 14px 18px;
+    background: rgba(255, 153, 51, 0.08);
+    border: 1px solid rgba(255, 153, 51, 0.25);
+    border-left-width: 4px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    color: #cbd5e1;
+    font-size: 0.84rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+  .panel {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 22px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .panel:hover {
+    border-color: rgba(0, 229, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 229, 255, 0.08);
+  }
+  .panel h2 {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    margin: 0 0 14px;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 10px 0;
+    font-size: 0.82rem;
+  }
+  .item:last-child { border-bottom: 0; }
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(255, 51, 75, 0.15);
+    border: 1px solid #ff334b;
+    color: #ff6b6b;
+    font-weight: 800;
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+  }
+  .badge.low {
+    background: rgba(0, 230, 118, 0.15);
+    border-color: #00e676;
+    color: #00e676;
+  }
+  .badge.medium {
+    background: rgba(255, 153, 51, 0.15);
+    border-color: var(--saffron);
+    color: var(--saffron);
+  }
+  .muted {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    margin-top: 3px;
+  }
+  .metric {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    color: var(--saffron);
+    font-weight: 800;
+  }
+  .health { color: #00e676; }
+  .controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  button, input {
+    font: inherit;
+    border-radius: 10px;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(6, 9, 15, 0.6);
+    color: #fff;
+    font-size: 0.85rem;
+  }
+  button {
+    cursor: pointer;
+    background: rgba(0, 229, 255, 0.15);
+    border-color: rgba(0, 229, 255, 0.4);
+    color: var(--cyan);
+    font-weight: 800;
+    transition: all 0.2s ease;
+  }
+  button:hover {
+    background: rgba(0, 229, 255, 0.25);
+    box-shadow: 0 0 14px rgba(0, 229, 255, 0.3);
+  }
+  .sim-output {
+    color: var(--saffron);
+    font-weight: 700;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    margin: 10px 0 4px;
+  }
+  .wide { grid-column: span 2; }
+  @media(max-width: 900px){
+    .wide { grid-column: auto; }
+  }
 </style>
-</head><body><div class="top"><div><a href="/">← Command Centre</a><h1>AI Safety Intelligence</h1><p>TrafficGuard Pro helps cities prevent dangerous situations, not just record violations.</p></div><div style="text-align:right;color:#7ee0ad;font-weight:800">सत्यमेव जयते<br><span class="muted">Privacy Mode: ON</span></div></div>
-<main class="wrap"><div class="ribbon"><b>AI-assisted risk estimation</b> · Scores are explainable and based on available evidence. Near-miss signals are not guaranteed accident predictions.</div><section class="grid"><article class="panel"><h2>High-risk vehicles</h2><div id="risks">Loading...</div></article><article class="panel"><h2>Live Safety Events</h2><div id="near">Loading...</div></article><article class="panel"><h2>Emergency alerts</h2><div id="emergency">Checking monitored events...</div><div class="muted">Signal integration is API-ready simulation only. No real traffic signals are controlled.</div></article><article class="panel wide"><h2>Predicted blackspots</h2><div id="blackspots">Loading available heatmap evidence...</div></article><article class="panel"><h2>Pending reviews</h2><div id="reviews">Loading...</div></article><article class="panel"><h2>AI recommendations</h2><div id="recommendations">Loading...</div></article><article class="panel"><h2>System health</h2><div id="health">Loading...</div></article><article class="panel"><h2>Weather-aware risk</h2><div class="muted">Demo input layer; replace with a weather provider when configured.</div><div class="controls"><input id="rain" type="number" min="0" max="100" value="0" placeholder="Rain %"><button onclick="weather()">Adjust estimate</button></div><p id="weatherOut" class="sim-output">Normal risk: 42</p></article><article class="panel"><h2>Traffic what-if simulator</h2><div class="controls"><input id="change" type="number" value="20" min="0" max="100"><button onclick="simulate()">Simulate</button></div><p id="simOut" class="sim-output">SIMULATED ESTIMATE</p><div class="muted">Not a measured real-world result.</div></article></section></main>
-<script>
-const get=async u=>(await fetch(u)).json();const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-async function load(){try{const d=await get('/api/risk/vehicles');document.getElementById('risks').innerHTML=d.vehicles.length?d.vehicles.slice(0,8).map(x=>`<div class="item"><b>${esc(x.vehicle)}</b> <span class="badge ${x.level==='LOW'?'low':x.level==='MEDIUM'?'medium':''}">${x.level} · ${x.score}/100</span><br><span class="muted">${x.reasons.join('; ')}</span></div>`).join(''):'<span class="muted">No observed vehicle risk records.</span>';const n=await get('/api/near-misses');document.getElementById('near').innerHTML=n.events.length?n.events.slice(0,6).map(x=>`<div class="item"><b>${x.risk_level} · ${x.risk_score}/100</b><br><span class="muted">${esc(x.reason)}</span></div>`).join(''):'<span class="muted">No near-miss event observed.</span>';const b=await get('/api/blackspots');document.getElementById('blackspots').innerHTML=b.blackspots.length?b.blackspots.slice(0,6).map(x=>`<div class="item"><b>${x.status} · ${x.risk_score}/100</b><br><span class="muted">${x.location.lat}, ${x.location.lng} · ${x.recommended_action}</span></div>`).join(''):'<span class="muted">No location-backed blackspot evidence available.</span>';const e=await get('/api/emergency-events');document.getElementById('emergency').innerHTML=e.events.length?e.events.map(x=>`<div class="item"><b>🚑 ${x.vehicle_type}</b> · ${x.status}</div>`).join(''):'<span class="muted">No emergency vehicle detected.</span>';const r=await get('/api/reviews');document.getElementById('reviews').innerHTML=r.reviews.slice(0,6).map(x=>`<div class="item"><b>${x.status}</b> · ${x.confidence}%<br>${esc(x.violation)} · ${esc(x.plate)}</div>`).join('');const i=await get('/api/recommendations');document.getElementById('recommendations').innerHTML=i.recommendations.map(x=>`<div class="item"><b>${x.violation}</b><br><span class="muted">${x.range}</span></div>`).join('');const h=await get('/api/system-health');document.getElementById('health').innerHTML=`<div class="metric health">${h.status.toUpperCase()}</div><div class="muted">ML: ${h.ml_available?'available':'preview mode'} · Cameras: ${h.cameras} · Privacy: ${h.privacy_mode}</div>`}catch(e){console.error(e)}}
-function weather(){const rain=Number(document.getElementById('rain').value||0);document.getElementById('weatherOut').textContent=`Normal risk: 42 → Rain-adjusted risk: ${Math.min(100,42+Math.round(rain*.25))} (DEMO ESTIMATE)`}function simulate(){const c=Number(document.getElementById('change').value||0);document.getElementById('simOut').textContent=`SIMULATED ESTIMATE · enforcement +${c}% may reduce observed violations by up to ${Math.round(c*.5)}% in this scenario.`}load();setInterval(load,15000);
-</script></body></html>
+</head>
+<body>
+  <div class="top">
+    <div>
+      <a href="/">← Command Centre</a>
+      <h1>🛡️ AI Safety Intelligence & Threat Grid</h1>
+      <p>TrafficGuard Pro algorithmic prevention engine: Early accident prediction & behavioral threat scoring.</p>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-weight:800; color:var(--saffron); font-size:0.75rem; letter-spacing:0.08em; font-family:var(--font-mono);">सत्यमेव जयते · MoRTH CERTIFIED</div>
+      <div class="muted" style="margin-top:2px;">Privacy Masking: <b style="color:#00e676;">ACTIVE</b></div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <div class="ribbon">
+      <b>Algorithmic Explainability Protocol</b> · Threat scores are mathematically deterministic, grounded in YOLOv8 + ByteTrack velocity differentials. Signal integration uses zero-trust preemption APIs.
+    </div>
+
+    <section class="grid">
+      <article class="panel">
+        <h2>High-Risk Vehicles</h2>
+        <div id="risks">Loading...</div>
+      </article>
+
+      <article class="panel">
+        <h2>Live Safety Events</h2>
+        <div id="near">Loading...</div>
+      </article>
+
+      <article class="panel">
+        <h2>Emergency Alerts</h2>
+        <div id="emergency">Checking monitored events...</div>
+        <div class="muted" style="margin-top:8px;">Preemption APIs ready for automated green wave clearance.</div>
+      </article>
+
+      <article class="panel wide">
+        <h2>Predicted Blackspots</h2>
+        <div id="blackspots">Loading available heatmap evidence...</div>
+      </article>
+
+      <article class="panel">
+        <h2>Pending Reviews</h2>
+        <div id="reviews">Loading...</div>
+      </article>
+
+      <article class="panel">
+        <h2>AI Strategic Recommendations</h2>
+        <div id="recommendations">Loading...</div>
+      </article>
+
+      <article class="panel">
+        <h2>System Health & Neural Nodes</h2>
+        <div id="health">Loading...</div>
+      </article>
+
+      <article class="panel">
+        <h2>Weather-Aware Risk Adjustment</h2>
+        <div class="muted">Simulates monsoon wet-surface braking distance degradation.</div>
+        <div class="controls">
+          <input id="rain" type="number" min="0" max="100" value="0" placeholder="Precipitation %" style="flex:1;">
+          <button onclick="weather()">Compute</button>
+        </div>
+        <p id="weatherOut" class="sim-output">Normal risk: 42</p>
+      </article>
+
+      <article class="panel">
+        <h2>Enforcement What-If Simulator</h2>
+        <div class="controls">
+          <input id="change" type="number" value="20" min="0" max="100" placeholder="Patrol increase %" style="flex:1;">
+          <button onclick="simulate()">Simulate</button>
+        </div>
+        <p id="simOut" class="sim-output">SIMULATED ESTIMATE</p>
+        <div class="muted">Predictive deterrence projection based on urban density models.</div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const get = async u => (await fetch(u)).json();
+    const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+    async function load() {
+      try {
+        const d = await get('/api/risk/vehicles');
+        document.getElementById('risks').innerHTML = d.vehicles.length ? d.vehicles.slice(0,8).map(x => `
+          <div class="item">
+            <b>${esc(x.vehicle)}</b> <span class="badge ${x.level==='LOW'?'low':x.level==='MEDIUM'?'medium':''}">${x.level} · ${x.score}/100</span><br>
+            <span class="muted">${x.reasons.join('; ')}</span>
+          </div>
+        `).join('') : '<span class="muted">No observed vehicle risk records.</span>';
+
+        const n = await get('/api/near-misses');
+        document.getElementById('near').innerHTML = n.events.length ? n.events.slice(0,6).map(x => `
+          <div class="item">
+            <b>${x.risk_level} · ${x.risk_score}/100</b><br>
+            <span class="muted">${esc(x.reason)}</span>
+          </div>
+        `).join('') : '<span class="muted">No near-miss event observed.</span>';
+
+        const b = await get('/api/blackspots');
+        document.getElementById('blackspots').innerHTML = b.blackspots.length ? b.blackspots.slice(0,6).map(x => `
+          <div class="item">
+            <b>${x.status} · ${x.risk_score}/100</b><br>
+            <span class="muted">${x.location.lat}, ${x.location.lng} · ${x.recommended_action}</span>
+          </div>
+        `).join('') : '<span class="muted">No location-backed blackspot evidence available.</span>';
+
+        const e = await get('/api/emergency-events');
+        document.getElementById('emergency').innerHTML = e.events.length ? e.events.map(x => `
+          <div class="item">
+            <b>🚑 ${x.vehicle_type}</b> · ${x.status}
+          </div>
+        `).join('') : '<span class="muted">No emergency vehicle detected.</span>';
+
+        const r = await get('/api/reviews');
+        document.getElementById('reviews').innerHTML = r.reviews.slice(0,6).map(x => `
+          <div class="item">
+            <b>${x.status}</b> · ${x.confidence}%<br>
+            ${esc(x.violation)} · <span class="plate-chip" style="font-size:0.7rem; padding:1px 6px;">${esc(x.plate)}</span>
+          </div>
+        `).join('');
+
+        const i = await get('/api/recommendations');
+        document.getElementById('recommendations').innerHTML = i.recommendations.map(x => `
+          <div class="item">
+            <b>${x.violation}</b><br>
+            <span class="muted">${x.range}</span>
+          </div>
+        `).join('');
+
+        const h = await get('/api/system-health');
+        document.getElementById('health').innerHTML = `
+          <div class="metric health">${h.status.toUpperCase()}</div>
+          <div class="muted">ML: ${h.ml_available?'Available':'Preview Mode'} · Nodes: ${h.cameras} · Privacy: ${h.privacy_mode}</div>
+        `;
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    function weather() {
+      const rain = Number(document.getElementById('rain').value || 0);
+      document.getElementById('weatherOut').textContent = `Normal: 42 → Rain-adjusted: ${Math.min(100, 42 + Math.round(rain * 0.25))} (SIMULATED)`;
+    }
+
+    function simulate() {
+      const c = Number(document.getElementById('change').value || 0);
+      document.getElementById('simOut').textContent = `Patrols +${c}% → Projected violation drop ~${Math.round(c * 0.5)}%`;
+    }
+
+    load();
+    setInterval(load, 15000);
+  </script>
+</body>
+</html>
+

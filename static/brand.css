@@ -1,538 +1,883 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Poppins:wght@500;600;700;800&display=swap');
+/* ═══════════════════════════════════════════════════════════════════════════════
+   🚦 TRAFFICGUARD PRO — NEXT-GENERATION DESIGN SYSTEM & DESIGN ENGINE
+   Inspirations:
+   • Typography: FontPair.co (Plus Jakarta Sans + Outfit + Inter + JetBrains Mono)
+   • UI Craft & Glass: Godly.design & UI.watermelon.sh (Obsidian Void, Bento Grids, Hairline Borders)
+   • Motion & Micro-interactions: Dribbble Web-Animation (Liquid Shimmer, Radar Sweep, Spring Hover)
+   ═══════════════════════════════════════════════════════════════════════════════ */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..900&family=JetBrains+Mono:ital,wght@0,300..800;1,300..800&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ── DESIGN TOKENS & SYSTEM VARIABLES ── */
 :root {
-  /* Indian National & Traffic Palette */
+  /* Indian National Identity & Traffic Command Palette */
   --saffron: #ff9933;
-  --saffron-glow: rgba(255, 153, 51, 0.25);
-  --traffic-red: #e61c16;
-  --traffic-red-glow: rgba(230, 28, 22, 0.25);
-  --green: #138808;
-  --green-glow: rgba(19, 136, 8, 0.25);
-  --navy: #001a4d;
-  --navy-dark: #000e2b;
+  --saffron-light: #ffb86c;
+  --saffron-glow: rgba(255, 153, 51, 0.35);
+  --saffron-soft: rgba(255, 153, 51, 0.12);
+  
+  --traffic-red: #ff334b;
+  --traffic-red-light: #ff6b7d;
+  --traffic-red-glow: rgba(255, 51, 75, 0.35);
+  --traffic-red-soft: rgba(255, 51, 75, 0.12);
+  
+  --green: #00e676;
+  --green-light: #69f0ae;
+  --green-glow: rgba(0, 230, 118, 0.35);
+  --green-soft: rgba(0, 230, 118, 0.12);
+  
   --cyan: #00e5ff;
+  --cyan-light: #80f4ff;
+  --cyan-glow: rgba(0, 229, 255, 0.35);
+  --cyan-soft: rgba(0, 229, 255, 0.12);
+  
   --gold: #ffd700;
+  --gold-glow: rgba(255, 215, 0, 0.35);
+  --gold-soft: rgba(255, 215, 0, 0.12);
 
-  /* Dark Mode Defaults */
-  --bg: #070d18;
-  --bg-gradient: radial-gradient(circle at 85% 15%, rgba(0, 229, 255, 0.08), transparent 40%),
-                 radial-gradient(circle at 15% 85%, rgba(255, 153, 51, 0.06), transparent 40%),
-                 #070d18;
-  --surface: rgba(14, 23, 38, 0.85);
-  --surface-card: rgba(17, 30, 51, 0.75);
-  --surface-hover: rgba(26, 44, 76, 0.85);
-  --border: rgba(43, 67, 105, 0.5);
-  --border-focus: rgba(0, 229, 255, 0.6);
-  --text: #f0f4f8;
-  --text-muted: #8fa0b5;
-  --text-dim: #5c6f84;
-  --shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  /* Deep Architectural Obsidian with Cyberpunk Flair */
+  --bg-dark: #040609;
+  --bg-deep: #080c16;
+  --bg-card: rgba(10, 16, 28, 0.65);
+  --bg-card-hover: rgba(14, 22, 38, 0.85);
+  --bg-panel: rgba(8, 12, 22, 0.75);
+  --bg-elevated: #0f172a;
 
-  --font-heading: 'Poppins', sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --border: rgba(0, 229, 255, 0.15);
+  --border-light: rgba(0, 229, 255, 0.25);
+  --border-cyan: rgba(0, 229, 255, 0.5);
+  --border-saffron: rgba(255, 153, 51, 0.4);
+
+  --text: #e2e8f0;
+  --text-primary: #ffffff;
+  --text-muted: #94a3b8;
+  --text-dim: #475569;
+  --text-sub: #334155;
+
+  /* Specular Highlights & Cyberpunk Elevations */
+  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), inset 0 0 20px rgba(0, 229, 255, 0.05);
+  --glass-highlight-subtle: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 12px 32px -4px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 229, 255, 0.1);
+  --shadow-lg: 0 24px 60px -12px rgba(0, 0, 0, 0.9), 0 0 1px 1px rgba(0, 229, 255, 0.2);
+  --shadow-glow-cyan: 0 0 30px -2px rgba(0, 229, 255, 0.4);
+  --shadow-glow-saffron: 0 0 30px -2px rgba(255, 153, 51, 0.3);
+
+  /* Typography Stack: High-character display + Monospace utility */
+  --font-display: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --font-numeric: 'JetBrains Mono', monospace;
+
+  /* Architectural Grounding: Solid tone with precision hairline grid */
+  --bg-ambient: #070a12;
+
+  /* Precision Engineering Grid Texture */
+  --cyber-grid: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+               linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }
 
+/* Light Mode Overrides */
 [data-theme="light"] {
-  --bg: #f4f7fb;
-  --bg-gradient: linear-gradient(180deg, #edf2f7 0%, #f7fafc 100%);
-  --surface: rgba(255, 255, 255, 0.92);
-  --surface-card: rgba(255, 255, 255, 0.85);
-  --surface-hover: rgba(240, 244, 250, 0.95);
-  --border: rgba(200, 214, 229, 0.8);
-  --border-focus: rgba(0, 102, 204, 0.8);
-  --text: #0b1a30;
-  --text-muted: #4a5d78;
-  --text-dim: #8294aa;
-  --shadow: 0 10px 30px rgba(11, 26, 48, 0.08);
+  --bg-dark: #f8fafc;
+  --bg-deep: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-panel: #ffffff;
+  --bg-elevated: #ffffff;
+
+  --border: rgba(148, 163, 184, 0.28);
+  --border-light: rgba(148, 163, 184, 0.4);
+  --border-cyan: rgba(0, 153, 204, 0.45);
+  --border-saffron: rgba(230, 115, 0, 0.45);
+
+  --text: #0f172a;
+  --text-primary: #020617;
+  --text-muted: #475569;
+  --text-dim: #64748b;
+  --text-sub: #94a3b8;
+
+  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 12px 28px -4px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 24px 50px -12px rgba(15, 23, 42, 0.12);
+
+  --bg-ambient: #f8fafc;
 }
 
-* {
+/* ── RESET & BASELINE ── */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html {
+  font-size: 15px;
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--bg-gradient);
+  background: var(--bg-ambient);
+  background-color: var(--bg-dark);
   background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-body);
   min-height: 100vh;
-  line-height: 1.5;
-  transition: background 0.3s ease, color 0.3s ease;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  transition: background 0.35s ease, color 0.35s ease;
 }
 
+/* ── TYPOGRAPHY HIERARCHY (FontPair.co style) ── */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.028em;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+h1 { font-size: clamp(1.8rem, 3.2vw, 2.7rem); }
+h2 { font-size: clamp(1.4rem, 2.2vw, 1.9rem); font-weight: 700; }
+h3 { font-size: clamp(1.1rem, 1.5vw, 1.35rem); font-weight: 700; }
+h4 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.015em; }
+
+p {
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  letter-spacing: -0.006em;
+}
+
+code, pre, .mono-data {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+/* Micro-label style */
+.micro-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
 }
 
-/* ── TRICOLOR ACCENT ── */
+/* ── TRICOLOR IDENTITY ACCENT ── */
 .tricolor-stripe {
-  height: 4px;
-  background: linear-gradient(90deg, var(--saffron) 0%, var(--saffron) 33.3%, #ffffff 33.3%, #ffffff 66.6%, var(--green) 66.6%, var(--green) 100%);
+  height: 3px;
+  background: linear-gradient(90deg, 
+    var(--saffron) 0%, 
+    var(--saffron) 33.3%, 
+    #ffffff 33.3%, 
+    #ffffff 66.6%, 
+    var(--green) 66.6%, 
+    var(--green) 100%);
   width: 100%;
+  position: relative;
+  z-index: 1010;
+  box-shadow: 0 0 16px rgba(255, 153, 51, 0.4), 0 0 20px rgba(0, 230, 118, 0.3);
 }
 
-/* ── GLASSMORPHISM ── */
+/* ── ULTRA-REFINED GLASSMORPHISM (Godly.design & UI.watermelon) ── */
 .glass-panel {
-  background: var(--surface);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
+  border-radius: 18px;
+  box-shadow: var(--shadow-md), var(--glass-highlight);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card {
-  background: var(--surface-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100%;
+  background: var(--glass-highlight);
+  pointer-events: none;
+  border-radius: 20px;
 }
 
 .glass-card:hover {
-  border-color: var(--border-focus);
   transform: translateY(-2px);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-cyan);
+  border-color: var(--border-cyan);
+  background: var(--bg-card-hover);
 }
 
-/* ── BADGES & CHIPS ── */
+.glass-card-interactive {
+  cursor: pointer;
+}
+
+.glass-card-interactive:active {
+  transform: translateY(-1px) scale(0.995);
+}
+
+/* ── BENTO GRID SYSTEM (Godly style) ── */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  width: 100%;
+}
+
+.bento-col-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .bento-col-span-2 {
+    grid-column: span 1;
+  }
+}
+
+/* ── RADAR & SCANNER ANIMATIONS (Dribbble Web-Animation) ── */
+@keyframes radarSweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+@keyframes pulseRipple {
+  0% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7);
+  }
+  70% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 10px rgba(0, 230, 118, 0);
+  }
+  100% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
+  }
+}
+
+@keyframes pulseRippleRed {
+  0% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(255, 51, 75, 0.75);
+  }
+  70% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 10px rgba(255, 51, 75, 0);
+  }
+  100% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(255, 51, 75, 0);
+  }
+}
+
+@keyframes shimmerFlow {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── LIVE PULSING BEACONS ── */
+.pulse-dot, .pulse-beacon {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--green);
+  display: inline-block;
+  animation: pulseRipple 1.9s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  position: relative;
+}
+
+.pulse-dot.danger, .pulse-beacon.danger {
+  background: var(--traffic-red);
+  animation: pulseRippleRed 1.6s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.pulse-dot.warning, .pulse-beacon.warning {
+  background: var(--saffron);
+  box-shadow: 0 0 10px var(--saffron);
+}
+
+.pulse-dot.cyan, .pulse-beacon.cyan {
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan);
+}
+
+/* ── STATUS PILLS & BADGES ── */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   font-size: 0.72rem;
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
-  letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.25s ease;
+}
+
+.badge-live {
+  background: rgba(0, 230, 118, 0.12);
+  border: 1px solid rgba(0, 230, 118, 0.38);
+  color: var(--green);
 }
 
 .badge-red {
-  background: rgba(230, 28, 22, 0.15);
-  border: 1px solid rgba(230, 28, 22, 0.4);
-  color: #ff5252;
+  background: rgba(255, 51, 75, 0.12);
+  border: 1px solid rgba(255, 51, 75, 0.38);
+  color: var(--traffic-red-light);
 }
 
-.badge-orange {
-  background: rgba(255, 153, 51, 0.15);
-  border: 1px solid rgba(255, 153, 51, 0.4);
-  color: #ffab40;
+.badge-orange, .badge-saffron {
+  background: rgba(255, 153, 51, 0.12);
+  border: 1px solid rgba(255, 153, 51, 0.38);
+  color: var(--saffron);
 }
 
 .badge-green {
-  background: rgba(19, 136, 8, 0.15);
-  border: 1px solid rgba(19, 136, 8, 0.4);
+  background: rgba(0, 230, 118, 0.12);
+  border: 1px solid rgba(0, 230, 118, 0.38);
   color: #00e676;
 }
 
-.badge-blue {
+.badge-blue, .badge-cyan {
   background: rgba(0, 229, 255, 0.12);
-  border: 1px solid rgba(0, 229, 255, 0.4);
-  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.38);
+  color: var(--cyan);
 }
 
 .badge-gold {
-  background: rgba(255, 215, 0, 0.15);
-  border: 1px solid rgba(255, 215, 0, 0.4);
-  color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.38);
+  color: var(--gold);
 }
 
-/* ── BUTTONS ── */
+/* ── AUTHENTIC INDIAN LICENSE PLATE CHIP (High-Security Registration Plate - HSRP) ── */
+.plate-chip {
+  font-family: var(--font-mono);
+  background: linear-gradient(180deg, #0d1527 0%, #030712 100%);
+  border: 1.5px solid #facc15;
+  color: #fef08a;
+  font-weight: 800;
+  font-size: 0.94rem;
+  padding: 4px 12px 4px 36px;
+  border-radius: 6px;
+  letter-spacing: 0.12em;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  user-select: all;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.plate-chip:hover {
+  border-color: #fde047;
+  box-shadow: 0 6px 20px rgba(250, 204, 21, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Blue retro-reflective IND country strip with hologram imprint */
+.plate-chip::before {
+  content: "IND";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 26px;
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e3a8a 100%);
+  color: #93c5fd;
+  font-size: 0.48rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  letter-spacing: 0.05em;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Chromium Security Hologram Dot */
+.plate-chip::after {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #60a5fa 30%, #2563eb 100%);
+  box-shadow: 0 0 4px #93c5fd;
+}
+
+/* Commercial Vehicle (Yellow) Variant */
+.plate-chip.commercial {
+  background: linear-gradient(180deg, #fef08a 0%, #eab308 100%);
+  border-color: #ca8a04;
+  color: #000000;
+}
+
+/* Electric Vehicle (Green) Variant */
+.plate-chip.ev {
+  background: linear-gradient(180deg, #052e16 0%, #022c22 100%);
+  border-color: #22c55e;
+  color: #86efac;
+}
+
+/* ── TACTICAL AEROSPACE HUD FRAMES (Impeccable & Taste Skill) ── */
+.hud-frame {
+  position: relative;
+}
+
+.hud-frame::before,
+.hud-frame::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-frame::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--cyan);
+  border-left: 2px solid var(--cyan);
+}
+
+.hud-frame::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--cyan);
+  border-right: 2px solid var(--cyan);
+}
+
+/* ── PHYSICAL HARDWARE LED STATUS LIGHTS ── */
+.led-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.led-green {
+  background: #00e676;
+  box-shadow: 0 0 0 1px rgba(0, 230, 118, 0.4), 0 0 10px #00e676;
+}
+
+.led-red {
+  background: #ff334b;
+  box-shadow: 0 0 0 1px rgba(255, 51, 75, 0.4), 0 0 10px #ff334b;
+}
+
+.led-amber, .led-saffron {
+  background: #ff9933;
+  box-shadow: 0 0 0 1px rgba(255, 153, 51, 0.4), 0 0 10px #ff9933;
+}
+
+.led-cyan {
+  background: #00e5ff;
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.4), 0 0 10px #00e5ff;
+}
+
+/* ── TACTILE MODERN BUTTONS (TasteSkill Sheen & Impeccable Scale) ── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 9px 18px;
-  border-radius: 8px;
-  font-family: var(--font-heading);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-family: var(--font-display);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+  letter-spacing: -0.01em;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* TasteSkill Micro-sheen reflection sweep on hover */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+  pointer-events: none;
+}
+
+.btn:hover::before {
+  transform: translateX(100%);
+}
+
+.btn:active {
+  transform: scale(0.97) translateY(1px);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #e61c16, #ff453a);
+  background: #e11d48;
   color: #ffffff;
-  box-shadow: 0 4px 14px var(--traffic-red-glow);
+  border: 1px solid #f43f5e;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.35);
 }
 
 .btn-primary:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+  background: #be123c;
+  border-color: #fda4af;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.45);
+  transform: translateY(-2px);
 }
 
 .btn-saffron {
-  background: linear-gradient(135deg, #ff9933, #ff7700);
+  background: #ea580c;
   color: #ffffff;
-  box-shadow: 0 4px 14px var(--saffron-glow);
+  border: 1px solid #f97316;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35);
 }
 
 .btn-saffron:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+  background: #c2410c;
+  border-color: #fdba74;
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-cyan {
+  background: #00d2eb;
+  color: #04101e;
+  font-weight: 800;
+  border: 1px solid #38bdf8;
+  box-shadow: 0 2px 8px rgba(0, 210, 235, 0.35);
+}
+
+.btn-cyan:hover {
+  background: #00b4cc;
+  box-shadow: 0 4px 14px rgba(0, 210, 235, 0.45);
+  transform: translateY(-2px);
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #138808, #00c853);
+  background: #059669;
   color: #ffffff;
-  box-shadow: 0 4px 14px var(--green-glow);
+  font-weight: 800;
+  border: 1px solid #10b981;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);
+}
+
+.btn-success:hover {
+  background: #047857;
+  transform: translateY(-2px);
 }
 
 .btn-outline {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text);
   border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--glass-highlight-subtle);
 }
 
 .btn-outline:hover {
   border-color: var(--cyan);
   color: var(--cyan);
-  background: rgba(0, 229, 255, 0.05);
+  background: rgba(0, 229, 255, 0.08);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.15), var(--glass-highlight-subtle);
+  transform: translateY(-1px);
 }
 
-/* ── NUMBER PLATE DISPLAY ── */
-.plate-chip {
+/* ── FORM INPUTS & SELECTS ── */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+  background: rgba(8, 14, 26, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  padding: 11px 16px;
+  outline: none;
+  transition: all 0.22s ease;
+  width: 100%;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--cyan);
+  background: rgba(10, 18, 34, 0.95);
+  box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.18), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ── KPI METRICS CARDS (Godly bento aesthetic) ── */
+.kpi-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 22px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm), var(--glass-highlight);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), transparent 70%);
+  opacity: 0.8;
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-cyan);
+  box-shadow: var(--shadow-md), 0 0 24px rgba(0, 229, 255, 0.12), var(--glass-highlight);
+}
+
+.kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-muted);
   font-family: var(--font-mono);
-  background: #000e2b;
-  border: 2px solid var(--saffron);
-  color: var(--saffron);
+  font-size: 0.72rem;
   font-weight: 700;
-  font-size: 0.95rem;
-  padding: 4px 10px;
-  border-radius: 6px;
-  letter-spacing: 0.1em;
-  display: inline-block;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-/* ── PULSE ANIMATION FOR LIVE FEEDS ── */
-@keyframes pulse-live {
-  0% { transform: scale(0.95); opacity: 0.7; }
-  50% { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 6px #00e5ff); }
-  100% { transform: scale(0.95); opacity: 0.7; }
+.kpi-value {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 10px 0 4px;
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.03em;
+  text-shadow: 0 0 24px rgba(0, 229, 255, 0.15);
 }
 
-.pulse-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #00e676;
-  display: inline-block;
-  animation: pulse-live 1.8s infinite;
+.kpi-footer {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.pulse-dot.danger {
-  background: #ff3b30;
-}
-
-/* ── OPERATIONS GRID VISUAL SYSTEM ─────────────────────────── */
+/* ── COMMAND CENTRE TOPBAR & NAVIGATION ── */
 body.command-shell,
 body.intelligence-shell,
 body.map-shell,
 body.citizen-shell {
-  --grid-line: rgba(0, 229, 255, 0.055);
-  --panel: rgba(12, 19, 33, 0.94);
-  --panel-raised: rgba(18, 28, 47, 0.94);
-  --cyan-soft: rgba(0, 229, 255, 0.12);
-  background-color: #070c16;
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
-    radial-gradient(circle at 80% 0%, rgba(0, 229, 255, 0.09), transparent 30%),
-    radial-gradient(circle at 20% 100%, rgba(255, 153, 51, 0.07), transparent 26%);
-  background-size: 32px 32px, 32px 32px, auto, auto;
-  letter-spacing: 0.01em;
+  background-color: var(--bg-dark);
+  background-image: var(--cyber-grid), var(--bg-ambient);
+  background-size: 40px 40px, auto;
 }
 
-body.command-shell .tricolor-stripe,
-body.intelligence-shell .tricolor-stripe,
-body.map-shell .tricolor-stripe,
-body.citizen-shell .tricolor-stripe {
-  height: 3px;
-  box-shadow: 0 0 18px rgba(0, 229, 255, 0.22);
+.topbar, .intel-topbar, .top-nav {
+  background: rgba(6, 11, 22, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 12px 28px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4) !important;
 }
 
-body.command-shell .topbar,
-body.intelligence-shell .intel-topbar,
-body.map-shell .top-nav,
-body.citizen-shell > header {
-  background: rgba(6, 12, 23, 0.96);
-  border-color: rgba(0, 229, 255, 0.26);
-  box-shadow: 0 5px 22px rgba(0, 0, 0, 0.28);
+.brand-title {
+  font-family: var(--font-display) !important;
+  font-weight: 900 !important;
+  font-size: 1.35rem !important;
+  letter-spacing: -0.03em !important;
 }
 
-body.command-shell .brand-title,
-body.intelligence-shell .intel-brand-title,
-body.map-shell .top-nav div,
-body.citizen-shell > header div {
-  font-family: var(--font-mono);
-  letter-spacing: 0.04em;
+.brand-emblem {
+  filter: drop-shadow(0 0 10px rgba(255, 153, 51, 0.6));
+  animation: floatSoft 4s ease-in-out infinite;
 }
 
-body.command-shell .nav-tabs,
-body.intelligence-shell .intel-sidebar,
-body.map-shell .sidebar {
-  background: rgba(5, 11, 22, 0.97);
-  border-color: rgba(0, 229, 255, 0.24);
+/* Floating Nav Tabs (Pill style) */
+.nav-tabs {
+  background: rgba(6, 11, 22, 0.95) !important;
+  border-right: 1px solid var(--border) !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4) !important;
 }
 
-body.command-shell .nav-tab,
-body.intelligence-shell .sidebar-btn {
-  border-radius: 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
+.nav-tab {
+  font-family: var(--font-display) !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  margin: 2px 8px !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  border: 1px solid transparent !important;
 }
 
-@media (min-width: 761px) {
-  body.command-shell .nav-tabs {
-    top: 245px !important;
-  }
-  body.command-shell .tab-content {
-    padding-top: 18px;
-  }
+.nav-tab:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-primary) !important;
+  transform: translateX(3px);
 }
 
-body.command-shell .nav-tab.active,
-body.intelligence-shell .sidebar-btn.active {
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.16), transparent);
-  color: var(--cyan);
-  border-color: var(--cyan);
-  box-shadow: inset 3px 0 var(--cyan), 0 0 16px rgba(0, 229, 255, 0.08);
+.nav-tab.active {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.16), rgba(0, 229, 255, 0.04)) !important;
+  color: var(--cyan) !important;
+  border-color: rgba(0, 229, 255, 0.35) !important;
+  box-shadow: 0 4px 20px rgba(0, 229, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
-body.command-shell .kpi-card,
-body.command-shell .glass-card,
-body.command-shell .video-viewport,
-body.command-shell .violation-card,
-body.intelligence-shell .intel-card,
-body.map-shell .sidebar,
-body.citizen-shell .glass-card,
-body.citizen-shell .modal-window {
-  background: var(--panel);
-  border: 1px solid rgba(84, 119, 151, 0.44);
-  border-radius: 3px;
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025), 0 14px 30px rgba(0, 0, 0, 0.22);
-}
-
-body.command-shell .kpi-card,
-body.intelligence-shell .intel-card {
-  position: relative;
+/* ── VIDEO VIEWPORT HUD SCANNER ── */
+.video-viewport {
+  border-radius: 16px !important;
   overflow: hidden;
+  border: 1px solid var(--border-cyan) !important;
+  box-shadow: 0 0 35px rgba(0, 229, 255, 0.15), var(--shadow-lg) !important;
+  position: relative;
 }
 
-body.command-shell .kpi-card::before,
-body.intelligence-shell .intel-card::before,
-body.citizen-shell .glass-card::before {
+.video-viewport::after {
   content: "";
   position: absolute;
-  inset: 0 0 auto;
+  top: 0; left: 0; right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--cyan), transparent 70%);
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  box-shadow: 0 0 12px var(--cyan);
   opacity: 0.7;
+  pointer-events: none;
+  animation: scanline 6s linear infinite;
 }
 
-body.command-shell .kpi-header,
-body.intelligence-shell .intel-card-title,
-body.command-shell .vcard-row,
-body.command-shell .ai-feed-item time {
+/* ── TABLES ENHANCEMENTS ── */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+table th {
   font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  background: rgba(10, 16, 28, 0.85);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
 }
 
-body.command-shell .kpi-value,
-body.intelligence-shell .intel-card-value {
-  font-family: var(--font-mono);
-  color: #eafcff;
-  text-shadow: 0 0 14px rgba(0, 229, 255, 0.22);
+table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+  color: var(--text);
+  transition: background 0.18s ease;
 }
 
-body.command-shell .btn,
-body.intelligence-shell .btn,
-body.map-shell .btn,
-body.citizen-shell .btn {
-  border-radius: 2px;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-}
-
-body.command-shell .btn-outline,
-body.intelligence-shell .btn-outline,
-body.map-shell .btn-outline,
-body.citizen-shell .btn-outline {
-  border-color: rgba(0, 229, 255, 0.38);
+table tr:hover td {
   background: rgba(0, 229, 255, 0.035);
 }
 
-body.command-shell .btn-primary,
-body.command-shell .btn-saffron,
-body.intelligence-shell .btn-primary,
-body.intelligence-shell .btn-saffron,
-body.citizen-shell .btn-saffron {
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.16);
+/* ── CUSTOM SCROLLBAR (Minimal sleek) ── */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
 }
 
-body.command-shell .video-view-grid {
-  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
-  gap: 12px;
+::-webkit-scrollbar-track {
+  background: rgba(6, 11, 20, 0.6);
 }
 
-body.command-shell .video-viewport {
-  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.16), 0 0 24px rgba(0, 0, 0, 0.35);
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 999px;
 }
 
-body.command-shell .video-controls,
-body.command-shell .kpi-grid,
-body.command-shell .tab-content {
-  gap: 10px;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan);
 }
 
-body.command-shell .kpi-grid {
-  padding-top: 14px;
+/* ── MODAL WINDOWS (Godly Spring Blur) ── */
+.modal-backdrop {
+  background: rgba(4, 7, 15, 0.82) !important;
+  backdrop-filter: blur(14px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
+  animation: fadeIn 0.2s ease;
 }
 
-body.command-shell .stage-step,
-body.command-shell .ai-feed-item,
-body.command-shell .chat-box,
-body.command-shell #heatmap-container {
-  border-radius: 2px;
-  background: rgba(2, 8, 16, 0.72);
+.modal-window {
+  background: rgba(14, 22, 38, 0.94) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08), var(--glass-highlight) !important;
+  animation: modalPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-body.citizen-shell {
-  --citizen-panel: rgba(12, 19, 33, 0.96);
-}
-
-body.citizen-shell > header {
-  min-height: 58px;
-  padding: 9px 24px !important;
-}
-
-body.citizen-shell .citizen-hero {
-  max-width: 1120px;
-  margin: 22px auto 0;
-  padding: 28px 28px 26px;
-  text-align: left;
-  border: 1px solid rgba(0, 229, 255, 0.24);
-  border-radius: 3px;
-  background: linear-gradient(135deg, rgba(11, 30, 48, 0.96), rgba(10, 16, 29, 0.96));
-  box-shadow: 0 0 36px rgba(0, 229, 255, 0.06);
-}
-
-body.citizen-shell .citizen-hero h1 {
-  max-width: 660px;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-body.citizen-shell .search-box-wrap {
-  margin: 20px 0 0;
-  max-width: 720px;
-}
-
-body.citizen-shell .search-input,
-body.citizen-shell input,
-body.citizen-shell select,
-body.map-shell input {
-  border-radius: 2px;
-  background: rgba(4, 10, 19, 0.82);
-  border-color: rgba(0, 229, 255, 0.32);
-  font-family: var(--font-mono);
-}
-
-body.citizen-shell .portal-container {
-  max-width: 1120px;
-  margin-top: 18px;
-}
-
-body.citizen-shell .portal-container > div:first-child {
-  grid-template-columns: repeat(3, 1fr) !important;
-  margin-bottom: 18px !important;
-}
-
-body.citizen-shell .portal-container > div:first-child .glass-card {
-  text-align: left !important;
-  min-height: 112px;
-  padding: 14px;
-}
-
-body.map-shell #map {
-  background: #07101d;
-  filter: saturate(0.72) brightness(0.72) contrast(1.08);
-}
-
-body.map-shell .top-nav {
-  height: 58px;
-}
-
-body.map-shell .sidebar {
-  top: 58px;
-  width: 300px;
-  padding: 14px;
-}
-
-body.map-shell #map {
-  top: 58px;
-  left: 300px;
-}
-
-body.map-shell .sidebar h3 {
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  color: var(--cyan);
-  letter-spacing: 0.04em;
-  font-size: 0.72rem;
-}
-
-body.map-shell .sidebar > div > div {
-  border-radius: 2px !important;
-  background: rgba(2, 8, 16, 0.7) !important;
-}
-
-body.intelligence-shell .intel-content {
-  padding: 16px;
-}
-
-body.intelligence-shell .intel-card,
-body.intelligence-shell .copilot-terminal {
-  border-radius: 3px;
-}
-
-@media (max-width: 760px) {
-  body.command-shell .nav-tabs {
-    top: 0 !important;
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
   }
-  body.citizen-shell .citizen-hero {
-    margin: 12px;
-    padding: 20px 16px;
-  }
-  body.citizen-shell .portal-container > div:first-child {
-    grid-template-columns: 1fr !important;
-  }
-  body.map-shell #map {
-    left: 0;
-    top: 280px;
-  }
-  body.map-shell .sidebar {
-    top: 58px;
-    width: 100%;
-    height: 222px;
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }

@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
   <style>
     body {
-      background: radial-gradient(circle at 50% 20%, #151d2a 0%, #0a0d14 100%);
+      background: var(--bg-dark);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -16,35 +16,38 @@
       font-family: var(--font-sans);
       color: var(--text);
       margin: 0;
-      padding: 20px;
+      padding: 24px;
     }
     .intel-login-box {
       width: 100%;
       max-width: 440px;
-      background: rgba(18, 24, 38, 0.85);
-      border: 1px solid rgba(0, 229, 255, 0.3);
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 229, 255, 0.1);
-      backdrop-filter: blur(16px);
+      background: rgba(13, 19, 33, 0.82);
+      border: 1px solid rgba(0, 229, 255, 0.28);
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 32px rgba(0, 229, 255, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       position: relative;
       overflow: hidden;
+      animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .intel-login-box::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #ff9933, #00e5ff, #00e676);
+      height: 3px;
+      background: linear-gradient(90deg, #00e5ff, #0077ff, #00e676);
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
     }
     .intel-header {
       text-align: center;
       margin-bottom: 24px;
     }
     .intel-logo {
-      font-size: 2.4rem;
+      font-size: 2.5rem;
       margin-bottom: 8px;
-      filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.4));
+      filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.5));
     }
     .intel-title {
       font-family: var(--font-heading);
@@ -53,97 +56,106 @@
       letter-spacing: -0.01em;
       color: #fff;
     }
-    .intel-title span { color: var(--cyan); }
+    .intel-title span {
+      background: linear-gradient(135deg, #00e5ff 0%, #0099ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
     .intel-sub {
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       color: var(--text-muted);
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       margin-top: 4px;
       font-weight: 600;
+      font-family: var(--font-mono);
     }
     .form-group {
       margin-bottom: 18px;
     }
     .form-label {
       display: block;
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       font-weight: 700;
       text-transform: uppercase;
       color: var(--text-muted);
       margin-bottom: 6px;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.04em;
     }
     .form-input {
       width: 100%;
       box-sizing: border-box;
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid var(--border);
+      background: rgba(6, 9, 15, 0.7);
+      border: 1px solid rgba(0, 229, 255, 0.2);
       color: #fff;
-      padding: 12px 14px;
-      border-radius: 8px;
+      padding: 13px 16px;
+      border-radius: 10px;
       font-family: var(--font-sans);
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       outline: none;
-      transition: all 0.2s;
+      transition: all 0.25s ease;
     }
     .form-input:focus {
       border-color: var(--cyan);
-      box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.35);
     }
     .btn-intel-submit {
       width: 100%;
-      background: linear-gradient(135deg, #0099ff, #00e5ff);
-      color: #000;
+      background: linear-gradient(135deg, #00e5ff 0%, #0077ff 100%);
+      color: #06090f;
       font-weight: 800;
       border: none;
-      padding: 12px;
-      border-radius: 8px;
+      padding: 14px;
+      border-radius: 10px;
       cursor: pointer;
-      font-size: 0.95rem;
-      letter-spacing: 0.02em;
-      transition: all 0.2s;
+      font-size: 0.92rem;
+      letter-spacing: 0.03em;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       margin-top: 8px;
     }
     .btn-intel-submit:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 18px rgba(0, 229, 255, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0, 229, 255, 0.45);
     }
     .btn-demo-quick {
       width: 100%;
-      background: rgba(255, 153, 51, 0.12);
-      border: 1px solid rgba(255, 153, 51, 0.4);
+      background: rgba(255, 153, 51, 0.1);
+      border: 1px solid rgba(255, 153, 51, 0.35);
       color: var(--saffron);
       font-weight: 700;
-      padding: 10px;
-      border-radius: 8px;
+      padding: 11px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 0.82rem;
-      margin-top: 10px;
-      transition: all 0.2s;
+      margin-top: 12px;
+      transition: all 0.25s ease;
     }
     .btn-demo-quick:hover {
-      background: rgba(255, 153, 51, 0.22);
+      background: rgba(255, 153, 51, 0.2);
       border-color: var(--saffron);
+      transform: translateY(-1px);
     }
     .intel-footer {
       margin-top: 24px;
       text-align: center;
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--text-dim);
     }
     .intel-footer a {
       color: var(--cyan);
       text-decoration: none;
+      transition: color 0.2s;
     }
-    .intel-footer a:hover { text-decoration: underline; }
+    .intel-footer a:hover {
+      color: #fff;
+    }
     .alert-error {
-      background: rgba(255, 82, 82, 0.12);
-      border: 1px solid #ff5252;
-      color: #ff5252;
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-size: 0.8rem;
+      background: rgba(255, 51, 75, 0.12);
+      border: 1px solid #ff334b;
+      color: #ff6b6b;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
       margin-bottom: 16px;
       text-align: center;
     }
@@ -155,7 +167,10 @@
     <div class="intel-header">
       <div class="intel-logo">🛡️</div>
       <div class="intel-title">TrafficGuard <span>Intelligence</span></div>
-      <div class="intel-sub">AI Traffic Intelligence & Operations Command</div>
+      <div class="intel-sub">AI Operations & Threat Grid Command</div>
+      <div class="badge badge-cyan" style="margin-top:10px; font-size:0.68rem; font-weight:700;">
+        <span class="pulse-dot"></span> SECURE OPERATOR ACCESS
+      </div>
     </div>
 
     {% if error %}
@@ -178,8 +193,8 @@
     </form>
 
     <div class="intel-footer">
-      <div style="margin-bottom:6px;">Restricted to Authorized Police & Intelligence Personnel</div>
-      <a href="/">← Return to Standard Officer Command Center</a> · <a href="/citizen">Citizen Portal</a>
+      <div style="margin-bottom:8px; color:var(--text-muted);">Restricted to Authorized Police & Intelligence Units</div>
+      <a href="/">← Standard Officer Command</a> · <a href="/citizen">Citizen Portal</a>
     </div>
   </div>
 
@@ -193,3 +208,4 @@
 
 </body>
 </html>
+

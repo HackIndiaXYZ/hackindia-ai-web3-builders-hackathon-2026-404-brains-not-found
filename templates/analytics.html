@@ -1,27 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>{{ app_name }} — Analytics</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<title>{{ app_name }} — AI Vision Analytics & Trend Intelligence</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg:        #080c10;
-    --surface:   #0d1117;
-    --surface2:  #111820;
-    --border:    #1c2a3a;
+    --bg:        #06090f;
+    --surface:   rgba(13, 19, 33, 0.85);
+    --surface2:  rgba(18, 26, 45, 0.7);
+    --border:    rgba(0, 229, 255, 0.16);
     --accent:    #00e5ff;
-    --red:       #ff2d55;
-    --green:     #00ff88;
-    --yellow:    #ffd60a;
+    --red:       #ff334b;
+    --green:     #00e676;
+    --yellow:    #ffd700;
     --purple:    #bf5af2;
-    --orange:    #ff9f0a;
-    --text:      #c9d1d9;
-    --muted:     #4a5568;
-    --font-ui:   'Rajdhani', sans-serif;
-    --font-mono: 'Share Tech Mono', monospace;
+    --orange:    #ff9933;
+    --text:      #e2e8f0;
+    --muted:     #94a3b8;
+    --font-ui:   var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+    --font-mono: var(--font-mono, 'JetBrains Mono', monospace);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
