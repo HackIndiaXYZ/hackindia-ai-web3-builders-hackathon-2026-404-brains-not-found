@@ -1,12 +1,3 @@
----
-title: TrafficGuard Pro
-emoji: 🚦
-colorFrom: red
-colorTo: orange
-sdk: docker
-pinned: true
----
-
 # 🚦 TrafficGuard Pro — AI Traffic Enforcement & Safety Command Grid
 ### *सत्यमेव जयते · AI for Road Safety & Transparent Governance*
 
@@ -24,7 +15,6 @@ pinned: true
 **Pawan Singh** — Founder & Full-Stack AI Engineer  
 - **Education:** B.Tech Computer Science & Engineering (CSE), Delhi Technical Campus (DTC), Greater Noida  
 - **University:** Guru Gobind Singh Indraprastha University (GGSIPU)  
-- **Academic Merit:** **9.16 CGPA** | Expected Graduation: **2028**  
 - **Email:** [pawan9140582015@gmail.com](mailto:pawan9140582015@gmail.com)  
 - **GitHub:** [github.com/pawan00207](https://github.com/pawan00207)  
 - **LinkedIn:** Pawan Singh  
