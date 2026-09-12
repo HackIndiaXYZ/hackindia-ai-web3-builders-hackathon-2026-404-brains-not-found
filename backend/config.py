@@ -32,13 +32,17 @@ CITIZEN_USERNAME    = os.environ.get("CITIZEN_USERNAME", "citizen")
 CITIZEN_PASSWORD    = os.environ.get("CITIZEN_PASSWORD", "citizen123")
 
 # Directories
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-REPORT_DIR = os.path.join(BASE_DIR, "static", "reports")
-SCREENSHOT_DIR = os.path.join(BASE_DIR, "static", "screenshots")
-CHALLAN_DIR = os.path.join(BASE_DIR, "static", "challans")
-RECEIPT_DIR = os.path.join(BASE_DIR, "static", "receipts")
-VIDEO_FOLDER = os.path.join(BASE_DIR, "videos")
-LOG_DIR = os.path.join(BASE_DIR, "logs")
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BACKEND_DIR)
+BASE_DIR = PROJECT_ROOT
+
+STATIC_DIR = os.path.join(PROJECT_ROOT, "frontend", "static") if os.path.isdir(os.path.join(PROJECT_ROOT, "frontend", "static")) else os.path.join(PROJECT_ROOT, "static")
+REPORT_DIR = os.path.join(STATIC_DIR, "reports")
+SCREENSHOT_DIR = os.path.join(STATIC_DIR, "screenshots")
+CHALLAN_DIR = os.path.join(STATIC_DIR, "challans")
+RECEIPT_DIR = os.path.join(STATIC_DIR, "receipts")
+VIDEO_FOLDER = os.path.join(PROJECT_ROOT, "videos")
+LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
 
 for d in [REPORT_DIR, SCREENSHOT_DIR, CHALLAN_DIR, RECEIPT_DIR, VIDEO_FOLDER, LOG_DIR]:
     os.makedirs(d, exist_ok=True)

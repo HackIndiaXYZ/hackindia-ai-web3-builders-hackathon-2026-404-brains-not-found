@@ -44,6 +44,7 @@
     .close { float:right; border:0; background:none; color:var(--muted); cursor:pointer; font-size:1.1rem; }
     .table { width:100%; border-collapse:collapse; font-size:.67rem; }.table th,.table td { text-align:left; padding:6px 3px; border-bottom:1px solid var(--line); }.table th { color:var(--muted); font-weight:600; }
     .arrow { font-size:18px; font-weight:bold; text-shadow:0 1px 5px #000; }
+    .leaflet-layer, .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-attribution { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
     @media(max-width:900px) { body { overflow:auto; }.workspace { position:relative; top:58px; min-height:calc(100vh - 58px); }.sidebar { position:relative; width:100%; max-height:none; }.workspace #map { position:relative; height:52vh; inset:auto; }.topbar { position:fixed; }.legend,.detail { position:absolute; }.actions a { display:none; } }
   </style>
 </head>
@@ -59,6 +60,7 @@
       <section class="panel"><h2>Layers & update rate</h2><div class="controls"><label class="control"><input type="checkbox" checked data-layer="traffic"> Traffic heatmap</label><label class="control"><input type="checkbox" checked data-layer="violations"> Violations</label><label class="control"><input type="checkbox" checked data-layer="flows"> Flow arrows</label><label class="control"><input type="checkbox" checked data-layer="predictions"> Risk zones</label></div><div style="display:flex;gap:7px;margin-top:10px;align-items:center"><select id="speed"><option value="500">0.5 sec</option><option value="1000">1 sec</option><option value="2000" selected>2 sec</option><option value="5000">5 sec</option></select><select id="severity"><option value="all">All severities</option><option value="high">High only</option><option value="medium">Medium only</option></select></div></section>
       <section class="panel"><h2>Top hotspots <span style="float:right;color:#ffb454" id="hotspot-count">0</span></h2><div id="hotspots" class="list"></div></section>
       <section class="panel"><h2>Recent violations</h2><div id="violations" class="feed"></div></section>
+      <section class="panel"><h2>Location Search</h2><div style="display:flex;gap:6px"><input id="searchLoc" placeholder="Search area..." class="btn btn-outline" style="flex:1;text-align:left;font-size:.75rem"><button class="btn btn-outline" onclick="searchLocation()" style="padding:6px 9px;font-size:.7rem">Find</button><button class="btn btn-outline" onclick="locateMe()" style="padding:6px 9px;font-size:.7rem;color:#00e5ff">Live</button></div></section>
       <section class="panel"><h2>Trajectory search</h2><div style="display:flex;gap:6px"><input id="searchPlate" placeholder="KA03MX4521" class="btn btn-outline" style="flex:1;text-align:left;font-size:.75rem"><button class="btn btn-outline" onclick="searchTrajectory()" style="padding:6px 9px;font-size:.7rem">Trace</button></div></section>
       <section class="panel"><h2>Provider status</h2><div id="provider" style="color:var(--muted);font-size:.72rem">Connecting...</div></section>
     </aside>
@@ -83,5 +85,7 @@ function focus(lat,lng){map.flyTo([lat,lng],15,{duration:.5})}function refreshNo
 document.querySelectorAll('[data-layer]').forEach(c=>c.addEventListener('change',e=>{const l=layers[e.target.dataset.layer];if(e.target.checked)l.addTo(map);else map.removeLayer(l)}));$('speed').addEventListener('change',schedule);$('severity').addEventListener('change',()=>latest&&render(latest));
 function searchTrajectory(){const p=$('searchPlate').value.trim();if(!p)return;fetch('/api/trajectory/search?plate='+encodeURIComponent(p)).then(r=>r.json()).then(d=>{if(!d.trajectory?.features?.length){alert('No sighting trajectory found for '+p);return}if(trajectoryLayer)map.removeLayer(trajectoryLayer);const c=d.trajectory.features.map(f=>[f.geometry.coordinates[1],f.geometry.coordinates[0]]);trajectoryLayer=L.polyline(c,{color:'#00e5ff',weight:4}).addTo(map);map.fitBounds(trajectoryLayer.getBounds())})}
 refreshNow();schedule();
+function searchLocation(){const q=$('searchLoc').value.trim();if(!q)return;fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(q)).then(r=>r.json()).then(d=>{if(d&&d.length>0){map.flyTo([d[0].lat,d[0].lon],14);L.marker([d[0].lat,d[0].lon]).addTo(map).bindPopup(d[0].display_name).openPopup()}else{alert('Location not found')}})}
+function locateMe(){if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{map.flyTo([p.coords.latitude,p.coords.longitude],15);L.marker([p.coords.latitude,p.coords.longitude]).addTo(map).bindPopup('You are here').openPopup()},()=>alert('Geolocation failed'))}else{alert('Geolocation not supported')}}
 </script>
 </body></html>
