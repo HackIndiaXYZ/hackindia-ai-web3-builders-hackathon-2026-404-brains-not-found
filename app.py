@@ -22,3 +22,4 @@ if __name__ == '__main__':
     debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
     port  = int(os.environ.get('PORT', 5001))
     _backend_app.app.run(debug=debug, threaded=True, host='0.0.0.0', port=port)
+

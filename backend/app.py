@@ -1010,7 +1010,20 @@ def _should_log(state):
     return not state["logged"] and state["all_violations_seen"] and n >= 15 and (has_plate or n >= 30)
 
 def _log_violation(state_snapshot, output_frame):
-    violation_str = " + ".join(sorted(state_snapshot["all_violations_seen"]))
+    violations_to_log = set(state_snapshot["all_violations_seen"])
+    
+    # Filter conflicting violations based on vehicle type heuristic
+    is_bike = "NO HELMET" in violations_to_log or "TRIPLE RIDING" in violations_to_log
+    if is_bike:
+        violations_to_log.discard("NO SEATBELT")
+    else:
+        violations_to_log.discard("NO HELMET")
+        violations_to_log.discard("TRIPLE RIDING")
+
+    if not violations_to_log:
+        return
+
+    violation_str = " + ".join(sorted(violations_to_log))
     if state_snapshot["last_good_plate"]:
         plate_str = state_snapshot["last_good_plate"]
     elif state_snapshot["plate_history"]:
@@ -1046,24 +1059,19 @@ def _log_violation(state_snapshot, output_frame):
     vtype = "Motorcycle / Scooter" if "HELMET" in violation_str or "TRIPLE" in violation_str else "Light Motor Vehicle"
     vid = save_violation(label, violation_str, plate_str, owner_name, total_fine, ss_filename,
                          status="ISSUED", confidence=97.4, tracking_id=None, vehicle_type=vtype, location=label)
-    challan_file = generate_challan(
-        CHALLAN_DIR, SCREENSHOT_DIR, vid, ts, label,
-        violation_str, plate_str, ss_filename, DB_PATH, owner_name,
-        offence_count=offence_count, vehicle_details=owner_info
-    )
-    update_challan(vid, challan_file)
-
     # Compute Evidence SHA256 & Record on Blockchain Ledger
     evidence_hash = ""
+    blockchain_ref = ""
     try:
         with open(ss_path, "rb") as f:
             evidence_hash = hashlib.sha256(f.read()).hexdigest()
         conn = _get_conn()
         blockchain_result = record_challan_on_blockchain(conn, vid, plate_str, violation_str, total_fine, evidence_hash)
         conn.close()
+        blockchain_ref = blockchain_result.get("challan_ref")
         publish_event("challan_issued", {
             "challan_id": vid,
-            "challan_ref": blockchain_result.get("challan_ref"),
+            "challan_ref": blockchain_ref,
             "plate": plate_str,
             "violation": violation_str,
             "fine": total_fine,
@@ -1072,6 +1080,14 @@ def _log_violation(state_snapshot, output_frame):
         })
     except Exception as e:
         logger.error(f"Blockchain recording error: {e}")
+
+    challan_file = generate_challan(
+        CHALLAN_DIR, SCREENSHOT_DIR, vid, ts, label,
+        violation_str, plate_str, ss_filename, DB_PATH, owner_name,
+        offence_count=offence_count, vehicle_details=owner_info,
+        evidence_hash=evidence_hash, blockchain_ref=blockchain_ref
+    )
+    update_challan(vid, challan_file)
 
     publish_event("violation_detected", {
         "plate": plate_str,

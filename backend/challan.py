@@ -92,7 +92,8 @@ def generate_challan(challan_dir, screenshot_dir,
                      violation_str, plate, screenshot_filename,
                      db_path, owner_name="Citizen",
                      offence_count=None, vehicle_details=None,
-                     officer_name="Inspector R. K. Sharma (Badge #404)"):
+                     officer_name="Inspector R. K. Sharma (Badge #404)",
+                     evidence_hash=None, blockchain_ref=None):
     """
     Generate Official High-Resolution Traffic Enforcement E-Challan PDF.
     """
@@ -271,6 +272,29 @@ def generate_challan(challan_dir, screenshot_dir,
     ]))
     story.append(ev_row)
     story.append(Spacer(1, 0.2*cm))
+
+    if evidence_hash and blockchain_ref:
+        story.append(Paragraph("4. MST Blockchain Cryptographic Audit & Evidence Hash", section_style))
+        bc_data = [
+            ["Blockchain Reference", blockchain_ref],
+            ["SHA-256 Evidence Hash", evidence_hash],
+            ["Verification Status", "IMMUTABLE & VERIFIED ON-CHAIN"]
+        ]
+        bc_table = Table(bc_data, colWidths=[5.5*cm, 12.5*cm])
+        bc_table.setStyle(TableStyle([
+            ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+            ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 8),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#d0d7de')),
+            ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#f6f8fa')),
+            ('TEXTCOLOR', (1,2), (1,2), colors.HexColor('#138808')),
+            ('FONTNAME', (1,2), (1,2), 'Helvetica-Bold'),
+            ('TOPPADDING', (0,0), (-1,-1), 4),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('LEFTPADDING', (0,0), (-1,-1), 6),
+        ]))
+        story.append(bc_table)
+        story.append(Spacer(1, 0.2*cm))
 
     # ── STATUTORY SETTLEMENT INSTRUCTIONS ──────────────────────────────────────
     pay_data = [
