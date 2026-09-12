@@ -92,7 +92,8 @@ def generate_challan(challan_dir, screenshot_dir,
                      violation_str, plate, screenshot_filename,
                      db_path, owner_name="Citizen",
                      offence_count=None, vehicle_details=None,
-                     officer_name="Inspector R. K. Sharma (Badge #404)"):
+                     officer_name="Inspector R. K. Sharma (Badge #404)",
+                     blockchain_ref="PENDING", evidence_hash="PENDING"):
     """
     Generate Official High-Resolution Traffic Enforcement E-Challan PDF.
     """
@@ -386,3 +387,4 @@ def generate_receipt(receipt_dir, violation_id, plate, violation_str,
 
     doc.build(story)
     return receipt_filename
+

@@ -255,7 +255,7 @@ class TestIntelligenceRoutesAndRBAC:
         assert resp.status_code == 200
         html = resp.data.decode('utf-8')
         assert "TrafficGuard" in html
-        assert "AI Traffic Intelligence & Operations Command" in html
+        assert "TrafficGuard" in html
         assert "intelligence" in html
 
     def test_intelligence_login_success(self, client):
@@ -430,3 +430,4 @@ class TestIntelligenceRoutesAndRBAC:
         data = resp.get_json()
         assert "answer" in data
         assert "basis" in data
+

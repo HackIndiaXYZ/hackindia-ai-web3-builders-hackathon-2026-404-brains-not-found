@@ -261,3 +261,4 @@ class TestFlaskEndpoints:
             assert pay_res.status_code == 200
             pay_data = pay_res.get_json()
             assert pay_data["status"] == "PAID"
+

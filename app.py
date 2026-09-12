@@ -963,36 +963,43 @@ def _run_plate_ocr(frame, motorcycle_boxes, state, h_f, w_f):
             state["cached_plates"] = [(px1+cx1, py1+cy1, px2+cx1, py2+cy1, plate_text)]
 
 def _draw_annotations(frame, violations, cached_plates, wrong_way_ids, traffic_results, helmet_results, label, traffic_boxes=None):
+    overlay = frame.copy()
     traffic_boxes = traffic_boxes or []
+    
     for tracked in traffic_boxes:
         if tracked["label"] == "motorcycle":
-            color = (0, 0, 255) if "TRIPLE RIDING" in violations or "NO HELMET" in violations else (0, 165, 255)
-            cv2.rectangle(frame, (tracked["x1"], tracked["y1"]),
-                          (tracked["x2"], tracked["y2"]), color, 3)
-            cv2.putText(frame, "MOTORCYCLE", (tracked["x1"], max(24, tracked["y1"] - 8)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.62, color, 2)
+            color = (0, 0, 255) if "TRIPLE RIDING" in violations or "NO HELMET" in violations else (0, 200, 255)
+            cv2.rectangle(frame, (tracked["x1"], tracked["y1"]), (tracked["x2"], tracked["y2"]), color, 2)
+            cv2.putText(frame, "MOTORCYCLE", (tracked["x1"], max(24, tracked["y1"] - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        elif tracked["label"] == "car" or tracked["label"] == "truck":
+            color = (0, 0, 255) if "NO SEATBELT" in violations else (0, 255, 100)
+            cv2.rectangle(frame, (tracked["x1"], tracked["y1"]), (tracked["x2"], tracked["y2"]), color, 2)
         elif tracked["label"] == "person":
-            cv2.rectangle(frame, (tracked["x1"], tracked["y1"]),
-                          (tracked["x2"], tracked["y2"]), (255, 180, 0), 2)
+            cv2.rectangle(frame, (tracked["x1"], tracked["y1"]), (tracked["x2"], tracked["y2"]), (255, 180, 0), 2)
+            
     for box in traffic_results.boxes:
-        if traffic_model.names[int(box.cls)] != "motorcycle" or box.id is None:
-            continue
+        if traffic_model.names[int(box.cls)] != "motorcycle" or box.id is None: continue
         if int(box.id) in wrong_way_ids:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             cx = (x1+x2)//2
             cv2.arrowedLine(frame, (cx, y1+10), (cx, y1+50), (0, 0, 255), 3, tipLength=0.4)
             cv2.putText(frame, "WRONG WAY", (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    y = 48
+
+    # Stylish Violation Overlay (Transparent)
     if violations:
-        banner = "  |  ".join(violations)
-        cv2.rectangle(frame, (10, 8), (min(frame.shape[1] - 10, 24 + len(banner) * 18), 42), (0, 0, 180), -1)
-        cv2.putText(frame, banner, (18, 32), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-    for v in violations:
-        cv2.putText(frame, "DETECTED: " + v, (20, y), cv2.FONT_HERSHEY_SIMPLEX, 0.72, (0, 0, 255), 2)
-        y += 35
+        y_offset = 60
+        for v in violations:
+            text = f"ALERT: {v}"
+            (w, h), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)
+            cv2.rectangle(overlay, (20, y_offset - h - 10), (20 + w + 20, y_offset + 10), (0, 0, 200), -1)
+            cv2.putText(overlay, text, (30, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+            y_offset += 50
+        cv2.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
+
     for (px1, py1, px2, py2, pt) in cached_plates:
         cv2.rectangle(frame, (px1, py1), (px2, py2), (0, 255, 255), 2)
-        cv2.putText(frame, pt or "PLATE", (px1, py1-8), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 255), 2)
+        cv2.putText(frame, pt or "PLATE", (px1, py1-8), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+        
     cv2.putText(frame, f"{APP_NAME} | {label}", (10, frame.shape[0]-12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 229, 255), 1)
 
 def _should_log(state):
@@ -1040,21 +1047,28 @@ def _log_violation(state_snapshot, output_frame):
     vtype = "Motorcycle / Scooter" if "HELMET" in violation_str or "TRIPLE" in violation_str else "Light Motor Vehicle"
     vid = save_violation(label, violation_str, plate_str, owner_name, total_fine, ss_filename,
                          status="ISSUED", confidence=97.4, tracking_id=None, vehicle_type=vtype, location=label)
-    challan_file = generate_challan(
-        CHALLAN_DIR, SCREENSHOT_DIR, vid, ts, label,
-        violation_str, plate_str, ss_filename, DB_PATH, owner_name,
-        offence_count=offence_count, vehicle_details=owner_info
-    )
-    update_challan(vid, challan_file)
-
     # Compute Evidence SHA256 & Record on Blockchain Ledger
     evidence_hash = ""
+    blockchain_result = {}
     try:
         with open(ss_path, "rb") as f:
             evidence_hash = hashlib.sha256(f.read()).hexdigest()
         conn = _get_conn()
         blockchain_result = record_challan_on_blockchain(conn, vid, plate_str, violation_str, total_fine, evidence_hash)
         conn.close()
+    except Exception as e:
+        logger.error(f"Blockchain recording error: {e}")
+
+    challan_file = generate_challan(
+        CHALLAN_DIR, SCREENSHOT_DIR, vid, ts, label,
+        violation_str, plate_str, ss_filename, DB_PATH, owner_name,
+        offence_count=offence_count, vehicle_details=owner_info,
+        blockchain_ref=blockchain_result.get("challan_ref", "PENDING_BLOCK"),
+        evidence_hash=evidence_hash
+    )
+    update_challan(vid, challan_file)
+
+    try:
         publish_event("challan_issued", {
             "challan_id": vid,
             "challan_ref": blockchain_result.get("challan_ref"),
@@ -2930,3 +2944,6 @@ if __name__ == '__main__':
     debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
     port  = int(os.environ.get('PORT', 5001))
     app.run(debug=debug, threaded=True, host='0.0.0.0', port=port)
+
+
+

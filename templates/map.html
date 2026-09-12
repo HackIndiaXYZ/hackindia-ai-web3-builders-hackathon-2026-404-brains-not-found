@@ -5,28 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ app_name }} — Geolocation Hotspot Map & Trajectory</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <style>
-    :root {
-      --map-bg: #06090f;
-      --map-surface: rgba(13, 19, 33, 0.88);
-      --map-border: rgba(0, 229, 255, 0.18);
-      --map-card: rgba(18, 26, 45, 0.7);
-    }
     body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: var(--map-bg);
-      font-family: var(--font-sans);
-      color: var(--text);
     }
 
     .top-nav {
       height: 60px;
-      background: var(--map-surface);
-      border-bottom: 1px solid var(--map-border);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
       padding: 0 24px;
       display: flex;
       align-items: center;
@@ -34,22 +27,6 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       z-index: 1000;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
-    }
-
-    .map-brand-title {
-      font-family: var(--font-heading);
-      font-weight: 800;
-      font-size: 1.15rem;
-      letter-spacing: -0.01em;
-      color: #fff;
-    }
-    .map-brand-title span {
-      background: linear-gradient(135deg, #00e5ff 0%, #0099ff 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
     }
 
     .sidebar {
@@ -58,25 +35,22 @@
       top: 76px;
       bottom: 16px;
       width: 340px;
-      background: var(--map-surface);
-      border: 1px solid var(--map-border);
-      border-radius: 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       padding: 20px;
       overflow-y: auto;
       z-index: 999;
       display: flex;
       flex-direction: column;
       gap: 16px;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
     }
 
     @media (max-width: 768px) {
       .sidebar {
         left: 0; right: 0; top: auto; bottom: 0;
         width: 100%; height: 320px;
-        border-radius: 16px 16px 0 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       }
       #map { left: 0; top: 60px; bottom: 320px; }
     }
@@ -87,49 +61,33 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: #06090f;
+      background: var(--bg);
     }
 
-    /* Custom Leaflet Dark Popup */
     .leaflet-popup-content-wrapper {
-      background: rgba(13, 19, 33, 0.95) !important;
-      color: #e2e8f0 !important;
-      border: 1px solid var(--map-border) !important;
-      border-radius: 12px !important;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7) !important;
-      backdrop-filter: blur(16px) !important;
+      background: var(--bg-surface) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--radius-md) !important;
     }
     .leaflet-popup-tip {
-      background: rgba(13, 19, 33, 0.95) !important;
+      background: var(--bg-surface) !important;
     }
     .leaflet-container {
-      background: #06090f !important;
+      background: var(--bg) !important;
     }
 
-    /* Blackspot Card Hover */
     .blackspot-card {
-      background: var(--map-card);
+      background: var(--bg);
       padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
+      transition: all 0.25s var(--ease);
     }
     .blackspot-card:hover {
-      background: rgba(0, 229, 255, 0.08);
-      border-color: rgba(0, 229, 255, 0.3);
-      transform: translateX(4px);
-    }
-
-    .pulse-ring {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--intel-cyan);
-      box-shadow: 0 0 0 rgba(0, 229, 255, 0.4);
-      animation: pulseRipple 2s infinite;
+      background: var(--bg-hover);
+      border-color: var(--accent);
     }
   </style>
 </head>
@@ -138,18 +96,18 @@
   <!-- Topbar -->
   <header class="top-nav">
     <div style="display:flex; align-items:center; gap:12px;">
-      <div style="font-size:1.6rem; filter:drop-shadow(0 0 8px rgba(0,229,255,0.4));">🗺️</div>
+      <i class="ph ph-map-trifold" style="font-size:1.6rem; color:var(--accent);"></i>
       <div>
-        <div class="map-brand-title">{{ app_name }} <span>GEOLOCATION INTELLIGENCE</span></div>
-        <div style="font-size:0.68rem; color:var(--text-muted); font-weight:600;">Spatial GIS Engine · Real-time Blackspot & Sighting Mesh</div>
+        <div style="font-weight:800; font-size:1.15rem; letter-spacing:-0.01em; color:var(--text);">{{ app_name }} <span style="color:var(--accent);">GEOLOCATION INTELLIGENCE</span></div>
+        <div class="text-xs text-muted" style="font-weight:600;">Spatial GIS Engine · Real-time Blackspot & Sighting Mesh</div>
       </div>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
-      <div class="badge badge-blue" style="font-family:var(--font-mono); font-size:0.7rem;">
+      <div class="badge badge-blue text-mono">
         <span class="pulse-dot"></span> SATELLITE SENSORS LIVE
       </div>
-      <a href="/" class="btn btn-outline" style="padding:6px 12px; font-size:0.78rem;">← Command Centre</a>
-      <a href="/intelligence" class="btn btn-outline" style="padding:6px 12px; font-size:0.78rem; border-color:var(--map-border); color:var(--intel-cyan);">Operations Grid</a>
+      <a href="/" class="btn btn-secondary btn-sm">← Command Centre</a>
+      <a href="/intelligence" class="btn btn-secondary btn-sm">Operations Grid</a>
     </div>
   </header>
 
@@ -157,20 +115,20 @@
   <div class="sidebar">
     <div>
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-        <h3 style="font-size:0.88rem; text-transform:uppercase; letter-spacing:0.06em; margin:0; font-family:var(--font-heading); color:#fff;">Vehicle Trajectory</h3>
-        <span class="badge badge-cyan" style="font-size:0.65rem;">GIS TRACE</span>
+        <h3 class="text-sm" style="text-transform:uppercase; letter-spacing:0.06em; margin:0; color:var(--text);">Vehicle Trajectory</h3>
+        <span class="badge badge-blue" style="font-size:0.65rem;">GIS TRACE</span>
       </div>
       <div style="display:flex; gap:8px;">
-        <input type="text" id="searchPlate" placeholder="Plate (e.g. KA03MX4521)" class="form-input" style="flex:1; text-align:left; font-size:0.82rem; text-transform:uppercase; font-family:var(--font-mono);">
-        <button class="btn btn-primary" style="padding:8px 16px; font-size:0.82rem;" onclick="searchTrajectory()">Trace</button>
+        <input type="text" id="searchPlate" placeholder="Plate (e.g. KA03MX4521)" style="flex:1; text-align:left; font-size:0.82rem; text-transform:uppercase; font-family:var(--font-mono);">
+        <button class="btn btn-primary btn-sm" onclick="searchTrajectory()">Trace</button>
       </div>
     </div>
 
-    <hr style="border:none; border-top:1px solid var(--map-border); margin:4px 0;">
+    <hr>
 
     <div>
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-        <h3 style="font-size:0.88rem; text-transform:uppercase; letter-spacing:0.06em; margin:0; font-family:var(--font-heading); color:#fff;">Hazardous Blackspots</h3>
+        <h3 class="text-sm" style="text-transform:uppercase; letter-spacing:0.06em; margin:0; color:var(--text);">Hazardous Blackspots</h3>
         <span class="badge badge-red" style="font-size:0.65rem;">HIGH PRIORITY</span>
       </div>
       <div id="blackspots-sidebar" style="display:flex; flex-direction:column; gap:10px;">
@@ -183,12 +141,10 @@
   <div id="map"></div>
 
   <script>
-    // Initialize Leaflet Map with Bangalore coordinates
     const map = L.map('map', {
       zoomControl: true
     }).setView([12.9716, 77.5946], 12);
 
-    // CartoDB Dark Matter tiles for ultra-sleek obsidian aesthetic
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a> | TrafficGuard Pro',
       subdomains: 'abcd',
@@ -201,17 +157,17 @@
       fetch('/api/blackspots').then(r => r.json()).then(d => {
         const side = document.getElementById('blackspots-sidebar');
         side.innerHTML = (d.blackspots || []).map(b => `
-          <div class="blackspot-card" style="border-left: 4px solid ${b.risk_score > 80 ? '#ff334b' : '#ff9933'};" onclick="map.flyTo([${b.location.lat}, ${b.location.lng}], 15, { animate: true, duration: 1.5 })">
-            <div style="font-weight:700; font-size:0.84rem; color:#fff;">${b.name}</div>
+          <div class="blackspot-card" style="border-left: 4px solid ${b.risk_score > 80 ? 'var(--error)' : 'var(--warning)'};" onclick="map.flyTo([${b.location.lat}, ${b.location.lng}], 15, { animate: true, duration: 1.5 })">
+            <div style="font-weight:700; font-size:0.84rem; color:var(--text);">${b.name}</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-              <span class="badge ${b.risk_score > 80 ? 'badge-red' : 'badge-orange'}" style="font-size:0.68rem;">Risk: ${b.risk_score}/100</span>
-              <span style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono);">Peak: ${b.peak_risk_time}</span>
+              <span class="badge ${b.risk_score > 80 ? 'badge-red' : 'badge-yellow'}" style="font-size:0.68rem;">Risk: ${b.risk_score}/100</span>
+              <span class="text-xs text-dim text-mono">Peak: ${b.peak_risk_time}</span>
             </div>
           </div>
         `).join('');
 
         (d.blackspots || []).forEach(b => {
-          const color = b.risk_score > 80 ? '#ff334b' : '#ff9933';
+          const color = b.risk_score > 80 ? '#8b5a4a' : '#956E2F';
           L.circleMarker([b.location.lat, b.location.lng], {
             radius: 12,
             color: color,
@@ -220,9 +176,9 @@
             fillOpacity: 0.55
           }).bindPopup(`
             <div style="padding:4px;">
-              <b style="font-size:0.95rem; color:#fff;">${b.name}</b><br/>
+              <b style="font-size:0.95rem; color:var(--text);">${b.name}</b><br/>
               <span style="color:${color}; font-weight:700; font-size:0.8rem;">Risk Score: ${b.risk_score}/100</span><br/>
-              <div style="font-size:0.76rem; color:#cbd5e1; margin-top:4px;">${b.recommended_action}</div>
+              <div class="text-sm" style="color:var(--text-muted); margin-top:4px;">${b.recommended_action}</div>
             </div>
           `).addTo(map);
         });
@@ -242,7 +198,7 @@
           if (trajectoryLayer) map.removeLayer(trajectoryLayer);
           const coords = data.trajectory.features.map(f => [f.geometry.coordinates[1], f.geometry.coordinates[0]]);
           trajectoryLayer = L.polyline(coords, {
-            color: '#00e5ff',
+            color: '#956E2F',
             weight: 5,
             opacity: 0.85,
             dashArray: '8, 8',
@@ -252,7 +208,7 @@
           coords.forEach((coord, i) => {
             L.circleMarker(coord, {
               radius: 6,
-              color: '#00e5ff',
+              color: '#956E2F',
               fillColor: '#ffffff',
               fillOpacity: 1
             }).bindPopup(`<b>Waypoint #${i + 1}</b><br/>Plate: ${p}`).addTo(map);
@@ -280,7 +236,7 @@
         userMarker = L.marker([lat, lon], {
           icon: L.divIcon({
             className: 'custom-user-icon',
-            html: '<div style="font-size:24px; filter:drop-shadow(0 0 10px #00e5ff);">??</div>',
+            html: '<i class="ph ph-user" style="font-size:24px; color:var(--accent);"></i>',
             iconSize: [24, 24],
             iconAnchor: [12, 24]
           })
@@ -294,13 +250,13 @@
       const q = document.getElementById("map-search-input").value;
       if (!q) return;
       try {
-        const res = await fetch(https://nominatim.openstreetmap.org/search?format=json&q= + encodeURIComponent(q));
+        const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q));
         const data = await res.json();
         if (data && data.length > 0) {
           const lat = parseFloat(data[0].lat);
           const lon = parseFloat(data[0].lon);
           map.flyTo([lat, lon], 14, { duration: 1.5 });
-          L.popup().setLatLng([lat, lon]).setContent(<b></b>).openOn(map);
+          L.popup().setLatLng([lat, lon]).setContent('<b></b>').openOn(map);
         } else {
           alert("Location not found.");
         }
@@ -311,5 +267,4 @@
 </script>
 </body>
 </html>
-
 
