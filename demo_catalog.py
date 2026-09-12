@@ -25,6 +25,18 @@ EXISTING_LABELS = {
 }
 
 
+def _is_file_present(folder, name):
+    p = os.path.join(folder, name)
+    if os.path.isfile(p):
+        return True
+    if os.name == 'nt':
+        abs_p = os.path.abspath(p)
+        if not abs_p.startswith(r"\\?\\"):
+            abs_p = r"\\?\\" + abs_p
+        return os.path.isfile(abs_p)
+    return False
+
+
 def build_demo_catalog(video_folder, conn=None):
     """Return only files present on disk, with observed rather than fabricated status."""
     names = sorted(name for name in os.listdir(video_folder) if name.lower().endswith((".mp4", ".avi", ".mov", ".mkv")))
@@ -50,6 +62,6 @@ def build_demo_catalog(video_folder, conn=None):
             "near_miss_events": 0,
             "risk_level": "NOT ASSESSED",
             "is_new": is_new,
-            "available": os.path.isfile(os.path.join(video_folder, name)),
+            "available": _is_file_present(video_folder, name),
         })
     return catalog

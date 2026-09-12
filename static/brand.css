@@ -236,3 +236,303 @@ h1, h2, h3, h4, h5, h6 {
 .pulse-dot.danger {
   background: #ff3b30;
 }
+
+/* ── OPERATIONS GRID VISUAL SYSTEM ─────────────────────────── */
+body.command-shell,
+body.intelligence-shell,
+body.map-shell,
+body.citizen-shell {
+  --grid-line: rgba(0, 229, 255, 0.055);
+  --panel: rgba(12, 19, 33, 0.94);
+  --panel-raised: rgba(18, 28, 47, 0.94);
+  --cyan-soft: rgba(0, 229, 255, 0.12);
+  background-color: #070c16;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    radial-gradient(circle at 80% 0%, rgba(0, 229, 255, 0.09), transparent 30%),
+    radial-gradient(circle at 20% 100%, rgba(255, 153, 51, 0.07), transparent 26%);
+  background-size: 32px 32px, 32px 32px, auto, auto;
+  letter-spacing: 0.01em;
+}
+
+body.command-shell .tricolor-stripe,
+body.intelligence-shell .tricolor-stripe,
+body.map-shell .tricolor-stripe,
+body.citizen-shell .tricolor-stripe {
+  height: 3px;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.22);
+}
+
+body.command-shell .topbar,
+body.intelligence-shell .intel-topbar,
+body.map-shell .top-nav,
+body.citizen-shell > header {
+  background: rgba(6, 12, 23, 0.96);
+  border-color: rgba(0, 229, 255, 0.26);
+  box-shadow: 0 5px 22px rgba(0, 0, 0, 0.28);
+}
+
+body.command-shell .brand-title,
+body.intelligence-shell .intel-brand-title,
+body.map-shell .top-nav div,
+body.citizen-shell > header div {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+body.command-shell .nav-tabs,
+body.intelligence-shell .intel-sidebar,
+body.map-shell .sidebar {
+  background: rgba(5, 11, 22, 0.97);
+  border-color: rgba(0, 229, 255, 0.24);
+}
+
+body.command-shell .nav-tab,
+body.intelligence-shell .sidebar-btn {
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+@media (min-width: 761px) {
+  body.command-shell .nav-tabs {
+    top: 245px !important;
+  }
+  body.command-shell .tab-content {
+    padding-top: 18px;
+  }
+}
+
+body.command-shell .nav-tab.active,
+body.intelligence-shell .sidebar-btn.active {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.16), transparent);
+  color: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: inset 3px 0 var(--cyan), 0 0 16px rgba(0, 229, 255, 0.08);
+}
+
+body.command-shell .kpi-card,
+body.command-shell .glass-card,
+body.command-shell .video-viewport,
+body.command-shell .violation-card,
+body.intelligence-shell .intel-card,
+body.map-shell .sidebar,
+body.citizen-shell .glass-card,
+body.citizen-shell .modal-window {
+  background: var(--panel);
+  border: 1px solid rgba(84, 119, 151, 0.44);
+  border-radius: 3px;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025), 0 14px 30px rgba(0, 0, 0, 0.22);
+}
+
+body.command-shell .kpi-card,
+body.intelligence-shell .intel-card {
+  position: relative;
+  overflow: hidden;
+}
+
+body.command-shell .kpi-card::before,
+body.intelligence-shell .intel-card::before,
+body.citizen-shell .glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), transparent 70%);
+  opacity: 0.7;
+}
+
+body.command-shell .kpi-header,
+body.intelligence-shell .intel-card-title,
+body.command-shell .vcard-row,
+body.command-shell .ai-feed-item time {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+body.command-shell .kpi-value,
+body.intelligence-shell .intel-card-value {
+  font-family: var(--font-mono);
+  color: #eafcff;
+  text-shadow: 0 0 14px rgba(0, 229, 255, 0.22);
+}
+
+body.command-shell .btn,
+body.intelligence-shell .btn,
+body.map-shell .btn,
+body.citizen-shell .btn {
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+}
+
+body.command-shell .btn-outline,
+body.intelligence-shell .btn-outline,
+body.map-shell .btn-outline,
+body.citizen-shell .btn-outline {
+  border-color: rgba(0, 229, 255, 0.38);
+  background: rgba(0, 229, 255, 0.035);
+}
+
+body.command-shell .btn-primary,
+body.command-shell .btn-saffron,
+body.intelligence-shell .btn-primary,
+body.intelligence-shell .btn-saffron,
+body.citizen-shell .btn-saffron {
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.16);
+}
+
+body.command-shell .video-view-grid {
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+  gap: 12px;
+}
+
+body.command-shell .video-viewport {
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.16), 0 0 24px rgba(0, 0, 0, 0.35);
+}
+
+body.command-shell .video-controls,
+body.command-shell .kpi-grid,
+body.command-shell .tab-content {
+  gap: 10px;
+}
+
+body.command-shell .kpi-grid {
+  padding-top: 14px;
+}
+
+body.command-shell .stage-step,
+body.command-shell .ai-feed-item,
+body.command-shell .chat-box,
+body.command-shell #heatmap-container {
+  border-radius: 2px;
+  background: rgba(2, 8, 16, 0.72);
+}
+
+body.citizen-shell {
+  --citizen-panel: rgba(12, 19, 33, 0.96);
+}
+
+body.citizen-shell > header {
+  min-height: 58px;
+  padding: 9px 24px !important;
+}
+
+body.citizen-shell .citizen-hero {
+  max-width: 1120px;
+  margin: 22px auto 0;
+  padding: 28px 28px 26px;
+  text-align: left;
+  border: 1px solid rgba(0, 229, 255, 0.24);
+  border-radius: 3px;
+  background: linear-gradient(135deg, rgba(11, 30, 48, 0.96), rgba(10, 16, 29, 0.96));
+  box-shadow: 0 0 36px rgba(0, 229, 255, 0.06);
+}
+
+body.citizen-shell .citizen-hero h1 {
+  max-width: 660px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+body.citizen-shell .search-box-wrap {
+  margin: 20px 0 0;
+  max-width: 720px;
+}
+
+body.citizen-shell .search-input,
+body.citizen-shell input,
+body.citizen-shell select,
+body.map-shell input {
+  border-radius: 2px;
+  background: rgba(4, 10, 19, 0.82);
+  border-color: rgba(0, 229, 255, 0.32);
+  font-family: var(--font-mono);
+}
+
+body.citizen-shell .portal-container {
+  max-width: 1120px;
+  margin-top: 18px;
+}
+
+body.citizen-shell .portal-container > div:first-child {
+  grid-template-columns: repeat(3, 1fr) !important;
+  margin-bottom: 18px !important;
+}
+
+body.citizen-shell .portal-container > div:first-child .glass-card {
+  text-align: left !important;
+  min-height: 112px;
+  padding: 14px;
+}
+
+body.map-shell #map {
+  background: #07101d;
+  filter: saturate(0.72) brightness(0.72) contrast(1.08);
+}
+
+body.map-shell .top-nav {
+  height: 58px;
+}
+
+body.map-shell .sidebar {
+  top: 58px;
+  width: 300px;
+  padding: 14px;
+}
+
+body.map-shell #map {
+  top: 58px;
+  left: 300px;
+}
+
+body.map-shell .sidebar h3 {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: var(--cyan);
+  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+}
+
+body.map-shell .sidebar > div > div {
+  border-radius: 2px !important;
+  background: rgba(2, 8, 16, 0.7) !important;
+}
+
+body.intelligence-shell .intel-content {
+  padding: 16px;
+}
+
+body.intelligence-shell .intel-card,
+body.intelligence-shell .copilot-terminal {
+  border-radius: 3px;
+}
+
+@media (max-width: 760px) {
+  body.command-shell .nav-tabs {
+    top: 0 !important;
+  }
+  body.citizen-shell .citizen-hero {
+    margin: 12px;
+    padding: 20px 16px;
+  }
+  body.citizen-shell .portal-container > div:first-child {
+    grid-template-columns: 1fr !important;
+  }
+  body.map-shell #map {
+    left: 0;
+    top: 280px;
+  }
+  body.map-shell .sidebar {
+    top: 58px;
+    width: 100%;
+    height: 222px;
+  }
+}

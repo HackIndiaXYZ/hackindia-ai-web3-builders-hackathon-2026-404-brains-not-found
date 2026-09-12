@@ -31,14 +31,12 @@ DEMO_PASSWORD       = os.environ.get("DEMO_PASSWORD", "demo123")
 
 # Directories
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Vercel only permits runtime writes under /tmp; deployed files are ephemeral.
-RUNTIME_DIR = "/tmp/trafficguard" if os.environ.get("VERCEL") else BASE_DIR
-REPORT_DIR = os.path.join(RUNTIME_DIR, "reports")
-SCREENSHOT_DIR = os.path.join(RUNTIME_DIR, "screenshots")
-CHALLAN_DIR = os.path.join(RUNTIME_DIR, "challans")
-RECEIPT_DIR = os.path.join(RUNTIME_DIR, "receipts")
+REPORT_DIR = os.path.join(BASE_DIR, "static", "reports")
+SCREENSHOT_DIR = os.path.join(BASE_DIR, "static", "screenshots")
+CHALLAN_DIR = os.path.join(BASE_DIR, "static", "challans")
+RECEIPT_DIR = os.path.join(BASE_DIR, "static", "receipts")
 VIDEO_FOLDER = os.path.join(BASE_DIR, "videos")
-LOG_DIR = os.path.join(RUNTIME_DIR, "logs")
+LOG_DIR = os.path.join(BASE_DIR, "logs")
 
 for d in [REPORT_DIR, SCREENSHOT_DIR, CHALLAN_DIR, RECEIPT_DIR, VIDEO_FOLDER, LOG_DIR]:
     os.makedirs(d, exist_ok=True)
@@ -46,6 +44,10 @@ for d in [REPORT_DIR, SCREENSHOT_DIR, CHALLAN_DIR, RECEIPT_DIR, VIDEO_FOLDER, LO
 # External API Integrations (Plug-and-play with offline fallbacks)
 VAHAN_API_KEY = os.environ.get("VAHAN_API_KEY", "")
 VAHAN_API_URL = os.environ.get("VAHAN_API_URL", "https://vahan.parivahan.gov.in/vahanservice/vahan/api/rc-details")
+VAHAN_API_TIMEOUT = int(os.environ.get("VAHAN_API_TIMEOUT", "8"))
+
+KAFKA_BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "")
+KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", "trafficguard.events")
 
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN  = os.environ.get("TWILIO_AUTH_TOKEN", "")

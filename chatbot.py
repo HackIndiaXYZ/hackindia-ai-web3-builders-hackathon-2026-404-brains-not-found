@@ -147,8 +147,62 @@ KNOWLEDGE_BASE = [
             "2. **चालान चुनौती (Dispute):** पोर्टल पर 'Dispute' पर क्लिक करें, कारण लिखें और फोटो/वीडियो प्रमाण संलग्न करें।\n"
             "3. **परिवहन पोर्टल:** आप [echallan.parivahan.gov.in](https://echallan.parivahan.gov.in) पर भी चालान भर सकते हैं।"
         )
+    },
+    {
+        "keywords": ["seatbelt", "seat belt", "belt", "सीटबेल्ट", "सीट बेल्ट"],
+        "answer_en": (
+            "🛡️ **Seatbelt Regulations under Section 194B of Motor Vehicles Act:**\n\n"
+            "• **Mandatory Use:** Whoever drives a motor vehicle without wearing a safety belt, or carries passengers not wearing safety belts, shall be punished.\n"
+            "• **Statutory Penalty:** Fine of **Rs. 1,000**.\n"
+            "• **Child Safety:** Section 194B(2) mandates safety harness/seatbelt for children being conveyed in motor vehicles.\n"
+            "• **Safety Rationale:** Wearing seatbelts reduces fatal injury risk by 45% to 50% in front-seat occupants."
+        ),
+        "answer_hi": (
+            "🛡️ **मोटर वाहन अधिनियम धारा 194B के तहत सीटबेल्ट नियम:**\n\n"
+            "• **अनिवार्यता:** कार चालक और सभी यात्रियों के लिए सीटबेल्ट पहनना कानूनी रूप से अनिवार्य है।\n"
+            "• **जुर्माना:** बिना सीटबेल्ट गाड़ी चलाने पर **₹1,000 का चालान**।\n"
+            "• **बच्चों की सुरक्षा:** बच्चों के लिए चाइल्ड सीट व बेल्ट का उपयोग अनिवार्य है।"
+        )
+    },
+    {
+        "keywords": ["drink", "drunk", "alcohol", "liquor", "शराब", "नशा", "ड्रंक ड्राइविंग"],
+        "answer_en": (
+            "🍷 **Drunk Driving Penalties under Section 185 of Motor Vehicles Act:**\n\n"
+            "• **Limit:** Blood Alcohol Content (BAC) exceeding 30 mg per 100 ml of blood.\n"
+            "• **First Offence:** Fine up to **Rs. 10,000** and/or imprisonment up to 6 months.\n"
+            "• **Repeat Offence (within 3 years):** Fine up to **Rs. 15,000** and/or imprisonment up to 2 years.\n"
+            "• Zero tolerance policy applies to all vehicle classes."
+        ),
+        "answer_hi": (
+            "🍷 **मोटर वाहन अधिनियम धारा 185 (शराब पीकर वाहन चलाना):**\n\n"
+            "• **पहला अपराध:** **₹10,000 तक जुर्माना** और/या 6 महीने तक की जेल।\n"
+            "• **दोबारा अपराध:** **₹15,000 तक जुर्माना** और/या 2 वर्ष तक की जेल।\n"
+            "• शराब पीकर गाड़ी चलाना कानूनी अपराध और जानलेवा है।"
+        )
+    },
+    {
+        "keywords": ["safe driving", "safety tip", "guidelines", "सुरक्षा नियम", "सुरक्षित ड्राइविंग", "सावधानी"],
+        "answer_en": (
+            "🚦 **TrafficGuard Pro Golden Rules for Safe Driving:**\n\n"
+            "1. **Protective Gear:** Always wear a certified helmet (strapped) or seatbelt.\n"
+            "2. **Lane Discipline:** Maintain designated lane and observe speed limits.\n"
+            "3. **No Wrong-Way Driving:** Never take reverse shortcuts on highways or service roads.\n"
+            "4. **Maintain 3-Second Gap:** Keep safe stopping distance from vehicles ahead.\n"
+            "5. **Pedestrian First:** Yield at zebra crossings and school zones."
+        ),
+        "answer_hi": (
+            "🚦 **सुरक्षित ड्राइविंग के 5 स्वर्णिम नियम:**\n\n"
+            "1. दोपहिया पर आईएसआई मार्का हेलमेट और चार पहिया में सीटबेल्ट अवश्य लगाएं।\n"
+            "2. निर्धारित गति सीमा का पालन करें और लेन अनुशासन बनाए रखें।\n"
+            "3. गलत दिशा में गाड़ी कभी न चलाएं।\n"
+            "4. आगे चल रहे वाहन से सुरक्षित दूरी बनाए रखें।\n"
+            "5. जेब्रा क्रॉसिंग पर पैदल यात्रियों को पहले निकलने दें।"
+        )
     }
 ]
+
+DISCLAIMER_EN = "\n\n⚖️ *Disclaimer: Responses are informational and educational. For official legal decisions, consult competent traffic authorities or echallan.parivahan.gov.in.*"
+DISCLAIMER_HI = "\n\n⚖️ *अस्वीकरण: यह जानकारी केवल मार्गदर्शन के लिए है। आधिकारिक निर्णयों हेतु परिवहन विभाग से संपर्क करें।*"
 
 
 def _is_hindi(text):
@@ -159,15 +213,16 @@ def _is_hindi(text):
 def answer_traffic_query(query_text, user_lang=None):
     """
     Process traffic rule queries using semantic keyword matching with automatic Hindi/English routing.
+    Includes official legal disclaimer.
     """
     if not query_text or not query_text.strip():
         return {
-            "answer": "Namaste! I am Saarthi AI, your Traffic Safety Assistant. Ask me about traffic rules, fines under the MV Act, RTO procedures, or challan payments in Hindi or English!",
+            "answer": "Namaste! I am Saarthi AI, your Traffic Safety Assistant. Ask me about traffic rules, fines under the MV Act, RTO procedures, or challan payments in Hindi or English!" + DISCLAIMER_EN,
             "source": "Saarthi AI"
         }
 
     q = query_text.lower().strip()
-    is_hi = user_lang == "hi" or _is_hindi(q) or any(w in q for w in ["kya", "kaise", "kitna", "chalan", "kahan", "kyu", "karo", "bataye"])
+    is_hi = user_lang == "hi" or _is_hindi(q) or any(w in q for w in ["kya", "kaise", "kitna", "chalan", "kahan", "kyu", "karo", "bataye", "niyam"])
 
     # 1. Match from Built-in Knowledge Base
     best_match = None
@@ -180,7 +235,7 @@ def answer_traffic_query(query_text, user_lang=None):
             best_match = item
 
     if best_match and max_hits > 0:
-        ans = best_match["answer_hi"] if is_hi else best_match["answer_en"]
+        ans = (best_match["answer_hi"] + DISCLAIMER_HI) if is_hi else (best_match["answer_en"] + DISCLAIMER_EN)
         return {"answer": ans, "source": "Saarthi AI (MV Act Knowledge Base)"}
 
     # 2. General Fallback
@@ -191,7 +246,8 @@ def answer_traffic_query(query_text, user_lang=None):
                 f"आपके प्रश्न *'{query_text}'* के संबंध में:\n"
                 f"भारतीय मोटर वाहन अधिनियम 1988 (संशोधित 2019) के तहत सड़क सुरक्षा नियमों का पालन अनिवार्य है।\n"
                 f"• हेलमेट, सीटबेल्ट और गति सीमा का सदैव पालन करें।\n"
-                f"• किसी विशिष्ट नियम (जैसे 'हेलमेट का जुर्माना', 'ड्राइविंग लाइसेंस कैसे बनवाएं', 'गलत दिशा चालान') के बारे में पूछें।"
+                f"• किसी विशिष्ट नियम (जैसे 'हेलमेट का जुर्माना', 'ड्राइविंग लाइसेंस कैसे बनवाएं', 'गलत दिशा चालान', 'सीटबेल्ट नियम') के बारे में पूछें।"
+                + DISCLAIMER_HI
             ),
             "source": "Saarthi AI Engine"
         }
@@ -201,7 +257,8 @@ def answer_traffic_query(query_text, user_lang=None):
             f"🤖 **Saarthi AI Assistant:**\n\n"
             f"Regarding your query *'{query_text}'*:\n"
             f"Under the Indian Motor Vehicles Act 1988 (Amended 2019), all road users must adhere to designated safety standards.\n"
-            f"• Try asking specifically about: *'Helmet Fine'*, *'Triple Riding'*, *'Wrong Way Penalties'*, *'Driving License Procedure'*, or *'How to Dispute Challan'*."
+            f"• Try asking specifically about: *'Helmet Fine'*, *'Triple Riding'*, *'Wrong Way Penalties'*, *'Seatbelt Rules'*, *'Drunk Driving'*, *'Driving License Procedure'*, or *'How to Dispute Challan'*."
+            + DISCLAIMER_EN
         ),
         "source": "Saarthi AI Engine"
     }
