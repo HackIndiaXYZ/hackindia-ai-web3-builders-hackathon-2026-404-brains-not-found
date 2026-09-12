@@ -5,11 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{ app_name }} — AI Safety Intelligence & Predictive Threat Grid</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
 <style>
   body {
-    background: radial-gradient(circle at 15% 10%, rgba(0, 229, 255, 0.06) 0%, transparent 45%),
-                radial-gradient(circle at 85% 85%, rgba(255, 153, 51, 0.04) 0%, transparent 40%),
-                var(--bg-dark);
+    background: var(--bg);
     color: var(--text);
     font-family: var(--font-sans);
     margin: 0;
@@ -17,8 +16,8 @@
   }
   .top {
     padding: 16px clamp(16px, 5vw, 40px);
-    background: rgba(13, 19, 33, 0.85);
-    border-bottom: 1px solid var(--glass-border);
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     display: flex;
@@ -30,18 +29,18 @@
     z-index: 100;
   }
   .top a {
-    color: var(--cyan);
+    color: var(--accent);
     text-decoration: none;
     font-size: 0.82rem;
     font-weight: 700;
     transition: color 0.2s;
   }
-  .top a:hover { color: #fff; }
+  .top a:hover { color: var(--accent-hover); }
   .top h1 {
-    font-family: var(--font-heading);
+    font-family: var(--font-sans);
     font-size: 1.45rem;
     margin: 4px 0 2px;
-    color: #fff;
+    color: var(--text-primary);
     letter-spacing: -0.01em;
   }
   .top p {
@@ -55,14 +54,14 @@
     padding: 24px clamp(16px, 5vw, 40px) 60px;
   }
   .ribbon {
-    border-left: 4px solid var(--saffron);
+    border-left: 4px solid var(--warning);
     padding: 14px 18px;
-    background: rgba(255, 153, 51, 0.08);
-    border: 1px solid rgba(255, 153, 51, 0.25);
+    background: var(--warning-muted);
+    border: 1px solid var(--warning);
     border-left-width: 4px;
     border-radius: 12px;
     margin-bottom: 24px;
-    color: #cbd5e1;
+    color: var(--text);
     font-size: 0.84rem;
   }
   .grid {
@@ -71,57 +70,54 @@
     gap: 20px;
   }
   .panel {
-    background: var(--card-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 22px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s var(--ease);
     position: relative;
     overflow: hidden;
   }
   .panel:hover {
-    border-color: rgba(0, 229, 255, 0.35);
+    border-color: var(--accent);
     transform: translateY(-2px);
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 229, 255, 0.08);
+    box-shadow: var(--shadow-sm);
   }
   .panel h2 {
-    font-family: var(--font-heading);
+    font-family: var(--font-sans);
     font-size: 1.05rem;
     margin: 0 0 14px;
-    color: #fff;
+    color: var(--text-primary);
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
   .item {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--border-subtle);
     padding: 10px 0;
     font-size: 0.82rem;
   }
   .item:last-child { border-bottom: 0; }
-  .badge {
+  .badge-risk {
     display: inline-block;
     padding: 3px 8px;
     border-radius: 6px;
-    background: rgba(255, 51, 75, 0.15);
-    border: 1px solid #ff334b;
-    color: #ff6b6b;
+    background: var(--error-muted);
+    border: 1px solid var(--error);
+    color: var(--error);
     font-weight: 800;
     font-size: 0.68rem;
     font-family: var(--font-mono);
   }
-  .badge.low {
-    background: rgba(0, 230, 118, 0.15);
-    border-color: #00e676;
-    color: #00e676;
+  .badge-risk.low {
+    background: var(--success-muted);
+    border-color: var(--success);
+    color: var(--success);
   }
-  .badge.medium {
-    background: rgba(255, 153, 51, 0.15);
-    border-color: var(--saffron);
-    color: var(--saffron);
+  .badge-risk.medium {
+    background: var(--warning-muted);
+    border-color: var(--warning);
+    color: var(--warning);
   }
   .muted {
     color: var(--text-muted);
@@ -129,12 +125,11 @@
     margin-top: 3px;
   }
   .metric {
-    font-family: var(--font-heading);
+    font-family: var(--font-mono);
     font-size: 2rem;
-    color: var(--saffron);
+    color: var(--success);
     font-weight: 800;
   }
-  .health { color: #00e676; }
   .controls {
     display: flex;
     gap: 10px;
@@ -146,25 +141,25 @@
     font: inherit;
     border-radius: 10px;
     padding: 10px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(6, 9, 15, 0.6);
-    color: #fff;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
     font-size: 0.85rem;
   }
   button {
     cursor: pointer;
-    background: rgba(0, 229, 255, 0.15);
-    border-color: rgba(0, 229, 255, 0.4);
-    color: var(--cyan);
+    background: var(--accent-muted);
+    border-color: var(--accent);
+    color: var(--accent);
     font-weight: 800;
     transition: all 0.2s ease;
   }
   button:hover {
-    background: rgba(0, 229, 255, 0.25);
-    box-shadow: 0 0 14px rgba(0, 229, 255, 0.3);
+    background: var(--accent);
+    color: var(--accent-fg);
   }
   .sim-output {
-    color: var(--saffron);
+    color: var(--warning);
     font-weight: 700;
     font-family: var(--font-mono);
     font-size: 0.82rem;
@@ -179,13 +174,13 @@
 <body>
   <div class="top">
     <div>
-      <a href="/">← Command Centre</a>
-      <h1>🛡️ AI Safety Intelligence & Threat Grid</h1>
+      <a href="/"><i class="ph ph-arrow-left"></i> Command Centre</a>
+      <h1><i class="ph ph-shield-check"></i> AI Safety Intelligence & Threat Grid</h1>
       <p>TrafficGuard Pro algorithmic prevention engine: Early accident prediction & behavioral threat scoring.</p>
     </div>
     <div style="text-align:right;">
-      <div style="font-weight:800; color:var(--saffron); font-size:0.75rem; letter-spacing:0.08em; font-family:var(--font-mono);">सत्यमेव जयते · MoRTH CERTIFIED</div>
-      <div class="muted" style="margin-top:2px;">Privacy Masking: <b style="color:#00e676;">ACTIVE</b></div>
+      <div style="font-weight:800; color:var(--accent); font-size:0.75rem; letter-spacing:0.08em; font-family:var(--font-mono);">satyamev jayate · MoRTH CERTIFIED</div>
+      <div class="muted" style="margin-top:2px;">Privacy Masking: <b style="color:var(--success);">ACTIVE</b></div>
     </div>
   </div>
 
@@ -196,43 +191,43 @@
 
     <section class="grid">
       <article class="panel">
-        <h2>High-Risk Vehicles</h2>
+        <h2><i class="ph ph-car"></i> High-Risk Vehicles</h2>
         <div id="risks">Loading...</div>
       </article>
 
       <article class="panel">
-        <h2>Live Safety Events</h2>
+        <h2><i class="ph ph-lightning"></i> Live Safety Events</h2>
         <div id="near">Loading...</div>
       </article>
 
       <article class="panel">
-        <h2>Emergency Alerts</h2>
+        <h2><i class="ph ph-megaphone"></i> Emergency Alerts</h2>
         <div id="emergency">Checking monitored events...</div>
         <div class="muted" style="margin-top:8px;">Preemption APIs ready for automated green wave clearance.</div>
       </article>
 
       <article class="panel wide">
-        <h2>Predicted Blackspots</h2>
+        <h2><i class="ph ph-map-pin"></i> Predicted Blackspots</h2>
         <div id="blackspots">Loading available heatmap evidence...</div>
       </article>
 
       <article class="panel">
-        <h2>Pending Reviews</h2>
+        <h2><i class="ph ph-clipboard-text"></i> Pending Reviews</h2>
         <div id="reviews">Loading...</div>
       </article>
 
       <article class="panel">
-        <h2>AI Strategic Recommendations</h2>
+        <h2><i class="ph ph-brain"></i> AI Strategic Recommendations</h2>
         <div id="recommendations">Loading...</div>
       </article>
 
       <article class="panel">
-        <h2>System Health & Neural Nodes</h2>
+        <h2><i class="ph ph-heart-pulse"></i> System Health & Neural Nodes</h2>
         <div id="health">Loading...</div>
       </article>
 
       <article class="panel">
-        <h2>Weather-Aware Risk Adjustment</h2>
+        <h2><i class="ph ph-cloud-rain"></i> Weather-Aware Risk Adjustment</h2>
         <div class="muted">Simulates monsoon wet-surface braking distance degradation.</div>
         <div class="controls">
           <input id="rain" type="number" min="0" max="100" value="0" placeholder="Precipitation %" style="flex:1;">
@@ -242,7 +237,7 @@
       </article>
 
       <article class="panel">
-        <h2>Enforcement What-If Simulator</h2>
+        <h2><i class="ph ph-flask"></i> Enforcement What-If Simulator</h2>
         <div class="controls">
           <input id="change" type="number" value="20" min="0" max="100" placeholder="Patrol increase %" style="flex:1;">
           <button onclick="simulate()">Simulate</button>
@@ -253,6 +248,7 @@
     </section>
   </main>
 
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
   <script>
     const get = async u => (await fetch(u)).json();
     const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
@@ -262,7 +258,7 @@
         const d = await get('/api/risk/vehicles');
         document.getElementById('risks').innerHTML = d.vehicles.length ? d.vehicles.slice(0,8).map(x => `
           <div class="item">
-            <b>${esc(x.vehicle)}</b> <span class="badge ${x.level==='LOW'?'low':x.level==='MEDIUM'?'medium':''}">${x.level} · ${x.score}/100</span><br>
+            <b>${esc(x.vehicle)}</b> <span class="badge-risk ${x.level==='LOW'?'low':x.level==='MEDIUM'?'medium':''}">${x.level} · ${x.score}/100</span><br>
             <span class="muted">${x.reasons.join('; ')}</span>
           </div>
         `).join('') : '<span class="muted">No observed vehicle risk records.</span>';
@@ -286,7 +282,7 @@
         const e = await get('/api/emergency-events');
         document.getElementById('emergency').innerHTML = e.events.length ? e.events.map(x => `
           <div class="item">
-            <b>🚑 ${x.vehicle_type}</b> · ${x.status}
+            <b><i class="ph ph-car"></i> ${x.vehicle_type}</b> · ${x.status}
           </div>
         `).join('') : '<span class="muted">No emergency vehicle detected.</span>';
 
@@ -308,7 +304,7 @@
 
         const h = await get('/api/system-health');
         document.getElementById('health').innerHTML = `
-          <div class="metric health">${h.status.toUpperCase()}</div>
+          <div class="metric">${h.status.toUpperCase()}</div>
           <div class="muted">ML: ${h.ml_available?'Available':'Preview Mode'} · Nodes: ${h.cameras} · Privacy: ${h.privacy_mode}</div>
         `;
       } catch(e) {
@@ -331,4 +327,3 @@
   </script>
 </body>
 </html>
-

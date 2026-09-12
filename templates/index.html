@@ -5,62 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ app_name }} — AI Traffic Enforcement Command Centre</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    /* ── COMMAND CENTRE OPERATIONAL DASHBOARD LAYOUT ── */
-    .command-shell { --command-header-height: 145px; }
-    
+    /* ── COMMAND SHELL ── */
+    .command-shell { --command-header-height: 100px; }
+
     .topbar {
-      background: rgba(6, 11, 22, 0.9) !important;
-      backdrop-filter: blur(24px) saturate(190%) !important;
-      -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
-      border-bottom: 1px solid var(--border) !important;
-      padding: 12px 28px !important;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 1000;
-      flex-wrap: wrap;
       gap: 12px;
-      box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.5) !important;
+      flex-wrap: wrap;
     }
-    .topbar::after {
-      content: "NATIONAL TRAFFIC COMMAND  /  CITY OPERATIONS GRID";
-      position: absolute;
-      left: 28px;
-      bottom: -18px;
-      color: rgba(0, 229, 255, 0.65);
-      font: 700 0.58rem var(--font-mono);
-      letter-spacing: 0.16em;
-      pointer-events: none;
-    }
+
     .brand-group {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
-    .brand-emblem {
-      font-size: 2rem;
-      filter: drop-shadow(0 0 12px rgba(255, 153, 51, 0.5));
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--accent-muted);
+      border: 1px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 1.1rem;
     }
     .brand-title {
-      font-family: var(--font-display) !important;
-      font-size: 1.35rem !important;
-      font-weight: 900 !important;
-      letter-spacing: -0.03em !important;
+      font-family: var(--font-sans);
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
       color: var(--text-primary);
     }
-    .brand-title span { 
-      color: var(--saffron);
-    }
+    .brand-title span { color: var(--accent); }
     .brand-sub {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      letter-spacing: 0.06em;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       font-weight: 700;
       font-family: var(--font-mono);
@@ -68,86 +63,64 @@
     .topbar-right {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
     }
     .live-clock {
       font-family: var(--font-mono);
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      color: var(--cyan);
-      background: rgba(0, 229, 255, 0.08);
-      border: 1px solid rgba(0, 229, 255, 0.3);
-      padding: 6px 14px;
-      border-radius: 8px;
-      box-shadow: 0 0 15px rgba(0, 229, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      color: var(--accent);
+      background: var(--accent-muted);
+      border: 1px solid var(--accent);
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
-      gap: 8px;
-      letter-spacing: 0.05em;
+      gap: 6px;
     }
 
-    /* ── KPI STATS CARDS (Bento Grid) ── */
+    /* ── KPI CARDS ── */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 16px;
-      padding: 24px 28px 12px 238px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      padding: 20px 28px 12px 238px;
     }
     .kpi-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      background: var(--bg-surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px 20px;
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      box-shadow: var(--shadow-sm), var(--glass-highlight);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      gap: 6px;
+      transition: border-color 0.15s ease;
     }
-    .kpi-card::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--cyan), transparent 75%);
-      opacity: 0.8;
-    }
-    .kpi-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--border-cyan);
-      box-shadow: var(--shadow-md), 0 0 24px rgba(0, 229, 255, 0.12), var(--glass-highlight);
-    }
+    .kpi-card:hover { border-color: var(--accent); }
     .kpi-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      color: var(--text-muted);
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.06em;
+      color: var(--text-muted);
     }
     .kpi-value {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 800;
       color: var(--text-primary);
-      margin: 8px 0 3px;
       font-family: var(--font-mono);
       letter-spacing: -0.03em;
-      text-shadow: 0 0 20px rgba(0, 229, 255, 0.18);
     }
     .kpi-footer {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: var(--text-dim);
-      font-weight: 500;
     }
 
-    /* ── TABS NAVIGATION (Floating Pill Sidebar) ── */
+    /* ── NAV TABS ── */
     .nav-tabs {
       position: fixed;
       left: 0;
@@ -156,138 +129,69 @@
       width: 218px;
       display: flex;
       flex-direction: column;
-      align-items: stretch;
-      gap: 5px;
-      padding: 96px 12px 24px;
+      gap: 2px;
+      padding: 20px 10px 24px;
       border-right: 1px solid var(--border);
-      background: rgba(6, 11, 22, 0.96);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: var(--bg-surface);
       overflow-y: auto;
       z-index: 900;
       scrollbar-width: none;
-      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45);
-    }
-    .nav-tabs::before {
-      content: "TG / 04";
-      position: absolute;
-      top: 28px;
-      left: 22px;
-      color: var(--saffron);
-      font: 800 1.15rem var(--font-mono);
-      letter-spacing: 0.1em;
-      text-shadow: 0 0 12px rgba(255, 153, 51, 0.4);
-    }
-    .nav-tabs::after {
-      content: "METRO SURVEILLANCE\A SECTOR 04 · COMMAND";
-      white-space: pre;
-      position: absolute;
-      top: 55px;
-      left: 23px;
-      color: var(--text-dim);
-      font: 700 0.56rem/1.5 var(--font-mono);
-      letter-spacing: 0.1em;
     }
     .nav-tab {
-      padding: 10px 14px;
+      padding: 9px 12px;
       border: 1px solid transparent;
-      border-radius: 10px;
+      border-radius: var(--radius-md);
       background: transparent;
       color: var(--text-muted);
-      font-family: var(--font-display);
-      font-size: 0.82rem;
-      font-weight: 700;
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      font-weight: 600;
       cursor: pointer;
       white-space: normal;
       line-height: 1.3;
-      min-height: 40px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      gap: 8px;
+      transition: all 0.15s ease;
       text-align: left;
     }
     .nav-tab:hover {
       color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.04);
-      transform: translateX(3px);
+      background: var(--bg-hover);
     }
     .nav-tab.active {
-      color: var(--cyan);
-      border-color: rgba(0, 229, 255, 0.35);
-      background: linear-gradient(90deg, rgba(0, 229, 255, 0.16), rgba(0, 229, 255, 0.04));
-      box-shadow: 0 4px 18px rgba(0, 229, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-muted);
     }
 
     /* ── TAB PANELS ── */
     .tab-content {
       margin-left: 218px;
-      padding: 22px 28px 60px;
+      padding: 20px 28px 60px;
     }
-    .tab-pane {
-      display: none;
-    }
+    .tab-pane { display: none; }
     .tab-pane.active {
       display: block;
-      animation: fadeSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeSlideUp 0.25s var(--ease) forwards;
     }
 
-    /* ── VIDEO INTERCEPTOR VIEW (HUD Grid) ── */
+    /* ── VIDEO VIEW ── */
     .video-view-grid {
       display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 22px;
-    }
-    @media (max-width: 1024px) {
-      .video-view-grid { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 760px) {
-      .command-shell { --command-header-height: 0px; }
-      .topbar { padding: 12px 16px !important; align-items: flex-start; }
-      .topbar::after { display: none; }
-      .brand-sub { max-width: 180px; }
-      .topbar-right { gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-      .topbar-right .badge-blue, .topbar-right select { display: none; }
-      .nav-tabs {
-        position: static;
-        width: 100%;
-        height: auto;
-        flex-direction: row;
-        padding: 8px 12px;
-        border-right: 0;
-        border-bottom: 1px solid var(--border);
-        overflow-x: auto;
-      }
-      .nav-tabs::before, .nav-tabs::after { display: none; }
-      .nav-tab { min-width: max-content; }
-      .kpi-grid { padding: 12px 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-      .kpi-card { padding: 12px; }
-      .kpi-value { font-size: 1.35rem; }
-      .tab-content { margin-left: 0; padding: 14px 12px 40px; }
-      .notif-dropdown { position: fixed; right: 10px; top: 64px; width: min(340px, calc(100vw - 20px)); }
+      grid-template-columns: 1fr 360px;
+      gap: 16px;
     }
     .video-viewport {
-      background: #000;
-      border: 1px solid var(--border-cyan) !important;
-      border-radius: 16px !important;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
       overflow: hidden;
       position: relative;
       aspect-ratio: 16/9;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 35px rgba(0, 229, 255, 0.15), var(--shadow-lg) !important;
-    }
-    .video-viewport::after {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      box-shadow: 0 0 14px var(--cyan);
-      opacity: 0.7;
-      pointer-events: none;
-      animation: scanline 6s linear infinite;
     }
     .video-viewport img {
       width: 100%;
@@ -297,38 +201,31 @@
     .video-controls {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-top: 14px;
+      gap: 8px;
+      margin-top: 12px;
       flex-wrap: wrap;
     }
 
-    /* ── VIOLATIONS CARDS GRID (Bento Cards) ── */
+    /* ── VIOLATIONS GRID ── */
     .violations-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-      gap: 18px;
-      margin-top: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
     }
     .violation-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      background: var(--bg-surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: var(--radius-md);
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: var(--shadow-sm), var(--glass-highlight);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: border-color 0.15s ease;
     }
-    .violation-card:hover {
-      border-color: var(--border-cyan);
-      transform: translateY(-4px) scale(1.006);
-      box-shadow: var(--shadow-md), 0 0 25px rgba(0, 229, 255, 0.12);
-    }
+    .violation-card:hover { border-color: var(--accent); }
     .vcard-img-wrap {
-      height: 170px;
-      background: #020612;
+      height: 160px;
+      background: var(--bg);
       position: relative;
       overflow: hidden;
     }
@@ -336,16 +233,12 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.35s ease;
-    }
-    .violation-card:hover .vcard-img-wrap img {
-      transform: scale(1.04);
     }
     .vcard-body {
-      padding: 16px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
     .vcard-row {
       display: flex;
@@ -353,166 +246,183 @@
       justify-content: space-between;
     }
 
-    /* ── NOTIFICATIONS POPUP BELL ── */
-    .notif-menu {
-      position: relative;
-    }
+    /* ── NOTIFICATIONS ── */
+    .notif-menu { position: relative; }
     .notif-dropdown {
       display: none;
       position: absolute;
       right: 0;
       top: 120%;
-      width: 360px;
-      max-height: 420px;
+      width: 340px;
+      max-height: 400px;
       overflow-y: auto;
-      background: rgba(14, 22, 38, 0.96);
-      backdrop-filter: blur(24px) saturate(190%);
-      -webkit-backdrop-filter: blur(24px) saturate(190%);
-      border: 1px solid var(--border-light);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), var(--glass-highlight);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
       z-index: 2000;
-      animation: modalPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-    .notif-dropdown.show {
-      display: block;
-    }
+    .notif-dropdown.show { display: block; }
 
+    /* ── AI FEED ── */
     .ai-feed-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      max-height: 250px;
+      gap: 6px;
+      max-height: 240px;
       overflow-y: auto;
     }
     .ai-feed-item {
       display: grid;
-      grid-template-columns: 28px 1fr auto;
-      gap: 10px;
+      grid-template-columns: 26px 1fr auto;
+      gap: 8px;
       align-items: center;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      background: rgba(2, 6, 14, 0.6);
-      font-size: 0.74rem;
-      transition: all 0.2s ease;
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      font-size: 0.72rem;
+      transition: border-color 0.15s ease;
+      cursor: default;
     }
-    .ai-feed-item:hover {
-      background: rgba(0, 229, 255, 0.04);
-      border-color: rgba(0, 229, 255, 0.25);
-    }
+    .ai-feed-item:hover { border-color: var(--accent); }
     .ai-feed-item strong { color: var(--text-primary); display: block; font-weight: 700; }
     .ai-feed-item small { color: var(--text-dim); display: block; margin-top: 2px; }
-    .ai-feed-item time { color: var(--cyan); font-family: var(--font-mono); font-size: 0.66rem; }
+    .ai-feed-item time { color: var(--accent); font-family: var(--font-mono); font-size: 0.64rem; }
 
-    /* ── LEAFLET MAP CONTAINER ── */
+    /* ── MAP ── */
     #heatmap-container {
-      height: 560px;
-      border-radius: 16px;
+      height: 520px;
+      border-radius: var(--radius-md);
       overflow: hidden;
-      border: 1px solid var(--border-cyan);
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border);
     }
 
-    /* ── CHATBOT & SAARTHI ── */
+    /* ── CHAT ── */
     .chat-box {
-      height: 420px;
+      height: 400px;
       overflow-y: auto;
-      padding: 18px;
-      background: rgba(3, 8, 18, 0.6);
-      border-radius: 14px;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: var(--radius-md);
       border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
     .chat-msg {
-      max-width: 82%;
-      padding: 12px 16px;
-      border-radius: 14px;
-      font-size: 0.88rem;
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
       line-height: 1.5;
-      box-shadow: var(--shadow-sm);
     }
     .chat-msg.user {
       align-self: flex-end;
-      background: linear-gradient(135deg, #0077e6, #0099ff);
-      color: #fff;
-      border-bottom-right-radius: 4px;
+      background: var(--accent);
+      color: var(--accent-fg);
     }
     .chat-msg.bot {
       align-self: flex-start;
-      background: rgba(16, 26, 46, 0.9);
-      border: 1px solid var(--border-light);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
       color: var(--text);
-      border-bottom-left-radius: 4px;
     }
 
-    /* ── DEMO PROGRESS STAGES ── */
+    /* ── DEMO STAGES ── */
     .stage-step {
-      background: rgba(4, 9, 20, 0.6);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       color: var(--text-muted);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 700;
-      transition: all 0.25s ease;
+      transition: all 0.15s ease;
     }
     .stage-step.active {
-      border-color: var(--saffron);
-      color: var(--saffron);
-      background: rgba(255, 153, 51, 0.1);
-      box-shadow: 0 0 16px rgba(255, 153, 51, 0.25);
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-muted);
     }
     .stage-step.completed {
-      border-color: var(--green);
-      color: var(--green);
-      background: rgba(0, 230, 118, 0.1);
-      box-shadow: 0 0 16px rgba(0, 230, 118, 0.2);
+      border-color: var(--success);
+      color: var(--success);
+      background: var(--success-muted);
     }
-    
-    /* ── MODAL DIALOG (Spring Blur) ── */
+
+    /* ── MODAL ── */
     .modal-overlay {
       display: none;
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(3, 7, 15, 0.85);
-      backdrop-filter: blur(16px) saturate(180%);
-      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
       z-index: 3000;
       align-items: center;
       justify-content: center;
       padding: 20px;
     }
     .modal-content {
-      background: rgba(14, 22, 38, 0.95);
-      border: 1px solid var(--border-light);
-      border-radius: 20px;
-      max-width: 780px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      max-width: 760px;
       width: 100%;
       max-height: 85vh;
       overflow-y: auto;
-      padding: 28px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), var(--glass-highlight);
-      animation: modalPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      padding: 24px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* ── HUD STRIP ── */
+    .hud-strip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .video-view-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .command-shell { --command-header-height: 0px; }
+      .topbar { padding: 10px 14px !important; }
+      .nav-tabs {
+        position: static;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        padding: 6px 10px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+        overflow-x: auto;
+      }
+      .nav-tab { min-width: max-content; }
+      .kpi-grid { padding: 10px 12px; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .tab-content { margin-left: 0; padding: 12px 10px 40px; }
+      .notif-dropdown { position: fixed; right: 8px; top: 60px; width: min(320px, calc(100vw - 16px)); }
     }
   </style>
 </head>
 <body class="command-shell">
 
-  <!-- Top Tricolor Stripe -->
-  <div class="tricolor-stripe"></div>
-
   <!-- Topbar -->
   <header class="topbar">
     <div class="brand-group">
-      <div class="brand-emblem">🏛️</div>
+      <div class="brand-icon"><i class="ph ph-shield-check"></i></div>
       <div>
         <div class="brand-title">{{ app_name }} <span>AI COMMAND</span></div>
         <div class="brand-sub">{{ organization }}</div>
@@ -522,183 +432,166 @@
     <div class="topbar-right">
       <div class="live-clock" id="live-clock">--:--:-- IST</div>
       <div class="badge badge-green"><span class="pulse-dot"></span> AI ONLINE</div>
-      
-      <!-- Multi-Language Selector -->
-      <select id="lang-select" class="btn btn-outline" onchange="changeLanguage(this.value)" style="padding:4px 8px;font-size:0.75rem;">
-        <option value="en">English (EN)</option>
-        <option value="hi">हिन्दी (HI)</option>
-        <option value="pb">ਪੰਜਾਬੀ (PB)</option>
+
+      <select id="lang-select" class="btn btn-secondary btn-sm" onchange="changeLanguage(this.value)">
+        <option value="en">EN</option>
+        <option value="hi">HI</option>
+        <option value="pb">PB</option>
       </select>
 
-      <!-- Theme Toggle -->
-      <button class="btn btn-outline" onclick="toggleTheme()" title="Toggle Dark/Light Mode" style="padding:6px 12px;">🌓</button>
+      <button class="btn btn-secondary btn-sm" data-theme-toggle title="Toggle Theme">
+        <i class="ph ph-circle-half-tilt"></i>
+      </button>
 
-      <!-- Notifications Bell -->
       <div class="notif-menu">
-        <button class="btn btn-outline" onclick="toggleNotifs()" style="padding:6px 12px; position:relative;">
-          🔔 <span id="notif-badge" style="position:absolute;top:-4px;right:-4px;background:#e61c16;color:#fff;font-size:0.65rem;padding:2px 6px;border-radius:10px;">0</span>
+        <button class="btn btn-secondary btn-sm" onclick="toggleNotifs()" style="position:relative;">
+          <i class="ph ph-bell"></i>
+          <span id="notif-badge" style="position:absolute;top:-4px;right:-4px;background:var(--error);color:#fff;font-size:0.6rem;padding:2px 5px;border-radius:10px;font-weight:700;">0</span>
         </button>
         <div class="notif-dropdown" id="notif-dropdown">
-          <div style="font-weight:700;font-size:0.85rem;margin-bottom:8px;display:flex;justify-content:space-between;">
+          <div style="font-weight:700;font-size:0.82rem;margin-bottom:8px;display:flex;justify-content:space-between;">
             <span>Live Alerts Broadcast</span>
-            <span style="font-size:0.7rem;color:var(--cyan);">SSE Active</span>
+            <span class="badge badge-green" style="font-size:0.6rem;">SSE Active</span>
           </div>
-          <div id="notif-feed-list" style="display:flex;flex-direction:column;gap:8px;">
-            <div style="font-size:0.75rem;color:var(--text-dim);text-align:center;">Monitoring live traffic channels...</div>
+          <div id="notif-feed-list" style="display:flex;flex-direction:column;gap:6px;">
+            <div class="text-dim text-xs text-center">Monitoring live traffic channels...</div>
           </div>
         </div>
       </div>
 
-      <!-- Officer Profile -->
-      <a href="/intelligence" class="btn btn-outline" style="padding:6px 12px; color:var(--cyan); border-color:rgba(0,229,255,0.4); font-weight:700;">🛡️ Intelligence Command</a>
-      <div class="badge badge-blue">👮 {{ username }} ({{ user_role|upper }})</div>
-      <a href="/logout" class="btn btn-outline" style="padding:6px 12px; color:#ff6b6b; border-color:rgba(255,107,107,0.3);">Logout</a>
+      <a href="/intelligence" class="btn btn-secondary btn-sm"><i class="ph ph-shield"></i> Intelligence</a>
+      <div class="badge badge-blue"><i class="ph ph-user-circle"></i> {{ username }} ({{ user_role|upper }})</div>
+      <a href="/logout" class="btn btn-secondary btn-sm" style="color:var(--error);">Logout</a>
     </div>
   </header>
 
-  <!-- KPI Top Stats Cards (Tactile Telemetry Matrix) -->
+  <!-- KPI Stats -->
   <section class="kpi-grid">
-    <div class="kpi-card hud-frame">
+    <div class="kpi-card">
       <div class="kpi-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="led-indicator led-red"></span>
-          <span data-i18n="violations_today">Violations Detected</span>
-        </div>
-        <span class="badge badge-red" style="font-size:0.6rem; padding:2px 6px;">REAL-TIME</span>
+        <span data-i18n="violations_today">Violations Detected</span>
+        <span class="badge badge-red">REAL-TIME</span>
       </div>
       <div class="kpi-value" id="kpi-total">0</div>
       <div class="kpi-footer">Across all camera intercept nodes</div>
     </div>
 
-    <div class="kpi-card hud-frame">
+    <div class="kpi-card">
       <div class="kpi-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="led-indicator led-saffron"></span>
-          <span data-i18n="total_fines">Fines Imposed</span>
-        </div>
-        <span class="badge badge-saffron" style="font-size:0.6rem; padding:2px 6px;">MV ACT 2019</span>
+        <span data-i18n="total_fines">Fines Imposed</span>
+        <span class="badge badge-yellow">MV ACT 2019</span>
       </div>
-      <div class="kpi-value" id="kpi-fines" style="color:var(--saffron);">₹0</div>
+      <div class="kpi-value" id="kpi-fines" style="color:var(--accent);">₹0</div>
       <div class="kpi-footer" id="kpi-pending">Pending: 0 challans</div>
     </div>
 
-    <div class="kpi-card hud-frame">
+    <div class="kpi-card">
       <div class="kpi-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="led-indicator led-green"></span>
-          <span data-i18n="revenue_collected">Settled Revenue</span>
-        </div>
-        <span class="badge badge-green" style="font-size:0.6rem; padding:2px 6px;">TREASURY</span>
+        <span data-i18n="revenue_collected">Settled Revenue</span>
+        <span class="badge badge-green">TREASURY</span>
       </div>
-      <div class="kpi-value" id="kpi-collected" style="color:var(--green);">₹0</div>
+      <div class="kpi-value" id="kpi-collected" style="color:var(--success);">₹0</div>
       <div class="kpi-footer" id="kpi-recovery">Recovery Rate: 0%</div>
     </div>
 
-    <div class="kpi-card hud-frame">
+    <div class="kpi-card">
       <div class="kpi-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="led-indicator led-cyan"></span>
-          <span data-i18n="active_cameras">Neural Interceptors</span>
-        </div>
-        <span class="badge badge-cyan" style="font-size:0.6rem; padding:2px 6px;">25 FPS</span>
+        <span data-i18n="active_cameras">Neural Interceptors</span>
+        <span class="badge badge-blue">25 FPS</span>
       </div>
-      <div class="kpi-value" id="kpi-cameras" style="color:var(--cyan);">1</div>
+      <div class="kpi-value" id="kpi-cameras" style="color:var(--accent);">1</div>
       <div class="kpi-footer">YOLOv8 + ByteTrack Active</div>
     </div>
 
-    <div class="kpi-card hud-frame">
+    <div class="kpi-card">
       <div class="kpi-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="led-indicator led-amber"></span>
-          <span data-i18n="blackspots">Accident Blackspots</span>
-        </div>
-        <span class="badge badge-gold" style="font-size:0.6rem; padding:2px 6px;">GIS MESH</span>
+        <span data-i18n="blackspots">Accident Blackspots</span>
+        <span class="badge badge-yellow">GIS MESH</span>
       </div>
-      <div class="kpi-value" style="color:var(--gold);">5</div>
+      <div class="kpi-value" style="color:var(--warning);">5</div>
       <div class="kpi-footer">High-risk urban corridors</div>
     </div>
   </section>
 
-  <!-- Command Navigation Tabs -->
+  <!-- Command Navigation -->
   <nav class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('tab-live')">📹 <span data-i18n="tab_live">Live Interceptor</span></button>
-    <button class="nav-tab" onclick="switchTab('tab-violations')">🚨 <span data-i18n="tab_violations">Violations Feed</span></button>
-    <button class="nav-tab" onclick="switchTab('tab-reviews')">🔍 <span data-i18n="tab_reviews">Review Queue</span></button>
-    <button class="nav-tab" onclick="switchTab('tab-heatmap')">🗺️ <span data-i18n="tab_map">Hotspot Heat Map</span></button>
-    <button class="nav-tab" onclick="switchTab('tab-predictive')">📈 <span data-i18n="tab_predictive">Predictive Analytics</span></button>
-    <button class="nav-tab" onclick="switchTab('tab-officers')">👮 <span data-i18n="tab_officers">Officer Leaderboard</span></button>
-    <button class="nav-tab" onclick="switchTab('tab-disputes')">⚖️ <span data-i18n="tab_disputes">Disputes Queue</span></button>
-    <button class="nav-tab" onclick="switchTab('tab-saarthi')">🤖 <span data-i18n="tab_saarthi">Saarthi AI Bot</span></button>
-    <button class="nav-tab" onclick="switchTab('tab-suraksha')">🏆 <span data-i18n="tab_suraksha">Suraksha Score</span></button>
-    <button class="nav-tab" onclick="switchTab('tab-reports')">📑 <span data-i18n="tab_reports">Reports & Audit</span></button>
-    
+    <button class="nav-tab active" onclick="switchTab('tab-live')"><i class="ph ph-video-camera"></i> <span data-i18n="tab_live">Live Interceptor</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-violations')"><i class="ph ph-warning"></i> <span data-i18n="tab_violations">Violations Feed</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-reviews')"><i class="ph ph-magnifying-glass"></i> <span data-i18n="tab_reviews">Review Queue</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-heatmap')"><i class="ph ph-map-pin"></i> <span data-i18n="tab_map">Hotspot Heat Map</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-predictive')"><i class="ph ph-chart-line-up"></i> <span data-i18n="tab_predictive">Predictive Analytics</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-officers')"><i class="ph ph-user-circle"></i> <span data-i18n="tab_officers">Officer Leaderboard</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-disputes')"><i class="ph ph-scale"></i> <span data-i18n="tab_disputes">Disputes Queue</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-saarthi')"><i class="ph ph-robot"></i> <span data-i18n="tab_saarthi">Saarthi AI Bot</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-suraksha')"><i class="ph ph-trophy"></i> <span data-i18n="tab_suraksha">Suraksha Score</span></button>
+    <button class="nav-tab" onclick="switchTab('tab-reports')"><i class="ph ph-file-text"></i> <span data-i18n="tab_reports">Reports & Audit</span></button>
+
     <div style="margin-top:auto; padding-top:10px;">
-      <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:6px 0 10px;">
-      <div style="font-size:0.62rem; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); padding:2px 8px 6px;">PORTAL MESH</div>
-      <a href="/advanced-features" class="nav-tab" style="text-decoration:none; color:var(--cyan); margin-bottom:4px;">🚀 <span>Features 21–35</span></a>
-      <a href="/intelligence" class="nav-tab" style="text-decoration:none; color:var(--saffron); margin-bottom:4px;">🛡️ <span>Operations Grid</span></a>
-      <a href="/map" class="nav-tab" style="text-decoration:none; margin-bottom:4px;">🗺️ <span>Tactical GIS Map</span></a>
-      <a href="/citizen" class="nav-tab" style="text-decoration:none;">🏛️ <span>Citizen Portal</span></a>
+      <hr>
+      <div class="text-xs text-dim text-mono font-bold" style="padding:2px 8px 6px;text-transform:uppercase;letter-spacing:0.08em;">PORTAL MESH</div>
+      <a href="/advanced-features" class="nav-tab" style="text-decoration:none; color:var(--accent);"><i class="ph ph-rocket"></i> <span>Features 21-35</span></a>
+      <a href="/intelligence" class="nav-tab" style="text-decoration:none; color:var(--accent-hover);"><i class="ph ph-shield"></i> <span>Operations Grid</span></a>
+      <a href="/map" class="nav-tab" style="text-decoration:none;"><i class="ph ph-map-trifold"></i> <span>Tactical GIS Map</span></a>
+      <a href="/citizen" class="nav-tab" style="text-decoration:none;"><i class="ph ph-buildings"></i> <span>Citizen Portal</span></a>
     </div>
   </nav>
 
-  <!-- Main Content Body -->
+  <!-- Main Content -->
   <main class="tab-content">
 
-    <!-- 1. LIVE INTERCEPTOR TAB -->
+    <!-- 1. LIVE INTERCEPTOR -->
     <div id="tab-live" class="tab-pane active">
-      
-      <!-- JUDGE DEMO VIDEO COMMAND & LIVE PROGRESS HUB -->
-      <div class="glass-card" style="margin-bottom:16px; border:1px solid rgba(255,153,51,0.35); background:linear-gradient(135deg, rgba(255,153,51,0.08), rgba(0,229,255,0.05));">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+
+      <!-- Demo Pipeline Banner -->
+      <div class="card" style="margin-bottom:14px; border-color:var(--accent);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <span class="badge badge-gold" style="font-size:0.75rem;">JUDGE DEMO SUITE</span>
-              <span style="font-weight:800; font-size:1.05rem; color:var(--text);">🎬 TrafficGuard Pro AI Demo Pipeline</span>
+              <span class="badge badge-yellow">JUDGE DEMO SUITE</span>
+              <span style="font-weight:700; font-size:0.95rem; color:var(--text);"><i class="ph ph-film-strip"></i> TrafficGuard Pro AI Demo Pipeline</span>
             </div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+            <div class="text-xs text-muted" style="margin-top:2px;">
               Live frame-by-frame inference: YOLOv8 Neural Tracking · ByteTrack Trajectories · EasyOCR ANPR · Blockchain Evidence Proof
             </div>
           </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn btn-saffron" onclick="triggerDeepDemoAnalysis()" id="btn-load-demo" style="box-shadow:0 0 12px rgba(255,153,51,0.3);">
-              ⚡ Load Demo Video (Judge Demo)
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="triggerDeepDemoAnalysis()" id="btn-load-demo">
+              <i class="ph ph-lightning"></i> Load Demo Video
             </button>
-            <button class="btn btn-outline" onclick="replayDemoVideo()" id="btn-replay-demo">
-              🔁 Replay Demo
+            <button class="btn btn-secondary btn-sm" onclick="replayDemoVideo()" id="btn-replay-demo">
+              <i class="ph ph-arrow-clockwise"></i> Replay
             </button>
-            <button class="btn btn-outline" onclick="openDemoAuditReport()" id="btn-demo-report">
-              📊 View Execution Report
+            <button class="btn btn-secondary btn-sm" onclick="openDemoAuditReport()" id="btn-demo-report">
+              <i class="ph ph-chart-bar"></i> Report
             </button>
           </div>
         </div>
 
-        <!-- Real-time Progress Bar & Visual Pipeline Indicator -->
-        <div id="demo-progress-wrapper" style="margin-top:14px; display:none;">
-          <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:6px;">
-            <span id="demo-progress-label" style="font-weight:700; color:var(--cyan);">Processing Video Stream...</span>
-            <span id="demo-progress-pct" style="font-family:var(--font-mono); color:var(--saffron); font-weight:700;">0%</span>
+        <!-- Progress -->
+        <div id="demo-progress-wrapper" style="margin-top:12px; display:none;">
+          <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px;">
+            <span id="demo-progress-label" style="font-weight:700; color:var(--accent);">Processing Video Stream...</span>
+            <span id="demo-progress-pct" class="text-mono" style="color:var(--accent); font-weight:700;">0%</span>
           </div>
-          <div style="width:100%; height:10px; background:rgba(255,255,255,0.08); border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
-            <div id="demo-progress-bar" style="width:0%; height:100%; background:linear-gradient(90deg, #ff9933, #00e5ff, #00e676); transition:width 0.2s ease;"></div>
+          <div style="width:100%; height:6px; background:var(--bg); border-radius:3px; overflow:hidden; border:1px solid var(--border);">
+            <div id="demo-progress-bar" style="width:0%; height:100%; background:var(--accent); transition:width 0.2s ease;"></div>
           </div>
-          
-          <!-- 5-Step Pipeline Stages Visual Indicator -->
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap:8px; margin-top:10px; font-size:0.72rem;">
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:6px; margin-top:8px;">
             <div id="stage-1" class="stage-step active">
-              <span style="font-size:0.9rem;">📹</span> <span>1. Stream Decoded</span>
+              <i class="ph ph-video-camera"></i> <span>1. Stream Decoded</span>
             </div>
             <div id="stage-2" class="stage-step">
-              <span style="font-size:0.9rem;">🚗</span> <span>2. Vehicles (<b id="cnt-veh">0</b>)</span>
+              <i class="ph ph-car"></i> <span>2. Vehicles (<b id="cnt-veh">0</b>)</span>
             </div>
             <div id="stage-3" class="stage-step">
-              <span style="font-size:0.9rem;">🪖</span> <span>3. Helmet / Violations</span>
+              <i class="ph ph-hard-hat"></i> <span>3. Helmet / Violations</span>
             </div>
             <div id="stage-4" class="stage-step">
-              <span style="font-size:0.9rem;">🔤</span> <span>4. Plates (<b id="cnt-plates">0</b>)</span>
+              <i class="ph ph-text-aa"></i> <span>4. Plates (<b id="cnt-plates">0</b>)</span>
             </div>
             <div id="stage-5" class="stage-step">
-              <span style="font-size:0.9rem;">🛡️</span> <span>5. Blockchain Sync</span>
+              <i class="ph ph-link"></i> <span>5. Blockchain Sync</span>
             </div>
           </div>
         </div>
@@ -706,206 +599,198 @@
 
       <div class="video-view-grid">
         <div>
-          <div class="video-viewport hud-frame">
-            <!-- Top HUD Status Bar -->
-            <div style="position:absolute; top:12px; left:16px; right:16px; display:flex; justify-content:space-between; align-items:center; z-index:20; pointer-events:none;">
-              <div style="background:rgba(6,9,15,0.8); border:1px solid rgba(0,229,255,0.35); border-radius:6px; padding:4px 10px; font-family:var(--font-mono); font-size:0.72rem; color:var(--cyan); display:flex; align-items:center; gap:8px; backdrop-filter:blur(10px);">
-                <span class="led-indicator led-cyan"></span>
+          <!-- Video viewport -->
+          <div class="video-viewport">
+            <!-- HUD overlays -->
+            <div style="position:absolute; top:10px; left:14px; right:14px; display:flex; justify-content:space-between; align-items:center; z-index:20; pointer-events:none;">
+              <div class="hud-strip">
+                <span class="pulse-dot"></span>
                 <span>CAM #01 · SILK BOARD NORTH // 1080P 25FPS</span>
               </div>
-              <div style="background:rgba(6,9,15,0.8); border:1px solid rgba(255,51,75,0.45); border-radius:6px; padding:4px 10px; font-family:var(--font-mono); font-size:0.72rem; color:#ff6b6b; display:flex; align-items:center; gap:8px; backdrop-filter:blur(10px);">
-                <span class="led-indicator led-red" style="animation:pulseRippleRed 1.2s infinite;"></span>
-                <span>● REC // NEURAL TRACKING LIVE</span>
+              <div class="hud-strip" style="border-color:var(--error); color:var(--error);">
+                <i class="ph ph-circle" style="font-size:0.5rem;"></i>
+                <span>REC // NEURAL TRACKING LIVE</span>
               </div>
             </div>
 
-            <!-- Central Tactical Reticle / Crosshair -->
-            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0.25;">
-              <div style="width:90px; height:90px; border:1px dashed var(--cyan); border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                <div style="width:6px; height:6px; background:var(--cyan); border-radius:50%;"></div>
+            <!-- Center crosshair -->
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0.2;">
+              <div style="width:80px; height:80px; border:1px dashed var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <div style="width:5px; height:5px; background:var(--border); border-radius:50%;"></div>
               </div>
             </div>
 
-            <!-- Bottom Telemetry HUD Strip -->
-            <div style="position:absolute; bottom:12px; left:16px; right:16px; display:flex; justify-content:space-between; align-items:center; z-index:20; pointer-events:none;">
-              <div style="background:rgba(6,9,15,0.8); border:1px solid rgba(255,255,255,0.12); border-radius:6px; padding:4px 10px; font-family:var(--font-mono); font-size:0.7rem; color:#cbd5e1; backdrop-filter:blur(10px);">
+            <!-- Bottom telemetry -->
+            <div style="position:absolute; bottom:10px; left:14px; right:14px; display:flex; justify-content:space-between; align-items:center; z-index:20; pointer-events:none;">
+              <div class="hud-strip">
                 PIPELINE: <b>YOLOv8 + BYTETRACK + EASYOCR</b> · LATENCY: <b>38ms</b>
               </div>
-              <div style="background:rgba(6,9,15,0.8); border:1px solid rgba(0,230,118,0.35); border-radius:6px; padding:4px 10px; font-family:var(--font-mono); font-size:0.7rem; color:#00e676; backdrop-filter:blur(10px);">
+              <div class="hud-strip" style="color:var(--success); border-color:var(--success);">
                 SHA-256 LEDGER AUDIT SYNCED
               </div>
             </div>
 
             <img id="live-stream-img" src="/video_feed" alt="Live AI Video Stream">
           </div>
+
+          <!-- Video controls -->
           <div class="video-controls">
-            <select id="video-selector" class="btn btn-outline" style="min-width:260px;">
+            <select id="video-selector" class="btn btn-secondary btn-sm" style="min-width:240px;">
               {% for v in videos %}
               <option value="{{ v }}">{{ v }}</option>
               {% endfor %}
             </select>
-            <input id="video-upload" type="file" accept="video/*" style="max-width:220px;color:var(--text-muted);">
-            <button class="btn btn-outline" onclick="uploadVideo()">⬆ Upload Video</button>
-            <button class="btn btn-primary" onclick="startSelectedVideo()">▶ <span data-i18n="btn_start">Start AI Detection</span></button>
-            <button class="btn btn-outline" onclick="stopVideo()">⏹ <span data-i18n="btn_stop">Stop</span></button>
-            <button class="btn btn-saffron" onclick="openAddCameraModal()">➕ Add RTSP Camera</button>
+            <input id="video-upload" type="file" accept="video/*" style="max-width:200px;color:var(--text-muted);font-size:0.78rem;">
+            <button class="btn btn-secondary btn-sm" onclick="uploadVideo()"><i class="ph ph-upload"></i> Upload</button>
+            <button class="btn btn-primary btn-sm" onclick="startSelectedVideo()"><i class="ph ph-play"></i> <span data-i18n="btn_start">Start AI Detection</span></button>
+            <button class="btn btn-secondary btn-sm" onclick="stopVideo()"><i class="ph ph-square"></i> <span data-i18n="btn_stop">Stop</span></button>
+            <button class="btn btn-secondary btn-sm" onclick="openAddCameraModal()"><i class="ph ph-plus"></i> Add Camera</button>
           </div>
         </div>
 
-        <div class="glass-card" style="display:flex; flex-direction:column; gap:14px;">
-          <h3 style="font-size:1rem;color:var(--text);">⚡ Live AI Vision Telemetry</h3>
-          <div style="display:flex; flex-direction:column; gap:8px; font-size:0.82rem;">
+        <!-- Side panel -->
+        <div class="card" style="display:flex; flex-direction:column; gap:12px;">
+          <h3 style="font-size:0.95rem;"><i class="ph ph-satellite"></i> Live AI Vision Telemetry</h3>
+          <div style="display:flex; flex-direction:column; gap:6px; font-size:0.78rem;">
             <div class="vcard-row">
-              <span style="color:var(--text-muted);">YOLOv8 Detection FPS:</span>
-              <span id="tel-fps" style="font-family:var(--font-mono);color:var(--cyan);font-weight:700;">24.8 FPS</span>
+              <span class="text-muted">YOLOv8 Detection FPS:</span>
+              <span id="tel-fps" class="text-mono" style="color:var(--accent);font-weight:700;">24.8 FPS</span>
             </div>
             <div class="vcard-row">
-              <span style="color:var(--text-muted);">Inference Latency:</span>
-              <span id="tel-latency" style="font-family:var(--font-mono);color:var(--green);font-weight:700;">38 ms</span>
+              <span class="text-muted">Inference Latency:</span>
+              <span id="tel-latency" class="text-mono" style="color:var(--success);font-weight:700;">38 ms</span>
             </div>
             <div class="vcard-row">
-              <span style="color:var(--text-muted);">EasyOCR Processing:</span>
-              <span id="tel-ocr" style="font-family:var(--font-mono);color:var(--saffron);font-weight:700;">Active</span>
+              <span class="text-muted">EasyOCR Processing:</span>
+              <span id="tel-ocr" class="text-mono" style="color:var(--accent);font-weight:700;">Active</span>
             </div>
             <div class="vcard-row">
-              <span style="color:var(--text-muted);">ByteTrack Trajectory:</span>
-              <span style="font-family:var(--font-mono);color:#00e676;font-weight:700;">TRACKING ON</span>
+              <span class="text-muted">ByteTrack Trajectory:</span>
+              <span class="text-mono" style="color:var(--success);font-weight:700;">TRACKING ON</span>
             </div>
           </div>
 
-          <hr style="border:none;border-top:1px solid var(--border);">
+          <hr>
 
-          <h4 style="font-size:0.85rem;color:var(--text);">🎯 Demo Video Library</h4>
-          <div style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;">
+          <h4 style="font-size:0.82rem;"><i class="ph ph-film-strip"></i> Demo Video Library</h4>
+          <div style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;">
             {% for dv in demo_videos %}
-            <div style="background:rgba(0,0,0,0.2);padding:8px 10px;border-radius:6px;display:flex;align-items:center;justify-content:space-between;font-size:0.75rem;">
+            <div class="card-flat" style="padding:8px;display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;cursor:pointer;" onclick="playDemoVideo('{{ dv.video_name }}')">
               <div>
                 <div style="font-weight:700;color:var(--text);">{{ dv.display_label }}</div>
-                <div style="color:var(--text-dim);font-size:0.68rem;">{{ dv.video_name[:24] }}...</div>
+                <div class="text-dim" style="font-size:0.66rem;">{{ dv.video_name[:24] }}...</div>
               </div>
-              <button class="btn btn-outline" style="padding:4px 8px;font-size:0.7rem;" onclick="playDemoVideo('{{ dv.video_name }}')">Play</button>
+              <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.68rem;"><i class="ph ph-play"></i></button>
             </div>
             {% endfor %}
           </div>
 
-          <div style="border-top:1px solid var(--border);padding-top:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <h4 style="font-size:0.85rem;color:var(--text);">📡 AI Dataset Stream</h4>
-              <span class="badge badge-green" style="font-size:0.6rem;"><span class="pulse-dot"></span> LIVE</span>
+          <div style="border-top:1px solid var(--border);padding-top:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <h4 style="font-size:0.82rem;"><i class="ph ph-satellite"></i> AI Dataset Stream</h4>
+              <span class="badge badge-green" style="font-size:0.58rem;"><span class="pulse-dot"></span> LIVE</span>
             </div>
             <div id="ai-dataset-feed" class="ai-feed-list">
-              <div style="font-size:0.72rem;color:var(--text-dim);text-align:center;padding:8px;">Waiting for generated events...</div>
+              <div class="text-xs text-dim text-center" style="padding:8px;">Waiting for generated events...</div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 2. VIOLATIONS FEED TAB -->
+    <!-- 2. VIOLATIONS FEED -->
     <div id="tab-violations" class="tab-pane">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-        <h2 style="font-size:1.2rem;">🚨 Real-Time Interceptions Ledger</h2>
-        <div style="display:flex; gap:10px;">
-          <input type="text" id="filter-plate" placeholder="Search Plate (e.g. KA03MX4521)" class="btn btn-outline" oninput="loadViolationsFeed()">
-          <a href="/export" class="btn btn-saffron">⬇ Export CSV</a>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <h2 style="font-size:1.1rem;"><i class="ph ph-warning"></i> Real-Time Interceptions Ledger</h2>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="filter-plate" placeholder="Search Plate (e.g. KA03MX4521)" oninput="loadViolationsFeed()" style="max-width:240px;">
+          <a href="/export" class="btn btn-primary btn-sm"><i class="ph ph-download"></i> Export CSV</a>
         </div>
       </div>
-      <div class="violations-grid" id="violations-container">
-        <!-- Dynamic Violation Cards -->
-      </div>
+      <div class="violations-grid" id="violations-container"></div>
     </div>
 
-    <!-- 2B. HUMAN-IN-THE-LOOP EVIDENCE REVIEW QUEUE TAB -->
+    <!-- 3. REVIEW QUEUE -->
     <div id="tab-reviews" class="tab-pane">
-      <div class="glass-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
           <div>
-            <h2 style="font-size:1.2rem;margin:0;">🔍 Human-in-the-Loop Evidence Review Queue</h2>
-            <div style="font-size:0.75rem;color:var(--text-muted);">Officer verification and adjudication queue for high/medium confidence AI detections</div>
+            <h2 style="font-size:1.1rem;margin:0;"><i class="ph ph-magnifying-glass"></i> Human-in-the-Loop Evidence Review Queue</h2>
+            <div class="text-xs text-muted">Officer verification and adjudication queue for high/medium confidence AI detections</div>
           </div>
-          <button class="btn btn-outline" onclick="loadReviewQueue()">🔄 Refresh Review Queue</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadReviewQueue()"><i class="ph ph-arrows-clockwise"></i> Refresh</button>
         </div>
-        <div id="review-queue-list" style="display:flex; flex-direction:column; gap:12px;">
-          <!-- Dynamic Review Queue Items -->
-        </div>
+        <div id="review-queue-list" style="display:flex; flex-direction:column; gap:10px;"></div>
       </div>
     </div>
 
-    <!-- 3. GEOLOCATION HEAT MAP TAB -->
+    <!-- 4. HEAT MAP -->
     <div id="tab-heatmap" class="tab-pane">
-      <div style="display:grid; grid-template-columns: 1fr 340px; gap:20px;">
+      <div style="display:grid; grid-template-columns:1fr 320px; gap:16px;">
         <div>
           <div id="heatmap-container"></div>
         </div>
-        <div class="glass-card">
-          <h3 style="font-size:1rem;margin-bottom:12px;">📍 Top 5 Hazardous Blackspots</h3>
-          <div id="hotspots-list" style="display:flex; flex-direction:column; gap:10px;">
-            <!-- Dynamic Hotspots -->
-          </div>
+        <div class="card">
+          <h3 style="font-size:0.95rem;margin-bottom:10px;"><i class="ph ph-map-pin"></i> Top 5 Hazardous Blackspots</h3>
+          <div id="hotspots-list" style="display:flex; flex-direction:column; gap:8px;"></div>
         </div>
       </div>
     </div>
 
-    <!-- 4. PREDICTIVE ANALYTICS TAB -->
+    <!-- 5. PREDICTIVE ANALYTICS -->
     <div id="tab-predictive" class="tab-pane">
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-        <div class="glass-card">
-          <h3 style="font-size:1rem;margin-bottom:12px;">⏰ Peak Violation Hours (AI Prediction)</h3>
-          <canvas id="peakHoursChart" style="max-height:260px;"></canvas>
+      <div class="bento-2">
+        <div class="card">
+          <h3 style="font-size:0.95rem;margin-bottom:10px;"><i class="ph ph-clock"></i> Peak Violation Hours (AI Prediction)</h3>
+          <canvas id="peakHoursChart" style="max-height:240px;"></canvas>
         </div>
-        <div class="glass-card">
-          <h3 style="font-size:1rem;margin-bottom:12px;">🎯 Tactical Interceptor Directives</h3>
-          <div id="ai-recs-container" style="display:flex; flex-direction:column; gap:10px;">
-            <!-- Dynamic Directives -->
-          </div>
+        <div class="card">
+          <h3 style="font-size:0.95rem;margin-bottom:10px;"><i class="ph ph-target"></i> Tactical Interceptor Directives</h3>
+          <div id="ai-recs-container" style="display:flex; flex-direction:column; gap:8px;"></div>
         </div>
       </div>
     </div>
 
-    <!-- 5. OFFICER LEADERBOARD TAB -->
+    <!-- 6. OFFICER LEADERBOARD -->
     <div id="tab-officers" class="tab-pane">
-      <div class="glass-card">
-        <h2 style="font-size:1.2rem;margin-bottom:16px;">👮 Traffic Police Enforcement Leaderboard</h2>
+      <div class="card">
+        <h2 style="font-size:1.1rem;margin-bottom:14px;"><i class="ph ph-user-circle"></i> Traffic Police Enforcement Leaderboard</h2>
         <div style="overflow-x:auto;">
-          <table style="width:100%; border-collapse:collapse; font-size:0.85rem;" id="officer-table">
+          <table id="officer-table">
             <thead>
-              <tr style="border-bottom:2px solid var(--border); text-align:left; color:var(--text-muted);">
-                <th style="padding:10px;">Rank</th>
-                <th style="padding:10px;">Officer Name</th>
-                <th style="padding:10px;">Badge No</th>
-                <th style="padding:10px;">Station / Zone</th>
-                <th style="padding:10px;">Violations Caught</th>
-                <th style="padding:10px;">Revenue Recovered</th>
-                <th style="padding:10px;">Accuracy</th>
-                <th style="padding:10px;">Badges & Honors</th>
+              <tr>
+                <th>Rank</th>
+                <th>Officer Name</th>
+                <th>Badge No</th>
+                <th>Station / Zone</th>
+                <th>Violations Caught</th>
+                <th>Revenue Recovered</th>
+                <th>Accuracy</th>
+                <th>Badges & Honors</th>
               </tr>
             </thead>
-            <tbody id="officer-tbody">
-              <!-- Dynamic Officers -->
-            </tbody>
+            <tbody id="officer-tbody"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- 6. CITIZEN DISPUTES QUEUE TAB -->
+    <!-- 7. DISPUTES -->
     <div id="tab-disputes" class="tab-pane">
-      <div class="glass-card">
-        <h2 style="font-size:1.2rem;margin-bottom:16px;">⚖️ Citizen Dispute Resolution Tribunal</h2>
-        <div id="disputes-list" style="display:flex; flex-direction:column; gap:12px;">
-          <!-- Dynamic Disputes -->
-        </div>
+      <div class="card">
+        <h2 style="font-size:1.1rem;margin-bottom:14px;"><i class="ph ph-scale"></i> Citizen Dispute Resolution Tribunal</h2>
+        <div id="disputes-list" style="display:flex; flex-direction:column; gap:10px;"></div>
       </div>
     </div>
 
-    <!-- 7. SAARTHI AI CHATBOT TAB -->
+    <!-- 8. SAARTHI AI -->
     <div id="tab-saarthi" class="tab-pane">
-      <div class="glass-card" style="max-width:800px; margin:auto;">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-          <span style="font-size:1.8rem;">🤖</span>
+      <div class="card" style="max-width:760px; margin:auto;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <div class="brand-icon"><i class="ph ph-robot"></i></div>
           <div>
-            <h2 style="font-size:1.15rem;margin:0;">Saarthi AI — Traffic Safety Assistant</h2>
-            <div style="font-size:0.75rem;color:var(--text-muted);">Motor Vehicles Act (1988/2019) Knowledge Engine in Hindi & English</div>
+            <h2 style="font-size:1.05rem;margin:0;">Saarthi AI — Traffic Safety Assistant</h2>
+            <div class="text-xs text-muted">Motor Vehicles Act (1988/2019) Knowledge Engine in Hindi & English</div>
           </div>
         </div>
         <div class="chat-box" id="saarthi-chat-box">
@@ -913,100 +798,97 @@
             Namaste! I am <b>Saarthi AI</b>. Ask me anything about traffic rules, penalty sections under the Motor Vehicles Act, driving license procedures, or challan settlements.
           </div>
         </div>
-        <div style="display:flex; gap:8px; margin-top:12px;">
-          <input type="text" id="chat-input" placeholder="Ask in Hindi or English (e.g. Helmet ka fine kitna hai?)" class="btn btn-outline" style="flex:1;" onkeypress="if(event.key==='Enter') sendSaarthiMsg()">
-          <button class="btn btn-primary" onclick="sendSaarthiMsg()">Send</button>
+        <div style="display:flex; gap:6px; margin-top:10px;">
+          <input type="text" id="chat-input" placeholder="Ask in Hindi or English (e.g. Helmet ka fine kitna hai?)" style="flex:1;" onkeypress="if(event.key==='Enter') sendSaarthiMsg()">
+          <button class="btn btn-primary" onclick="sendSaarthiMsg()"><i class="ph ph-paper-plane-tilt"></i> Send</button>
         </div>
       </div>
     </div>
 
-    <!-- 8. SURAKSHA SCORE TAB -->
+    <!-- 9. SURAKSHA SCORE -->
     <div id="tab-suraksha" class="tab-pane">
-      <div class="glass-card" style="max-width:700px; margin:auto;">
-        <h2 style="font-size:1.15rem;margin-bottom:12px;">🏆 Suraksha Safe Driving Compliance Checker</h2>
-        <div style="display:flex; gap:10px; margin-bottom:16px;">
-          <input type="text" id="suraksha-plate-input" placeholder="Enter Registration No (e.g. KA03MX4521)" class="btn btn-outline" style="flex:1;">
-          <button class="btn btn-saffron" onclick="checkSurakshaScore()">Check Score</button>
+      <div class="card" style="max-width:660px; margin:auto;">
+        <h2 style="font-size:1.05rem;margin-bottom:10px;"><i class="ph ph-trophy"></i> Suraksha Safe Driving Compliance Checker</h2>
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <input type="text" id="suraksha-plate-input" placeholder="Enter Registration No (e.g. KA03MX4521)" style="flex:1;">
+          <button class="btn btn-primary" onclick="checkSurakshaScore()"><i class="ph ph-magnifying-glass"></i> Check Score</button>
         </div>
-        <div id="suraksha-result-box" style="display:none; background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; border:1px solid var(--border);">
-          <!-- Dynamic Score Card -->
-        </div>
+        <div id="suraksha-result-box" style="display:none;" class="card-flat"></div>
       </div>
     </div>
 
-    <!-- 9. REPORTS & AUDIT TAB -->
+    <!-- 10. REPORTS & AUDIT -->
     <div id="tab-reports" class="tab-pane">
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-        <div class="glass-card">
-          <h3 style="font-size:1rem;margin-bottom:10px;">📑 Traffic Police Headquarters Monthly Report</h3>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;">Official multi-section PDF containing executive KPIs, repeat offender matrices, blackspot risk audits, and strategic deployment directives.</p>
-          <a href="/reports/monthly" target="_blank" class="btn btn-primary">⬇ Download Official PDF Report</a>
+      <div class="bento-2">
+        <div class="card">
+          <h3 style="font-size:0.95rem;margin-bottom:8px;"><i class="ph ph-file-text"></i> Traffic Police Headquarters Monthly Report</h3>
+          <p style="font-size:0.78rem;margin-bottom:12px;">Official multi-section PDF containing executive KPIs, repeat offender matrices, blackspot risk audits, and strategic deployment directives.</p>
+          <a href="/reports/monthly" target="_blank" class="btn btn-primary btn-sm"><i class="ph ph-download"></i> Download PDF Report</a>
         </div>
-        <div class="glass-card">
-          <h3 style="font-size:1rem;margin-bottom:10px;">⛓️ Cryptographic Blockchain Immutability Ledger</h3>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;">Every e-challan is mathematically locked with SHA-256 block hash chains to guarantee tamper-proof evidentiary integrity.</p>
-          <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
-            <input type="text" id="bc-challan-input" placeholder="Challan Ref (e.g. RX-000001)" class="btn btn-outline" style="flex:1;min-width:180px;">
-            <button class="btn btn-outline" onclick="verifyBlockchainChallan()">Verify Block</button>
-            <button class="btn btn-saffron" onclick="verifyFullLedgerChain()">Verify Entire Ledger</button>
+        <div class="card">
+          <h3 style="font-size:0.95rem;margin-bottom:8px;"><i class="ph ph-link"></i> Cryptographic Blockchain Immutability Ledger</h3>
+          <p style="font-size:0.78rem;margin-bottom:12px;">Every e-challan is mathematically locked with SHA-256 block hash chains to guarantee tamper-proof evidentiary integrity.</p>
+          <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
+            <input type="text" id="bc-challan-input" placeholder="Challan Ref (e.g. RX-000001)" style="flex:1;min-width:160px;">
+            <button class="btn btn-secondary btn-sm" onclick="verifyBlockchainChallan()"><i class="ph ph-check-circle"></i> Verify Block</button>
+            <button class="btn btn-primary btn-sm" onclick="verifyFullLedgerChain()"><i class="ph ph-link"></i> Verify Ledger</button>
           </div>
-          <div id="bc-verify-result" style="margin-top:10px; font-size:0.75rem;"></div>
+          <div id="bc-verify-result" style="margin-top:8px; font-size:0.72rem;"></div>
         </div>
       </div>
     </div>
 
   </main>
 
-  <!-- ── ADD RTSP CAMERA MODAL ── -->
-  <div class="modal-backdrop" id="add-cam-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:5000;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;max-width:480px;width:100%;padding:24px;box-shadow:var(--shadow);">
-      <h3 style="font-size:1.15rem;margin-bottom:4px;color:var(--text);">📹 Connect New RTSP Video Feed</h3>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">Add network IP camera or CCTV stream for real-time AI enforcement</div>
+  <!-- Add RTSP Camera Modal -->
+  <div class="modal-backdrop" id="add-cam-modal">
+    <div class="modal-window">
+      <h3 style="font-size:1.05rem;margin-bottom:4px;"><i class="ph ph-video-camera"></i> Connect New RTSP Video Feed</h3>
+      <div class="text-xs text-muted" style="margin-bottom:14px;">Add network IP camera or CCTV stream for real-time AI enforcement</div>
 
-      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px;">
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
         <div>
-          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Camera Name / Junction Identifier:</label>
-          <input type="text" id="new-cam-name" class="btn btn-outline" style="width:100%;text-align:left;" placeholder="e.g. Silk Board East Flyover (Cam-05)">
+          <label class="text-xs text-muted" style="display:block;margin-bottom:4px;">Camera Name / Junction Identifier:</label>
+          <input type="text" id="new-cam-name" placeholder="e.g. Silk Board East Flyover (Cam-05)">
         </div>
         <div>
-          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">RTSP / RTMP / HTTP Stream URL:</label>
-          <input type="text" id="new-cam-url" class="btn btn-outline" style="width:100%;text-align:left;" placeholder="rtsp://admin:pass@192.168.1.100:554/live/ch0">
+          <label class="text-xs text-muted" style="display:block;margin-bottom:4px;">RTSP / RTMP / HTTP Stream URL:</label>
+          <input type="text" id="new-cam-url" placeholder="rtsp://admin:pass@192.168.1.100:554/live/ch0">
         </div>
         <div>
-          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Sector / Zone:</label>
-          <input type="text" id="new-cam-sector" class="btn btn-outline" style="width:100%;text-align:left;" placeholder="e.g. South Zone Corridor-3">
+          <label class="text-xs text-muted" style="display:block;margin-bottom:4px;">Sector / Zone:</label>
+          <input type="text" id="new-cam-sector" placeholder="e.g. South Zone Corridor-3">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <div>
-            <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Latitude:</label>
-            <input type="number" step="0.0001" id="new-cam-lat" class="btn btn-outline" style="width:100%;text-align:left;" value="12.9176">
+            <label class="text-xs text-muted" style="display:block;margin-bottom:4px;">Latitude:</label>
+            <input type="number" step="0.0001" id="new-cam-lat" value="12.9176">
           </div>
           <div>
-            <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Longitude:</label>
-            <input type="number" step="0.0001" id="new-cam-lng" class="btn btn-outline" style="width:100%;text-align:left;" value="77.6238">
+            <label class="text-xs text-muted" style="display:block;margin-bottom:4px;">Longitude:</label>
+            <input type="number" step="0.0001" id="new-cam-lng" value="77.6238">
           </div>
         </div>
       </div>
 
-      <div style="display:flex;gap:10px;">
-        <button class="btn btn-saffron" style="flex:1;" onclick="submitAddCamera()">Connect Camera</button>
-        <button class="btn btn-outline" onclick="closeAddCameraModal()">Cancel</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="submitAddCamera()"><i class="ph ph-link"></i> Connect Camera</button>
+        <button class="btn btn-secondary" onclick="closeAddCameraModal()">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- ── SCRIPTS ── -->
+  <!-- Demo Report Modal -->
+  <div id="demo-report-modal" class="modal-overlay" onclick="if(event.target===this) closeDemoReportModal()">
+    <div class="modal-content" id="demo-report-body"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
   <script>
     let currentTheme = localStorage.getItem('tg_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    function toggleTheme() {
-      currentTheme = (currentTheme === 'dark') ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', currentTheme);
-      localStorage.setItem('tg_theme', currentTheme);
-    }
-
-    // ── MULTI-LANGUAGE TRANSLATION DICTIONARY ──
     const TRANSLATIONS = {
       en: {
         violations_today: "Violations Detected",
@@ -1072,9 +954,7 @@
       const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (dict[key]) {
-          el.textContent = dict[key];
-        }
+        if (dict[key]) el.textContent = dict[key];
       });
     }
 
@@ -1091,7 +971,6 @@
       }
     }
 
-    // Live IST Clock
     function updateClock() {
       const now = new Date();
       document.getElementById('live-clock').textContent = now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST';
@@ -1099,7 +978,6 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Stats & KPI loader
     function loadStats() {
       fetch('/stats').then(r => r.json()).then(d => {
         document.getElementById('kpi-total').textContent = d.total || 0;
@@ -1131,16 +1009,16 @@
       const container = document.getElementById('ai-dataset-feed');
       if (!container) return;
       if (!events || !events.length) {
-        container.innerHTML = '<div style="font-size:0.72rem;color:var(--text-dim);text-align:center;padding:8px;">No events yet</div>';
+        container.innerHTML = '<div class="text-xs text-dim text-center" style="padding:8px;">No events yet</div>';
         return;
       }
       container.innerHTML = events.slice(0, 8).map(event => {
         const summary = eventSummary(event);
         const severity = String(event.severity || event.severity_level || 'info').toLowerCase();
-        const tone = severity === 'critical' || severity === 'high' ? 'var(--traffic-red)' : severity === 'medium' ? 'var(--saffron)' : 'var(--cyan)';
+        const tone = severity === 'critical' || severity === 'high' ? 'var(--error)' : severity === 'medium' ? 'var(--accent)' : 'var(--success)';
         const timestamp = event.timestamp ? event.timestamp.split(' ')[1] : '--:--:--';
         return `<div class="ai-feed-item" style="border-left:3px solid ${tone};">
-          <span style="font-size:1rem;">${event.icon || '📡'}</span>
+          <span style="font-size:0.9rem;color:${tone};"><i class="ph ${event.icon ? 'ph-' + event.icon.replace('ph-','') : 'ph-satellite-dish'}"></i></span>
           <div><strong>${summary.type}</strong><small>${summary.detail}</small></div>
           <time>${timestamp}</time>
         </div>`;
@@ -1155,13 +1033,12 @@
           events.slice(0, 3).forEach(event => {
             const summary = eventSummary(event);
             if (event.severity === 'critical' || event.severity_level === 'critical') {
-              addNotif(`${event.icon || '🚨'} ${summary.type}: ${summary.detail}`);
+              addNotif(`<i class="ph ph-warning"></i> ${summary.type}: ${summary.detail}`);
             }
           });
         }).catch(() => {});
     }
 
-    // Violations Feed Loader
     function loadViolationsFeed() {
       const search = (document.getElementById('filter-plate') ? document.getElementById('filter-plate').value : '').trim();
       fetch('/violations?limit=40').then(r => r.json()).then(data => {
@@ -1171,22 +1048,22 @@
         container.innerHTML = filtered.map(v => `
           <div class="violation-card">
             <div class="vcard-img-wrap">
-              ${v.screenshot ? `<img src="/static/screenshots/${v.screenshot}" onerror="this.remove(); this.parentElement.innerHTML='<div style=\"color:#666;display:flex;align-items:center;justify-content:center;height:100%;\">Evidence unavailable</div>'">` : `<div style="color:#666;display:flex;align-items:center;justify-content:center;height:100%;">Evidence Stored in Vault</div>`}
+              ${v.screenshot ? `<img src="/static/screenshots/${v.screenshot}" onerror="this.remove(); this.parentElement.innerHTML='<div class=\\'text-dim text-xs\\' style=\\'display:flex;align-items:center;justify-content:center;height:100%;\\'>Evidence unavailable</div>'">` : `<div class="text-dim text-xs" style="display:flex;align-items:center;justify-content:center;height:100%;">Evidence Stored in Vault</div>`}
             </div>
             <div class="vcard-body">
               <div class="vcard-row">
                 <span class="plate-chip">${v.plate && v.plate !== 'UNKNOWN' ? v.plate : 'UNRESOLVED'}</span>
-                <span class="badge ${v.paid ? 'badge-green' : 'badge-red'}">${v.paid ? '✅ PAID' : '⏳ UNPAID'}</span>
+                <span class="badge ${v.paid ? 'badge-green' : 'badge-red'}"><i class="ph ${v.paid ? 'ph-check-circle' : 'ph-hourglass'}"></i> ${v.paid ? 'PAID' : 'UNPAID'}</span>
               </div>
-              <div style="font-weight:700;color:var(--text);font-size:0.85rem;">${v.violation}</div>
-              <div class="vcard-row" style="font-size:0.75rem;color:var(--text-muted);">
-                <span>👤 ${v.owner_name || 'Citizen'}</span>
-                <span style="font-weight:700;color:var(--saffron);font-size:0.95rem;">₹${(v.fine||0).toLocaleString('en-IN')}</span>
+              <div style="font-weight:700;color:var(--text);font-size:0.82rem;">${v.violation}</div>
+              <div class="vcard-row" style="font-size:0.72rem;color:var(--text-muted);">
+                <span><i class="ph ph-user"></i> ${v.owner_name || 'Citizen'}</span>
+                <span style="font-weight:700;color:var(--accent);font-size:0.92rem;">₹${(v.fine||0).toLocaleString('en-IN')}</span>
               </div>
-              <div style="font-size:0.7rem;color:var(--text-dim);">${v.timestamp} · Ref: RX-${String(v.id).padStart(6, '0')}</div>
-              <div style="display:flex;gap:6px;margin-top:6px;">
-                <a href="/challan/${v.id}" target="_blank" class="btn btn-outline" style="flex:1;padding:4px 8px;font-size:0.75rem;">⬇ Challan</a>
-                <a href="/verify/${v.id}" target="_blank" class="btn btn-outline" style="padding:4px 8px;font-size:0.75rem;">🔍 Verify</a>
+              <div class="text-xs text-dim">${v.timestamp} · Ref: RX-${String(v.id).padStart(6, '0')}</div>
+              <div style="display:flex;gap:4px;margin-top:4px;">
+                <a href="/challan/${v.id}" target="_blank" class="btn btn-secondary btn-sm" style="flex:1;padding:4px 6px;font-size:0.72rem;"><i class="ph ph-download"></i> Challan</a>
+                <a href="/verify/${v.id}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 6px;font-size:0.72rem;"><i class="ph ph-magnifying-glass"></i></a>
               </div>
             </div>
           </div>
@@ -1194,32 +1071,31 @@
       });
     }
 
-    // Evidence Review Queue
     function loadReviewQueue() {
       fetch('/api/reviews').then(r => r.json()).then(d => {
         const container = document.getElementById('review-queue-list');
         if (!container) return;
         const revs = d.reviews || [];
         if (!revs.length) {
-          container.innerHTML = '<div style="color:var(--text-dim);text-align:center;padding:24px;">No items pending officer review in queue.</div>';
+          container.innerHTML = '<div class="text-dim text-center" style="padding:20px;">No items pending officer review in queue.</div>';
           return;
         }
         container.innerHTML = revs.map(item => `
-          <div style="background:rgba(0,0,0,0.2);padding:14px;border-radius:10px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div class="card-flat" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
             <div>
-              <div style="display:flex;align-items:center;gap:10px;">
+              <div style="display:flex;align-items:center;gap:8px;">
                 <span class="plate-chip">${item.plate || 'UNKNOWN'}</span>
-                <span class="badge ${item.confidence >= 90 ? 'badge-green' : item.confidence >= 70 ? 'badge-orange' : 'badge-red'}">Confidence: ${item.confidence}%</span>
-                <span style="font-size:0.75rem;color:var(--text-dim);font-family:var(--font-mono);">RX-${String(item.violation_id).padStart(6,'0')}</span>
+                <span class="badge ${item.confidence >= 90 ? 'badge-green' : item.confidence >= 70 ? 'badge-yellow' : 'badge-red'}">Confidence: ${item.confidence}%</span>
+                <span class="text-xs text-dim text-mono">RX-${String(item.violation_id).padStart(6,'0')}</span>
               </div>
-              <div style="font-weight:700;font-size:0.88rem;color:var(--text);margin-top:4px;">${item.violation}</div>
-              <div style="font-size:0.72rem;color:var(--text-muted);">${item.timestamp} · Status: <b>${item.status}</b></div>
-              <div style="font-size:0.7rem;color:var(--cyan);margin-top:2px;">${item.reason}</div>
+              <div style="font-weight:700;font-size:0.85rem;color:var(--text);margin-top:4px;">${item.violation}</div>
+              <div class="text-xs text-muted">${item.timestamp} · Status: <b>${item.status}</b></div>
+              <div class="text-xs" style="color:var(--accent);margin-top:2px;">${item.reason}</div>
             </div>
-            <div style="display:flex;gap:8px;">
-              <button class="btn btn-success" style="padding:6px 12px;font-size:0.75rem;" onclick="reviewAction(${item.violation_id}, 'APPROVED')">✔ Approve & Lock</button>
-              <button class="btn btn-primary" style="padding:6px 12px;font-size:0.75rem;" onclick="reviewAction(${item.violation_id}, 'REJECTED')">✖ Reject</button>
-              <a href="/challan/${item.violation_id}" target="_blank" class="btn btn-outline" style="padding:6px 10px;font-size:0.75rem;">PDF</a>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-primary btn-sm" style="padding:5px 10px;font-size:0.72rem;" onclick="reviewAction(${item.violation_id}, 'APPROVED')"><i class="ph ph-check"></i> Approve</button>
+              <button class="btn btn-secondary btn-sm" style="padding:5px 10px;font-size:0.72rem;" onclick="reviewAction(${item.violation_id}, 'REJECTED')"><i class="ph ph-x"></i> Reject</button>
+              <a href="/challan/${item.violation_id}" target="_blank" class="btn btn-secondary btn-sm" style="padding:5px 8px;font-size:0.72rem;"><i class="ph ph-file-text"></i></a>
             </div>
           </div>
         `).join('');
@@ -1238,7 +1114,6 @@
       });
     }
 
-    // Video Controls
     function startSelectedVideo() {
       const v = document.getElementById('video-selector').value;
       if (!v) return;
@@ -1250,10 +1125,7 @@
     function uploadVideo() {
       const input = document.getElementById('video-upload');
       const file = input.files[0];
-      if (!file) {
-        alert('Select a video file first.');
-        return;
-      }
+      if (!file) { alert('Select a video file first.'); return; }
       const form = new FormData();
       form.append('video', file);
       fetch('/api/upload-video', {method: 'POST', body: form})
@@ -1281,12 +1153,11 @@
       switchTab('tab-live');
     }
 
-    // Add RTSP Camera Modal Handlers
     function openAddCameraModal() {
-      document.getElementById('add-cam-modal').style.display = 'flex';
+      document.getElementById('add-cam-modal').classList.add('show');
     }
     function closeAddCameraModal() {
-      document.getElementById('add-cam-modal').style.display = 'none';
+      document.getElementById('add-cam-modal').classList.remove('show');
     }
     function submitAddCamera() {
       const name = document.getElementById('new-cam-name').value.trim();
@@ -1294,22 +1165,11 @@
       const sector = document.getElementById('new-cam-sector').value.trim();
       const lat = parseFloat(document.getElementById('new-cam-lat').value) || 12.9176;
       const lng = parseFloat(document.getElementById('new-cam-lng').value) || 77.6238;
-
-      if (!name) {
-        alert('Please enter a camera name or junction identifier.');
-        return;
-      }
-
+      if (!name) { alert('Please enter a camera name or junction identifier.'); return; }
       fetch('/admin/cameras/add', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          name: name,
-          rtsp_url: url,
-          sector: sector,
-          lat: lat,
-          lng: lng
-        })
+        body: JSON.stringify({ name, rtsp_url: url, sector, lat, lng })
       }).then(r => r.json()).then(d => {
         closeAddCameraModal();
         alert(`Camera "${name}" registered successfully with ID: ${d.camera_id}`);
@@ -1320,35 +1180,31 @@
       });
     }
 
-    // Heatmap Initialization
     function initHeatmap() {
       const map = L.map('heatmap-container').setView([12.9716, 77.5946], 12);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
       window.leafletMap = map;
-
       fetch('/api/blackspots').then(r => r.json()).then(d => {
         const list = document.getElementById('hotspots-list');
         list.innerHTML = (d.blackspots || []).map(b => `
-          <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;border-left:4px solid ${b.risk_score > 80 ? '#e61c16' : '#ff9933'};">
+          <div class="card-flat" style="border-left:3px solid ${b.risk_score > 80 ? 'var(--error)' : 'var(--accent)'};">
             <div style="font-weight:700;font-size:0.82rem;color:var(--text);">${b.name}</div>
-            <div style="font-size:0.72rem;color:var(--text-muted);margin:2px 0;">Risk Score: <b style="color:#ff5252;">${b.risk_score}/100</b> · Peak: ${b.peak_risk_time}</div>
-            <div style="font-size:0.7rem;color:var(--cyan);">${b.recommended_action}</div>
+            <div class="text-xs text-muted" style="margin:2px 0;">Risk Score: <b style="color:var(--error);">${b.risk_score}/100</b> · Peak: ${b.peak_risk_time}</div>
+            <div class="text-xs" style="color:var(--accent);">${b.recommended_action}</div>
           </div>
         `).join('');
-
         (d.blackspots || []).forEach(b => {
           L.circleMarker([b.location.lat, b.location.lng], {
             radius: 12,
-            color: b.risk_score > 80 ? '#e61c16' : '#ff9933',
-            fillColor: b.risk_score > 80 ? '#e61c16' : '#ff9933',
+            color: b.risk_score > 80 ? '#8b5a4a' : '#956E2F',
+            fillColor: b.risk_score > 80 ? '#8b5a4a' : '#956E2F',
             fillOpacity: 0.6
           }).bindPopup(`<b>${b.name}</b><br/>Risk Score: ${b.risk_score}/100<br/>${b.recommended_action}`).addTo(map);
         });
       });
     }
 
-    // Predictive Analytics
-        let peakHoursChart = null;
+    let peakHoursChart = null;
     function initPredictiveCharts() {
       const fetchAndUpdate = () => {
         fetch('/api/predictive/peak-hours').then(r => r.json()).then(d => {
@@ -1365,8 +1221,8 @@
                 datasets: [{
                   label: 'Predicted Infractions',
                   data: d.counts,
-                  backgroundColor: 'rgba(0, 229, 255, 0.5)',
-                  borderColor: '#00e5ff',
+                  backgroundColor: 'rgba(149, 110, 47, 0.5)',
+                  borderColor: '#956E2F',
                   borderWidth: 1,
                   borderRadius: 4
                 }]
@@ -1374,12 +1230,12 @@
               options: {
                 responsive: true,
                 animation: { duration: 500 },
-                scales: { 
-                  y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0aec0' } },
-                  x: { grid: { display: false }, ticks: { color: '#a0aec0' } }
+                scales: {
+                  y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a5a5a5' } },
+                  x: { grid: { display: false }, ticks: { color: '#a5a5a5' } }
                 },
                 plugins: {
-                  legend: { labels: { color: '#fff' } }
+                  legend: { labels: { color: '#e8e6e3' } }
                 }
               }
             });
@@ -1387,48 +1243,46 @@
         });
       };
       fetchAndUpdate();
-      setInterval(fetchAndUpdate, 10000); // Update dynamically every 10s
+      setInterval(fetchAndUpdate, 10000);
     }
 
-    // Officer Leaderboard
     function loadOfficerLeaderboard() {
       fetch('/api/officers/leaderboard').then(r => r.json()).then(officers => {
         document.getElementById('officer-tbody').innerHTML = officers.map(o => `
-          <tr style="border-bottom:1px solid var(--border);">
-            <td style="padding:10px;font-weight:800;color:${o.rank===1?'#ffd700':o.rank===2?'#c0c0c0':'#cd7f32'};">#${o.rank}</td>
-            <td style="padding:10px;font-weight:700;">${o.name}</td>
-            <td style="padding:10px;font-family:var(--font-mono);">${o.badge}</td>
-            <td style="padding:10px;color:var(--text-muted);">${o.station}</td>
-            <td style="padding:10px;font-weight:700;color:var(--cyan);">${o.violations_intercepted}</td>
-            <td style="padding:10px;font-weight:700;color:var(--green);">₹${o.revenue_generated.toLocaleString('en-IN')}</td>
-            <td style="padding:10px;">${o.accuracy_rate}%</td>
-            <td style="padding:10px;">${o.badges.map(b => `<span class="badge badge-gold" style="margin-right:4px;">${b}</span>`).join('')}</td>
+          <tr>
+            <td style="font-weight:800;color:${o.rank===1?'var(--accent)':o.rank===2?'var(--text-muted)':'var(--text-dim)'};">#${o.rank}</td>
+            <td style="font-weight:700;">${o.name}</td>
+            <td class="text-mono">${o.badge}</td>
+            <td class="text-muted">${o.station}</td>
+            <td style="font-weight:700;color:var(--accent);">${o.violations_intercepted}</td>
+            <td style="font-weight:700;color:var(--success);">₹${o.revenue_generated.toLocaleString('en-IN')}</td>
+            <td>${o.accuracy_rate}%</td>
+            <td>${o.badges.map(b => `<span class="badge badge-yellow" style="margin-right:4px;">${b}</span>`).join('')}</td>
           </tr>
         `).join('');
       });
     }
 
-    // Disputes Loader
     function loadDisputes() {
       fetch('/admin/disputes').then(r => r.json()).then(disputes => {
         const c = document.getElementById('disputes-list');
         if (!disputes.length) {
-          c.innerHTML = '<div style="color:var(--text-dim);text-align:center;padding:20px;">No pending citizen disputes.</div>';
+          c.innerHTML = '<div class="text-dim text-center" style="padding:18px;">No pending citizen disputes.</div>';
           return;
         }
         c.innerHTML = disputes.map(d => `
-          <div style="background:rgba(0,0,0,0.2);padding:14px;border-radius:10px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <div class="card-flat" style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div style="font-weight:700;font-size:0.85rem;">Plate: <span class="plate-chip">${d.plate}</span> | Challan: RX-${String(d.violation_id).padStart(6,'0')}</div>
-              <div style="font-size:0.75rem;color:#ff6b6b;margin:4px 0;">Reason: ${d.reason}</div>
-              <div style="font-size:0.72rem;color:var(--text-muted);">${d.explanation || 'Citizen submitted digital proof.'}</div>
+              <div style="font-weight:700;font-size:0.82rem;">Plate: <span class="plate-chip">${d.plate}</span> | Challan: RX-${String(d.violation_id).padStart(6,'0')}</div>
+              <div class="text-xs" style="color:var(--error);margin:4px 0;">Reason: ${d.reason}</div>
+              <div class="text-xs text-muted">${d.explanation || 'Citizen submitted digital proof.'}</div>
             </div>
-            <div style="display:flex;gap:8px;">
+            <div style="display:flex;gap:6px;">
               ${d.status === 'PENDING' ? `
-              <button class="btn btn-success" style="padding:6px 12px;font-size:0.75rem;" onclick="resolveDispute(${d.id}, 'ACCEPTED')">Accept & Waive</button>
-              <button class="btn btn-primary" style="padding:6px 12px;font-size:0.75rem;" onclick="resolveDispute(${d.id}, 'REJECTED')">Reject</button>
+              <button class="btn btn-primary btn-sm" style="padding:5px 10px;font-size:0.72rem;" onclick="resolveDispute(${d.id}, 'ACCEPTED')"><i class="ph ph-check"></i> Accept</button>
+              <button class="btn btn-secondary btn-sm" style="padding:5px 10px;font-size:0.72rem;" onclick="resolveDispute(${d.id}, 'REJECTED')"><i class="ph ph-x"></i> Reject</button>
               ` : `
-              <span style="font-size:0.75rem; padding:4px 8px; border-radius:4px; background: ${d.status === 'ACCEPTED' ? 'rgba(39, 174, 96, 0.2)' : 'rgba(230, 28, 22, 0.2)'}; color: ${d.status === 'ACCEPTED' ? '#2ecc71' : '#ff4d4d'}; font-weight: bold;">${d.status}</span>
+              <span class="badge ${d.status === 'ACCEPTED' ? 'badge-green' : 'badge-red'}">${d.status}</span>
               `}
             </div>
           </div>
@@ -1444,7 +1298,6 @@
       }).then(() => loadDisputes());
     }
 
-    // Saarthi AI Chat
     function sendSaarthiMsg() {
       const inp = document.getElementById('chat-input');
       const txt = inp.value.trim();
@@ -1453,7 +1306,6 @@
       box.innerHTML += `<div class="chat-msg user">${txt}</div>`;
       inp.value = '';
       box.scrollTop = box.scrollHeight;
-
       fetch('/api/chatbot/ask', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -1464,7 +1316,6 @@
       });
     }
 
-    // Suraksha Score
     function checkSurakshaScore() {
       const plate = document.getElementById('suraksha-plate-input').value.trim();
       if (!plate) return;
@@ -1474,55 +1325,54 @@
         box.innerHTML = `
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div style="font-size:1.1rem;font-weight:800;color:var(--text);">${d.owner_name}</div>
+              <div style="font-size:1rem;font-weight:800;color:var(--text);">${d.owner_name}</div>
               <div class="plate-chip" style="margin-top:4px;">${d.plate}</div>
             </div>
             <div style="text-align:right;">
-              <div style="font-size:2.2rem;font-weight:800;color:${d.color};font-family:var(--font-heading);">${d.score}/100</div>
-              <div style="font-size:0.75rem;font-weight:700;color:${d.color};">${d.tier} (${d.grade})</div>
+              <div style="font-size:2rem;font-weight:800;color:${d.color};font-family:var(--font-mono);">${d.score}/100</div>
+              <div class="text-xs font-bold" style="color:${d.color};">${d.tier} (${d.grade})</div>
             </div>
           </div>
-          <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
-          <div style="font-size:0.75rem;">
-            ${(d.bonuses||[]).map(b => `<div style="color:#00e676;">✔ ${b}</div>`).join('')}
-            ${(d.deductions||[]).map(dd => `<div style="color:#ff5252;">✖ ${dd}</div>`).join('')}
+          <hr>
+          <div class="text-xs">
+            ${(d.bonuses||[]).map(b => `<div style="color:var(--success);"><i class="ph ph-check-circle"></i> ${b}</div>`).join('')}
+            ${(d.deductions||[]).map(dd => `<div style="color:var(--error);"><i class="ph ph-x-circle"></i> ${dd}</div>`).join('')}
           </div>
         `;
       });
     }
 
-    // Blockchain Verification (Single Block & Full Chain)
     function verifyBlockchainChallan() {
       const ref = document.getElementById('bc-challan-input').value.trim();
       if (!ref) return;
       fetch('/api/blockchain/verify/' + encodeURIComponent(ref)).then(r => r.json()).then(d => {
         const out = document.getElementById('bc-verify-result');
         if (d.verified) {
-          out.innerHTML = `<div style="color:#00e676;background:rgba(0,230,118,0.1);padding:10px;border-radius:8px;border:1px solid #00e676;">
-            <b>✅ ${d.status}</b><br/>Block Height: ${d.block_height}<br/>Hash: <code>${d.block_hash.slice(0,32)}...</code><br/>Evidence SHA256: <code>${(d.evidence_sha256||'').slice(0,24)}...</code>
+          out.innerHTML = `<div style="color:var(--success);background:var(--success-muted);padding:10px;border-radius:var(--radius-md);border:1px solid var(--success);">
+            <b><i class="ph ph-check-circle"></i> ${d.status}</b><br/>Block Height: ${d.block_height}<br/>Hash: <code>${d.block_hash.slice(0,32)}...</code><br/>Evidence SHA256: <code>${(d.evidence_sha256||'').slice(0,24)}...</code>
           </div>`;
         } else {
-          out.innerHTML = `<div style="color:#ff5252;background:rgba(255,82,82,0.1);padding:10px;border-radius:8px;border:1px solid #ff5252;">${d.message || d.status}</div>`;
+          out.innerHTML = `<div style="color:var(--error);background:var(--error-muted);padding:10px;border-radius:var(--radius-md);border:1px solid var(--error);">${d.message || d.status}</div>`;
         }
       });
     }
 
     function verifyFullLedgerChain() {
       const out = document.getElementById('bc-verify-result');
-      out.innerHTML = '<div style="color:var(--cyan);padding:8px;">Traversing SHA-256 block hash chain from Genesis Block #0...</div>';
+      out.innerHTML = '<div style="color:var(--accent);padding:8px;"><i class="ph ph-spinner"></i> Traversing SHA-256 block hash chain from Genesis Block #0...</div>';
       fetch('/api/blockchain/verify-ledger').then(r => r.json()).then(d => {
         if (d.is_valid) {
           out.innerHTML = `
-            <div style="color:#00e676;background:rgba(0,230,118,0.12);padding:12px;border-radius:8px;border:1px solid #00e676;">
-              <b style="font-size:0.9rem;">🛡️ LEDGER VALID — 100% CRYPTOGRAPHIC INTEGRITY</b><br/>
+            <div style="color:var(--success);background:var(--success-muted);padding:12px;border-radius:var(--radius-md);border:1px solid var(--success);">
+              <b style="font-size:0.85rem;"><i class="ph ph-shield-check"></i> LEDGER VALID — 100% CRYPTOGRAPHIC INTEGRITY</b><br/>
               <span>Genesis Block Verified · Total Blocks Checked: <b>${d.total_blocks}</b></span><br/>
-              <span style="font-size:0.7rem;color:var(--text-muted);">Merkle continuity unbroken. Zero unauthorized database tampering detected.</span>
+              <span class="text-xs text-muted">Merkle continuity unbroken. Zero unauthorized database tampering detected.</span>
             </div>
           `;
         } else {
           out.innerHTML = `
-            <div style="color:#ff5252;background:rgba(255,82,82,0.12);padding:12px;border-radius:8px;border:1px solid #ff5252;">
-              <b style="font-size:0.9rem;">🚨 LEDGER TAMPERED WARNING</b><br/>
+            <div style="color:var(--error);background:var(--error-muted);padding:12px;border-radius:var(--radius-md);border:1px solid var(--error);">
+              <b style="font-size:0.85rem;"><i class="ph ph-warning"></i> LEDGER TAMPERED WARNING</b><br/>
               <span>${d.message || 'Block hash discrepancy identified in audit chain.'}</span>
             </div>
           `;
@@ -1530,7 +1380,6 @@
       });
     }
 
-    // SSE Real-Time Stream
     function initSSE() {
       const evt = new EventSource('/api/events');
       evt.addEventListener('violation', e => {
@@ -1538,12 +1387,12 @@
         loadStats();
         loadViolationsFeed();
         loadReviewQueue();
-        addNotif(`🚨 New violation: ${data.plate} (${data.violation})`);
+        addNotif(`<i class="ph ph-warning"></i> New violation: ${data.plate} (${data.violation})`);
       });
       evt.addEventListener('payment', e => {
         const data = JSON.parse(e.data);
         loadStats();
-        addNotif(`💳 Payment received: ₹${data.amount} for ${data.challan}`);
+        addNotif(`<i class="ph ph-credit-card"></i> Payment received: ₹${data.amount} for ${data.challan}`);
       });
       evt.addEventListener('demo_start', e => {
         const d = JSON.parse(e.data);
@@ -1560,7 +1409,6 @@
         document.getElementById('demo-progress-bar').style.width = `${p.percent}%`;
         document.getElementById('cnt-veh').textContent = p.vehicles_count || 0;
         document.getElementById('cnt-plates').textContent = p.plates_count || 0;
-        
         if (p.percent > 15) document.getElementById('stage-2').className = 'stage-step active';
         if (p.percent > 40) document.getElementById('stage-3').className = 'stage-step active';
         if (p.percent > 65) document.getElementById('stage-4').className = 'stage-step active';
@@ -1570,7 +1418,7 @@
         const report = JSON.parse(e.data);
         document.getElementById('demo-progress-pct').textContent = '100% · Complete';
         document.getElementById('demo-progress-bar').style.width = '100%';
-        document.getElementById('demo-progress-label').textContent = '✅ AI Enforcement Run Complete';
+        document.getElementById('demo-progress-label').textContent = '<i class="ph ph-check-circle"></i> AI Enforcement Run Complete';
         for (let i = 1; i <= 5; i++) {
           const el = document.getElementById(`stage-${i}`);
           if (el) el.className = 'stage-step completed';
@@ -1582,7 +1430,6 @@
       });
     }
 
-    // ── DEMO VIDEO EXECUTION HANDLERS ──
     const DEMO_VIDEO_FILE = "Driving without helmet...!! How it looks vs How it feels..!! #bike #helmet #shorts #youtubeshorts.mp4";
 
     function triggerDeepDemoAnalysis() {
@@ -1590,25 +1437,19 @@
       if (w) w.style.display = 'block';
       document.getElementById('demo-progress-bar').style.width = '5%';
       document.getElementById('demo-progress-pct').textContent = 'Initializing AI Models...';
-      document.getElementById('demo-progress-label').textContent = '🚀 Loading YOLOv8 + ByteTrack + EasyOCR...';
-
-      // Start stream as well
+      document.getElementById('demo-progress-label').textContent = 'Loading YOLOv8 + ByteTrack + EasyOCR...';
       startVideoByName(DEMO_VIDEO_FILE, true);
     }
 
     function replayDemoVideo() {
       fetch('/api/demo/reset/' + encodeURIComponent(DEMO_VIDEO_FILE), {method: 'POST'})
-        .then(() => {
-          triggerDeepDemoAnalysis();
-        });
+        .then(() => { triggerDeepDemoAnalysis(); });
     }
 
     function openDemoAuditReport() {
       fetch('/api/demo/report/' + encodeURIComponent(DEMO_VIDEO_FILE))
         .then(r => r.json())
-        .then(report => {
-          renderDemoReportModal(report);
-        });
+        .then(report => { renderDemoReportModal(report); });
     }
 
     function startVideoByName(vname, demoMode = false) {
@@ -1624,72 +1465,64 @@
       const modal = document.getElementById('demo-report-modal');
       const body = document.getElementById('demo-report-body');
       if (!modal || !body) return;
-
       const lackHtml = (r.features_lacking_evidence || []).map(item => `
-        <div style="background:rgba(255,82,82,0.06);border:1px solid rgba(255,82,82,0.25);border-radius:8px;padding:10px 14px;margin-bottom:8px;">
+        <div style="background:var(--error-muted);border:1px solid var(--error);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:6px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <b style="color:#ff6b6b;font-size:0.85rem;">⚠️ ${item.feature}</b>
-            <span class="badge badge-red" style="font-size:0.68rem;">${item.status}</span>
+            <b style="color:var(--error);font-size:0.82rem;"><i class="ph ph-warning"></i> ${item.feature}</b>
+            <span class="badge badge-red" style="font-size:0.66rem;">${item.status}</span>
           </div>
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;line-height:1.4;">${item.reason}</div>
+          <div class="text-xs text-muted" style="margin-top:4px;line-height:1.4;">${item.reason}</div>
         </div>
       `).join('');
-
       body.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:14px;">
           <div>
             <div style="display:flex;align-items:center;gap:8px;">
-              <span class="badge badge-gold">AI EXECUTION AUDIT</span>
-              <h2 style="font-size:1.15rem;margin:0;color:var(--text);">🎬 TrafficGuard Pro Execution Report</h2>
+              <span class="badge badge-yellow">AI EXECUTION AUDIT</span>
+              <h2 style="font-size:1.05rem;margin:0;color:var(--text);"><i class="ph ph-film-strip"></i> TrafficGuard Pro Execution Report</h2>
             </div>
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Video Input: <code>${r.filename}</code></div>
+            <div class="text-xs text-muted" style="margin-top:2px;">Video Input: <code>${r.filename}</code></div>
           </div>
-          <button class="btn btn-outline" onclick="closeDemoReportModal()" style="padding:4px 10px;">✕ Close</button>
+          <button class="btn btn-secondary btn-sm" onclick="closeDemoReportModal()"><i class="ph ph-x"></i> Close</button>
         </div>
-
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px;">
-          <div style="background:rgba(0,0,0,0.25);padding:10px 14px;border-radius:8px;border:1px solid var(--border);">
-            <div style="font-size:0.7rem;color:var(--text-muted);">RESOLUTION & DURATION</div>
-            <div style="font-size:0.95rem;font-weight:700;color:var(--cyan);margin-top:2px;">${r.resolution}</div>
-            <div style="font-size:0.72rem;color:var(--text-dim);">${r.duration_seconds}s · ${r.fps} FPS · ${r.file_size_mb} MB</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px;">
+          <div class="card-flat">
+            <div class="text-xs text-dim">RESOLUTION & DURATION</div>
+            <div style="font-size:0.9rem;font-weight:700;color:var(--accent);margin-top:2px;">${r.resolution}</div>
+            <div class="text-xs text-dim">${r.duration_seconds}s · ${r.fps} FPS · ${r.file_size_mb} MB</div>
           </div>
-          <div style="background:rgba(0,0,0,0.25);padding:10px 14px;border-radius:8px;border:1px solid var(--border);">
-            <div style="font-size:0.7rem;color:var(--text-muted);">FRAMES PROCESSED</div>
-            <div style="font-size:0.95rem;font-weight:700;color:var(--green);margin-top:2px;">${r.frames_processed} / ${r.total_frames}</div>
-            <div style="font-size:0.72rem;color:var(--text-dim);">100% Neural Coverage</div>
+          <div class="card-flat">
+            <div class="text-xs text-dim">FRAMES PROCESSED</div>
+            <div style="font-size:0.9rem;font-weight:700;color:var(--success);margin-top:2px;">${r.frames_processed} / ${r.total_frames}</div>
+            <div class="text-xs text-dim">100% Neural Coverage</div>
           </div>
-          <div style="background:rgba(0,0,0,0.25);padding:10px 14px;border-radius:8px;border:1px solid var(--border);">
-            <div style="font-size:0.7rem;color:var(--text-muted);">VEHICLES & PLATES</div>
-            <div style="font-size:0.95rem;font-weight:700;color:var(--saffron);margin-top:2px;">${r.vehicles_detected} Detected · ${r.plates_detected} Plates</div>
-            <div style="font-size:0.72rem;color:var(--text-dim);">ANPR: <b>${(r.plates_recognized||['KA03MX4521']).join(', ')}</b></div>
+          <div class="card-flat">
+            <div class="text-xs text-dim">VEHICLES & PLATES</div>
+            <div style="font-size:0.9rem;font-weight:700;color:var(--accent);margin-top:2px;">${r.vehicles_detected} Detected · ${r.plates_detected} Plates</div>
+            <div class="text-xs text-dim">ANPR: <b>${(r.plates_recognized||['KA03MX4521']).join(', ')}</b></div>
           </div>
         </div>
-
-        <h4 style="font-size:0.85rem;color:var(--text);margin-bottom:8px;">🧠 AI Models & Processing Stack</h4>
-        <div style="display:flex;flex-direction:column;gap:4px;background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;font-size:0.75rem;margin-bottom:16px;">
-          ${(r.ai_models_used || []).map(m => `<div>✔ <b>${m.split('(')[0]}</b> <span style="color:var(--text-muted);">(${m.split('(')[1]||''}</span></div>`).join('')}
+        <h4 style="font-size:0.82rem;margin-bottom:6px;"><i class="ph ph-cpu"></i> AI Models & Processing Stack</h4>
+        <div style="display:flex;flex-direction:column;gap:4px;background:var(--bg);padding:10px;border-radius:var(--radius-md);font-size:0.72rem;margin-bottom:14px;">
+          ${(r.ai_models_used || []).map(m => `<div><i class="ph ph-check"></i> <b>${m.split('(')[0]}</b> <span class="text-muted">(${m.split('(')[1]||''}</span></div>`).join('')}
         </div>
-
-        <h4 style="font-size:0.85rem;color:var(--text);margin-bottom:8px;">🚨 Detected Violations & Enforcement Actions</h4>
-        <div style="background:rgba(0,230,118,0.06);border:1px solid rgba(0,230,118,0.3);border-radius:8px;padding:12px;margin-bottom:16px;">
+        <h4 style="font-size:0.82rem;margin-bottom:6px;"><i class="ph ph-warning"></i> Detected Violations & Enforcement Actions</h4>
+        <div style="background:var(--success-muted);border:1px solid var(--success);border-radius:var(--radius-md);padding:12px;margin-bottom:14px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <b style="color:#00e676;font-size:0.9rem;">✅ ${(r.violations_list||['NO HELMET']).join(' + ')}</b>
+            <b style="color:var(--success);font-size:0.85rem;"><i class="ph ph-check-circle"></i> ${(r.violations_list||['NO HELMET']).join(' + ')}</b>
             <span class="badge badge-green">EVIDENCE CAPTURED</span>
           </div>
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
+          <div class="text-xs text-muted" style="margin-top:4px;">
             Violation recorded to SQLite DB · PDF Challan generated · Merkle-Root SHA-256 evidence committed to Blockchain Ledger.
           </div>
         </div>
-
-        <h4 style="font-size:0.85rem;color:var(--text);margin-bottom:8px;">🔍 Features Lacking Visual Evidence in this Video</h4>
+        <h4 style="font-size:0.82rem;margin-bottom:6px;"><i class="ph ph-magnifying-glass"></i> Features Lacking Visual Evidence</h4>
         ${lackHtml}
-
-        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;border-top:1px solid var(--border);padding-top:12px;">
-          <button class="btn btn-outline" onclick="closeDemoReportModal()">Close Report</button>
-          <button class="btn btn-saffron" onclick="closeDemoReportModal(); replayDemoVideo();">🔁 Replay Demo</button>
+        <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:14px;border-top:1px solid var(--border);padding-top:10px;">
+          <button class="btn btn-secondary btn-sm" onclick="closeDemoReportModal()">Close</button>
+          <button class="btn btn-primary btn-sm" onclick="closeDemoReportModal(); replayDemoVideo();"><i class="ph ph-arrow-clockwise"></i> Replay</button>
         </div>
       `;
-
       modal.style.display = 'flex';
     }
 
@@ -1704,8 +1537,8 @@
       document.getElementById('notif-badge').textContent = notifCount;
       const list = document.getElementById('notif-feed-list');
       const item = document.createElement('div');
-      item.style.cssText = 'padding:6px;background:rgba(0,0,0,0.2);border-radius:6px;font-size:0.75rem;';
-      item.innerHTML = `<div>${msg}</div><div style="font-size:0.65rem;color:var(--text-dim);">${new Date().toLocaleTimeString()}</div>`;
+      item.style.cssText = 'padding:6px;background:var(--bg);border-radius:var(--radius-sm);font-size:0.72rem;border:1px solid var(--border);';
+      item.innerHTML = `<div>${msg}</div><div class="text-xs text-dim">${new Date().toLocaleTimeString()}</div>`;
       list.prepend(item);
     }
     function toggleNotifs() {
@@ -1714,14 +1547,12 @@
       document.getElementById('notif-badge').textContent = '0';
     }
 
-    // Initialize all modules
     window.addEventListener('DOMContentLoaded', () => {
       const savedLang = localStorage.getItem('tg_lang') || 'en';
       if (document.getElementById('lang-select')) {
         document.getElementById('lang-select').value = savedLang;
       }
       changeLanguage(savedLang);
-
       loadStats();
       loadViolationsFeed();
       loadReviewQueue();
@@ -1736,13 +1567,5 @@
     });
   </script>
 
-  <!-- Demo Video Execution & Audit Report Modal Dialog -->
-  <div id="demo-report-modal" class="modal-overlay" onclick="if(event.target===this) closeDemoReportModal()">
-    <div class="modal-content" id="demo-report-body">
-      <!-- Dynamic Audit Content -->
-    </div>
-  </div>
-
 </body>
 </html>
-

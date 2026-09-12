@@ -5,26 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TrafficGuard Intelligence — AI Traffic Intelligence & Operations Command</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    /* ── INTELLIGENCE COMMAND GRID THEME (Godly & Watermelon Aesthetics) ── */
-    :root {
-      --intel-bg: #06090f;
-      --intel-surface: rgba(13, 19, 33, 0.85);
-      --intel-card: rgba(18, 26, 45, 0.65);
-      --intel-border: rgba(0, 229, 255, 0.16);
-      --intel-border-bright: rgba(0, 229, 255, 0.4);
-      --intel-cyan: #00e5ff;
-      --intel-cyan-glow: rgba(0, 229, 255, 0.35);
-      --intel-gold: #ffd700;
-      --intel-red: #ff334b;
-      --intel-green: #00e676;
-    }
-
     body.intelligence-shell {
-      background: var(--intel-bg);
+      background: var(--bg);
       color: var(--text);
       margin: 0;
       font-family: var(--font-sans);
@@ -34,26 +21,9 @@
       overflow-x: hidden;
     }
 
-    /* Custom Scrollbars */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(6, 9, 15, 0.8);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(0, 229, 255, 0.25);
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 229, 255, 0.5);
-    }
-
-    /* ── TOPBAR ── */
     .intel-topbar {
-      background: var(--intel-surface);
-      border-bottom: 1px solid var(--intel-border);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
       padding: 12px 28px;
       display: flex;
       align-items: center;
@@ -63,7 +33,6 @@
       z-index: 1000;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
     }
     .intel-brand-group {
       display: flex;
@@ -71,43 +40,41 @@
       gap: 14px;
     }
     .intel-brand-title {
-      font-family: var(--font-heading);
+      font-family: var(--font-sans);
       font-size: 1.28rem;
       font-weight: 800;
       letter-spacing: -0.01em;
-      color: #fff;
+      color: var(--text-primary);
     }
     .intel-brand-title span {
-      color: var(--intel-cyan);
+      color: var(--accent);
     }
     .intel-badge-live {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(0, 229, 255, 0.08);
-      border: 1px solid rgba(0, 229, 255, 0.35);
-      color: var(--intel-cyan);
+      background: var(--accent-muted);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       font-family: var(--font-mono);
       font-size: 0.68rem;
       font-weight: 700;
       padding: 4px 10px;
       border-radius: 9999px;
       letter-spacing: 0.06em;
-      box-shadow: 0 0 14px rgba(0, 229, 255, 0.15);
     }
     .intel-clock-badge {
       font-family: var(--font-mono);
       font-size: 0.82rem;
       font-weight: 600;
-      color: var(--intel-cyan);
-      background: rgba(0, 229, 255, 0.07);
-      border: 1px solid rgba(0, 229, 255, 0.25);
+      color: var(--accent);
+      background: var(--accent-muted);
+      border: 1px solid var(--border);
       padding: 5px 12px;
       border-radius: 8px;
       letter-spacing: 0.05em;
     }
 
-    /* ── LAYOUT (SIDEBAR + MAIN CONTENT) ── */
     .intel-layout {
       display: grid;
       grid-template-columns: 280px 1fr;
@@ -118,16 +85,14 @@
       .intel-sidebar { display: none; }
     }
 
-    /* ── SIDEBAR NAVIGATION ── */
     .intel-sidebar {
-      background: rgba(10, 15, 26, 0.95);
-      border-right: 1px solid var(--intel-border);
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border);
       padding: 20px 14px;
       display: flex;
       flex-direction: column;
       gap: 4px;
       backdrop-filter: blur(16px);
-      box-shadow: inset -1px 0 0 0 rgba(255, 255, 255, 0.03);
     }
     .sidebar-header {
       font-family: var(--font-mono);
@@ -135,7 +100,7 @@
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: rgba(255, 255, 255, 0.4);
+      color: var(--text-dim);
       padding: 12px 14px 6px;
     }
     .sidebar-btn {
@@ -153,24 +118,22 @@
       font-weight: 600;
       cursor: pointer;
       text-align: left;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s var(--ease);
       position: relative;
     }
     .sidebar-btn:hover {
-      background: rgba(255, 255, 255, 0.04);
-      color: #fff;
+      background: var(--bg-hover);
+      color: var(--text-primary);
       transform: translateX(3px);
-      border-color: rgba(255, 255, 255, 0.06);
+      border-color: var(--border);
     }
     .sidebar-btn.active {
-      background: rgba(0, 229, 255, 0.12);
-      color: #ffffff;
-      border: 1px solid rgba(0, 229, 255, 0.4);
+      background: var(--accent-muted);
+      color: var(--text-primary);
+      border: 1px solid var(--accent);
       font-weight: 700;
-      box-shadow: 0 4px 14px rgba(0, 229, 255, 0.15);
     }
 
-    /* ── MAIN CONTENT AREA ── */
     .intel-content {
       padding: 28px;
       overflow-y: auto;
@@ -181,14 +144,13 @@
     }
     .intel-pane.active {
       display: block;
-      animation: paneSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: paneSlideUp 0.35s var(--ease);
     }
     @keyframes paneSlideUp {
       from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── KPI & CARD GRIDS (Bento Spec) ── */
     .intel-kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -196,21 +158,18 @@
       margin-bottom: 24px;
     }
     .intel-card {
-      background: var(--intel-card);
-      border: 1px solid var(--intel-border);
-      border-radius: 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       padding: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       position: relative;
       overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.3s var(--ease);
     }
     .intel-card:hover {
-      border-color: var(--intel-border-bright);
+      border-color: var(--accent);
       transform: translateY(-2px);
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 229, 255, 0.08);
+      box-shadow: var(--shadow-sm);
     }
     .intel-card-title {
       font-size: 0.72rem;
@@ -225,8 +184,8 @@
     .intel-card-value {
       font-size: 2rem;
       font-weight: 800;
-      color: #fff;
-      font-family: var(--font-heading);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
       letter-spacing: -0.02em;
       margin: 10px 0 4px;
     }
@@ -235,33 +194,29 @@
       color: var(--text-dim);
     }
 
-    /* ── SIMULATION & STATUS BADGES ── */
     .sim-badge {
-      background: rgba(255, 153, 51, 0.12);
-      border: 1px solid rgba(255, 153, 51, 0.5);
-      color: var(--saffron);
+      background: var(--warning-muted);
+      border: 1px solid var(--warning);
+      color: var(--warning);
       font-family: var(--font-mono);
       font-size: 0.68rem;
       font-weight: 800;
       padding: 3px 8px;
       border-radius: 6px;
       letter-spacing: 0.06em;
-      box-shadow: 0 0 10px rgba(255, 153, 51, 0.15);
     }
     .obs-badge {
-      background: rgba(0, 230, 118, 0.12);
-      border: 1px solid rgba(0, 230, 118, 0.5);
-      color: var(--intel-green);
+      background: var(--success-muted);
+      border: 1px solid var(--success);
+      color: var(--success);
       font-family: var(--font-mono);
       font-size: 0.68rem;
       font-weight: 800;
       padding: 3px 8px;
       border-radius: 6px;
       letter-spacing: 0.06em;
-      box-shadow: 0 0 10px rgba(0, 230, 118, 0.15);
     }
 
-    /* ── JOURNEY NODES ── */
     .journey-sequence {
       display: flex;
       align-items: center;
@@ -269,9 +224,9 @@
       flex-wrap: wrap;
     }
     .seq-node {
-      background: rgba(0, 229, 255, 0.1);
-      border: 1px solid rgba(0, 229, 255, 0.35);
-      color: var(--intel-cyan);
+      background: var(--accent-muted);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       font-family: var(--font-mono);
       font-size: 0.74rem;
       font-weight: 700;
@@ -280,31 +235,27 @@
       transition: all 0.2s ease;
     }
     .seq-node:hover {
-      background: rgba(0, 229, 255, 0.2);
-      border-color: var(--intel-cyan);
-      box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+      background: var(--accent);
+      color: var(--accent-fg);
     }
     .seq-arrow {
-      color: rgba(0, 229, 255, 0.5);
+      color: var(--text-dim);
       font-size: 0.85rem;
       font-weight: bold;
     }
 
-    /* ── COPILOT TERMINAL (Godly Aesthetics) ── */
     .copilot-terminal {
-      background: rgba(6, 10, 18, 0.88);
-      border: 1px solid var(--intel-border);
-      border-radius: 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       height: 520px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(24px);
     }
     .copilot-terminal-header {
-      background: rgba(13, 19, 33, 0.9);
-      border-bottom: 1px solid var(--intel-border);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
       padding: 10px 16px;
       display: flex;
       align-items: center;
@@ -319,9 +270,9 @@
       height: 10px;
       border-radius: 50%;
     }
-    .terminal-dot.red { background: #ff5f56; }
-    .terminal-dot.yellow { background: #ffbd2e; }
-    .terminal-dot.green { background: #27c93f; }
+    .terminal-dot.red { background: var(--error); }
+    .terminal-dot.yellow { background: var(--warning); }
+    .terminal-dot.green { background: var(--success); }
     .terminal-title {
       font-family: var(--font-mono);
       font-size: 0.75rem;
@@ -347,23 +298,21 @@
     }
     .copilot-msg.user {
       align-self: flex-end;
-      background: linear-gradient(135deg, #0052cc 0%, #0088ff 100%);
-      color: #fff;
+      background: var(--accent);
+      color: var(--accent-fg);
       border-bottom-right-radius: 4px;
-      box-shadow: 0 4px 20px rgba(0, 136, 255, 0.3);
     }
     .copilot-msg.bot {
       align-self: flex-start;
-      background: rgba(18, 26, 45, 0.85);
-      border: 1px solid var(--intel-border);
-      color: #e2e8f0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
       border-bottom-left-radius: 4px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
     .copilot-msg code {
-      background: rgba(0, 229, 255, 0.12);
-      border: 1px solid rgba(0, 229, 255, 0.3);
-      color: var(--intel-cyan);
+      background: var(--accent-muted);
+      border: 1px solid var(--border);
+      color: var(--accent);
       font-family: var(--font-mono);
       font-size: 0.8em;
       padding: 2px 6px;
@@ -377,8 +326,8 @@
       margin-bottom: 4px;
     }
     .copilot-hotkey-chip {
-      background: rgba(14, 22, 38, 0.8);
-      border: 1px solid var(--intel-border);
+      background: var(--bg);
+      border: 1px solid var(--border);
       color: var(--text-muted);
       font-size: 0.74rem;
       padding: 6px 12px;
@@ -390,15 +339,15 @@
       transition: all 0.2s ease;
     }
     .copilot-hotkey-chip:hover {
-      background: rgba(0, 229, 255, 0.1);
-      border-color: var(--intel-cyan);
-      color: #fff;
+      background: var(--accent-muted);
+      border-color: var(--accent);
+      color: var(--text-primary);
       transform: translateY(-1px);
     }
     .hotkey-badge {
-      background: rgba(0, 229, 255, 0.15);
-      border: 1px solid rgba(0, 229, 255, 0.4);
-      color: var(--intel-cyan);
+      background: var(--accent-muted);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       font-family: var(--font-mono);
       font-size: 0.65rem;
       font-weight: 800;
@@ -410,8 +359,8 @@
       align-items: center;
       gap: 5px;
       padding: 12px 18px;
-      background: rgba(18, 26, 45, 0.7);
-      border: 1px solid var(--intel-border);
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 12px;
       width: fit-content;
       animation: fadeIn 0.2s ease;
@@ -420,7 +369,7 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: var(--intel-cyan);
+      background: var(--accent);
       opacity: 0.4;
       animation: pulseDot 1.2s infinite ease-in-out;
     }
@@ -432,45 +381,40 @@
     }
     .copilot-input-bar {
       padding: 14px 16px;
-      border-top: 1px solid var(--intel-border);
-      background: rgba(10, 15, 26, 0.8);
+      border-top: 1px solid var(--border);
+      background: var(--bg);
       display: flex;
       gap: 12px;
     }
     .copilot-input-bar input {
       flex: 1;
-      background: rgba(0, 0, 0, 0.5) !important;
-      border: 1px solid var(--intel-border) !important;
+      background: var(--bg-surface) !important;
+      border: 1px solid var(--border) !important;
       border-radius: 10px;
-      color: #fff;
+      color: var(--text);
       padding: 10px 14px;
       font-size: 0.86rem;
       transition: all 0.25s;
     }
     .copilot-input-bar input:focus {
       outline: none;
-      border-color: var(--intel-cyan) !important;
-      box-shadow: 0 0 16px rgba(0, 229, 255, 0.3);
+      border-color: var(--accent) !important;
     }
 
-    /* Modern Table Hover */
     .intel-table tbody tr {
       transition: background 0.2s;
     }
     .intel-table tbody tr:hover {
-      background: rgba(0, 229, 255, 0.05);
+      background: var(--bg-hover);
     }
   </style>
 </head>
 <body class="intelligence-shell">
 
-  <!-- Top Tricolor Stripe -->
-  <div class="tricolor-stripe"></div>
-
   <!-- Topbar -->
   <header class="intel-topbar">
     <div class="intel-brand-group">
-      <div style="font-size:1.8rem; filter:drop-shadow(0 0 8px rgba(0,229,255,0.4));">🛡️</div>
+      <i class="ph ph-shield-check" style="font-size:1.8rem; color:var(--accent);"></i>
       <div>
         <div class="intel-brand-title">TrafficGuard <span>INTELLIGENCE COMMAND</span></div>
         <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">AI Traffic Intelligence & Operations System · MHA / MoRTH Standards</div>
@@ -479,10 +423,10 @@
 
     <div style="display:flex; align-items:center; gap:14px;">
       <div class="intel-badge-live"><span class="pulse-dot"></span> LIVE GRID ACTIVE</div>
-      <div style="font-family:var(--font-mono); font-size:0.82rem; color:var(--intel-cyan); background:rgba(0,229,255,0.08); border:1px solid rgba(0,229,255,0.2); padding:4px 10px; border-radius:6px;" id="intel-clock">--:--:-- IST</div>
-      <div class="badge badge-blue">👮 {{ username }} ({{ user_role }})</div>
-      <a href="/" class="btn btn-outline" style="padding:6px 10px; font-size:0.75rem;">Officer Command Center</a>
-      <a href="/intelligence/logout" class="btn btn-outline" style="padding:6px 10px; font-size:0.75rem; color:#ff6b6b; border-color:rgba(255,107,107,0.3);">Logout</a>
+      <div style="font-family:var(--font-mono); font-size:0.82rem; color:var(--accent); background:var(--accent-muted); border:1px solid var(--border); padding:4px 10px; border-radius:6px;" id="intel-clock">--:--:-- IST</div>
+      <div class="badge badge-blue"><i class="ph ph-user"></i> {{ username }} ({{ user_role }})</div>
+      <a href="/" class="btn btn-secondary btn-sm">Officer Command Center</a>
+      <a href="/intelligence/logout" class="btn btn-secondary btn-sm" style="color:var(--error); border-color:var(--error);">Logout</a>
     </div>
   </header>
 
@@ -492,28 +436,28 @@
     <!-- Sidebar Navigation -->
     <aside class="intel-sidebar">
       <div class="sidebar-header">Core Operations</div>
-      <button class="sidebar-btn active" onclick="switchIntelTab('tab-overview')">📊 Overview</button>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-live-intel')">⚡ Live Intelligence</button>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-journeys')">🚗 Vehicle Journeys</button>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-risks')">⚠️ Risk Intelligence</button>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-incidents')">🚨 Incidents Command</button>
+      <button class="sidebar-btn active" onclick="switchIntelTab('tab-overview')"><i class="ph ph-chart-line-up"></i> Overview</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-live-intel')"><i class="ph ph-lightning"></i> Live Intelligence</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-journeys')"><i class="ph ph-car"></i> Vehicle Journeys</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-risks')"><i class="ph ph-warning"></i> Risk Intelligence</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-incidents')"><i class="ph ph-megaphone"></i> Incidents Command</button>
 
       <div class="sidebar-header" style="margin-top:10px;">Dispatch & Corridors</div>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-officers')">👮 Officer Response</button>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-corridors')">🛣️ Corridor Intelligence</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-officers')"><i class="ph ph-user-circle"></i> Officer Response</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-corridors')"><i class="ph ph-road-horizon"></i> Corridor Intelligence</button>
 
       <div class="sidebar-header" style="margin-top:10px;">Simulators & Analytics</div>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-signal-sim')">🚦 Signal Simulator</button>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-effectiveness')">📈 Enforcement Effectiveness</button>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-policy-sim')">🔬 Policy Simulator</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-signal-sim')"><i class="ph ph-traffic-cone"></i> Signal Simulator</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-effectiveness')"><i class="ph ph-chart-bar"></i> Enforcement Effectiveness</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-policy-sim')"><i class="ph ph-flask"></i> Policy Simulator</button>
 
       <div class="sidebar-header" style="margin-top:10px;">AI Operational Copilot</div>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-copilot')">🤖 TrafficGuard Copilot</button>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-evidence')">🔍 Evidence & Digest</button>
-      <button class="sidebar-btn" onclick="switchIntelTab('tab-audit')">⛓️ Blockchain Audit</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-copilot')"><i class="ph ph-robot"></i> TrafficGuard Copilot</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-evidence')"><i class="ph ph-magnifying-glass"></i> Evidence & Digest</button>
+      <button class="sidebar-btn" onclick="switchIntelTab('tab-audit')"><i class="ph ph-chain"></i> Blockchain Audit</button>
 
-      <div style="margin-top:auto; padding-top:14px; border-top:1px solid var(--intel-border);">
-        <a href="/intelligence/logout" class="sidebar-btn" style="color:#ff6b6b;">🚪 Logout Command</a>
+      <div style="margin-top:auto; padding-top:14px; border-top:1px solid var(--border);">
+        <a href="/intelligence/logout" class="sidebar-btn" style="color:var(--error);"><i class="ph ph-sign-out"></i> Logout Command</a>
       </div>
     </aside>
 
@@ -526,52 +470,50 @@
       <div id="tab-overview" class="intel-pane active">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <div>
-            <h2 style="font-size:1.3rem; margin:0;">📊 Live Operations & Intelligence Overview</h2>
+            <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-chart-line-up"></i> Live Operations & Intelligence Overview</h2>
             <div style="font-size:0.75rem; color:var(--text-muted);">Real-time aggregated telemetry across Bangalore City Traffic Command Grid</div>
           </div>
-          <button class="btn btn-outline" onclick="loadIntelOverview()">🔄 Refresh Grid</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadIntelOverview()"><i class="ph ph-arrows-clockwise"></i> Refresh Grid</button>
         </div>
 
         <div class="intel-kpi-grid" id="intel-kpi-container">
           <div class="intel-card">
-            <div class="intel-card-title">Active Cameras <span>📹</span></div>
-            <div class="intel-card-value" id="kpi-cam-count" style="color:var(--intel-cyan);">8</div>
+            <div class="intel-card-title">Active Cameras <i class="ph ph-video-camera"></i></div>
+            <div class="intel-card-value" id="kpi-cam-count" style="color:var(--accent);">8</div>
             <div class="intel-card-sub">25 FPS YOLOv8 Nodes</div>
           </div>
           <div class="intel-card">
-            <div class="intel-card-title">Vehicles Detected <span>🚗</span></div>
-            <div class="intel-card-value" id="kpi-veh-count" style="color:#fff;">0</div>
+            <div class="intel-card-title">Vehicles Detected <i class="ph ph-car"></i></div>
+            <div class="intel-card-value" id="kpi-veh-count">0</div>
             <div class="intel-card-sub">Real-time tracked instances</div>
           </div>
           <div class="intel-card">
-            <div class="intel-card-title">Active Incidents <span>🚨</span></div>
-            <div class="intel-card-value" id="kpi-inc-count" style="color:var(--saffron);">0</div>
+            <div class="intel-card-title">Active Incidents <i class="ph ph-megaphone"></i></div>
+            <div class="intel-card-value" id="kpi-inc-count" style="color:var(--warning);">0</div>
             <div class="intel-card-sub" id="kpi-crit-count">Critical: 0 incidents</div>
           </div>
           <div class="intel-card">
-            <div class="intel-card-title">High-Risk Zones <span>⚠️</span></div>
-            <div class="intel-card-value" style="color:var(--intel-gold);">5</div>
+            <div class="intel-card-title">High-Risk Zones <i class="ph ph-warning"></i></div>
+            <div class="intel-card-value" style="color:var(--warning);">5</div>
             <div class="intel-card-sub">Blackspot radii monitored</div>
           </div>
           <div class="intel-card">
-            <div class="intel-card-title">Cross-Camera Tracked <span>🔄</span></div>
-            <div class="intel-card-value" id="kpi-cross-count" style="color:var(--intel-green);">0</div>
+            <div class="intel-card-title">Cross-Camera Tracked <i class="ph ph-arrows-clockwise"></i></div>
+            <div class="intel-card-value" id="kpi-cross-count" style="color:var(--success);">0</div>
             <div class="intel-card-sub">Multi-node journey records</div>
           </div>
         </div>
 
         <div style="display:grid; grid-template-columns: 2fr 1fr; gap:16px;">
           <div class="intel-card">
-            <h3 style="font-size:0.95rem; margin-top:0; color:#fff;">🛣️ Arterial Corridor Density & Delays</h3>
+            <h3 style="font-size:0.95rem; margin-top:0; color:var(--text-primary);"><i class="ph ph-road-horizon"></i> Arterial Corridor Density & Delays</h3>
             <div id="overview-corridor-list" style="display:flex; flex-direction:column; gap:10px;">
-              <!-- Dynamic Corridors -->
             </div>
           </div>
 
           <div class="intel-card">
-            <h3 style="font-size:0.95rem; margin-top:0; color:#fff;">🚨 Priority Command Alerts</h3>
+            <h3 style="font-size:0.95rem; margin-top:0; color:var(--text-primary);"><i class="ph ph-megaphone"></i> Priority Command Alerts</h3>
             <div id="overview-priority-alerts" style="display:flex; flex-direction:column; gap:8px;">
-              <!-- Dynamic Alerts -->
             </div>
           </div>
         </div>
@@ -583,14 +525,13 @@
       <div id="tab-journeys" class="intel-pane">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
           <div>
-            <h2 style="font-size:1.3rem; margin:0;">🚗 Cross-Camera Vehicle Journey Tracker</h2>
+            <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-car"></i> Cross-Camera Vehicle Journey Tracker</h2>
             <div style="font-size:0.75rem; color:var(--text-muted);">Multi-intersection trajectory sequencing, transit durations, and cumulative violation profiles</div>
           </div>
-          <input type="text" id="journey-search-plate" placeholder="Search Plate (e.g. KA03MX4521)" class="btn btn-outline" oninput="filterJourneys(this.value)">
+          <input type="text" id="journey-search-plate" placeholder="Search Plate (e.g. KA03MX4521)" class="btn btn-secondary btn-sm" oninput="filterJourneys(this.value)">
         </div>
 
         <div id="journeys-list-container" style="display:flex; flex-direction:column; gap:12px;">
-          <!-- Dynamic Journey Cards -->
         </div>
       </div>
 
@@ -600,22 +541,22 @@
       <div id="tab-risks" class="intel-pane">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
           <div>
-            <h2 style="font-size:1.3rem; margin:0;">⚠️ Multi-Dimensional Risk Intelligence</h2>
+            <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-warning"></i> Multi-Dimensional Risk Intelligence</h2>
             <div style="font-size:0.75rem; color:var(--text-muted);">Real-time behavioral risk scoring categorized into Critical, High, Medium, and Low tiers</div>
           </div>
           <div style="display:flex; gap:6px;">
-            <button class="btn btn-outline" onclick="filterRiskTier('ALL')">All</button>
-            <button class="btn btn-outline" style="border-color:#ff334b; color:#ff334b;" onclick="filterRiskTier('CRITICAL')">Critical</button>
-            <button class="btn btn-outline" style="border-color:#ff9933; color:#ff9933;" onclick="filterRiskTier('HIGH')">High</button>
-            <button class="btn btn-outline" style="border-color:#ffd700; color:#ffd700;" onclick="filterRiskTier('MEDIUM')">Medium</button>
-            <button class="btn btn-outline" style="border-color:#00e676; color:#00e676;" onclick="filterRiskTier('LOW')">Low</button>
+            <button class="btn btn-secondary btn-sm" onclick="filterRiskTier('ALL')">All</button>
+            <button class="btn btn-secondary btn-sm" style="color:var(--error); border-color:var(--error);" onclick="filterRiskTier('CRITICAL')">Critical</button>
+            <button class="btn btn-secondary btn-sm" style="color:var(--warning); border-color:var(--warning);" onclick="filterRiskTier('HIGH')">High</button>
+            <button class="btn btn-secondary btn-sm" style="color:var(--warning); border-color:var(--warning);" onclick="filterRiskTier('MEDIUM')">Medium</button>
+            <button class="btn btn-secondary btn-sm" style="color:var(--success); border-color:var(--success);" onclick="filterRiskTier('LOW')">Low</button>
           </div>
         </div>
 
         <div class="intel-card" style="padding:0; overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
             <thead>
-              <tr style="background:rgba(0,0,0,0.4); border-bottom:1px solid var(--intel-border); color:var(--text-muted);">
+              <tr style="background:var(--bg); border-bottom:1px solid var(--border); color:var(--text-muted);">
                 <th style="padding:12px;">Challan</th>
                 <th style="padding:12px;">Plate / Owner</th>
                 <th style="padding:12px;">Risk Tier</th>
@@ -626,7 +567,6 @@
               </tr>
             </thead>
             <tbody id="risk-table-body">
-              <!-- Dynamic Risk Rows -->
             </tbody>
           </table>
         </div>
@@ -638,14 +578,13 @@
       <div id="tab-incidents" class="intel-pane">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <div>
-            <h2 style="font-size:1.3rem; margin:0;">🚨 Real-Time Incident Command Grid</h2>
+            <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-megaphone"></i> Real-Time Incident Command Grid</h2>
             <div style="font-size:0.75rem; color:var(--text-muted);">Automated detection of wrong-way movements, proximity near-misses, and response prioritization</div>
           </div>
-          <button class="btn btn-outline" onclick="loadIncidents()">🔄 Refresh Incidents</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadIncidents()"><i class="ph ph-arrows-clockwise"></i> Refresh Incidents</button>
         </div>
 
         <div id="incidents-container" style="display:flex; flex-direction:column; gap:12px;">
-          <!-- Dynamic Incident Cards -->
         </div>
       </div>
 
@@ -656,7 +595,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <h2 style="font-size:1.3rem; margin:0;">👮 Officer Fleet Response & Dispatch</h2>
+              <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-user-circle"></i> Officer Fleet Response & Dispatch</h2>
               <span class="sim-badge">DEMO / SIMULATION MODE</span>
             </div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Active police patrol units, sector assignments, and automated response ETA estimation</div>
@@ -666,23 +605,22 @@
         <div class="intel-kpi-grid">
           <div class="intel-card">
             <div class="intel-card-title">Active Patrols</div>
-            <div class="intel-card-value" id="off-active-cnt" style="color:var(--intel-cyan);">4</div>
+            <div class="intel-card-value" id="off-active-cnt" style="color:var(--accent);">4</div>
             <div class="intel-card-sub">Logged in units</div>
           </div>
           <div class="intel-card">
             <div class="intel-card-title">Available for Dispatch</div>
-            <div class="intel-card-value" id="off-avail-cnt" style="color:var(--intel-green);">2</div>
+            <div class="intel-card-value" id="off-avail-cnt" style="color:var(--success);">2</div>
             <div class="intel-card-sub">Zero queue backlog</div>
           </div>
           <div class="intel-card">
             <div class="intel-card-title">Average Dispatch ETA</div>
-            <div class="intel-card-value" style="color:var(--saffron);">2.8 min</div>
+            <div class="intel-card-value" style="color:var(--warning);">2.8 min</div>
             <div class="intel-card-sub">Urban corridor response</div>
           </div>
         </div>
 
         <div id="officers-fleet-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px;">
-          <!-- Dynamic Officer Cards -->
         </div>
       </div>
 
@@ -691,12 +629,11 @@
       <!-- ======================================================== -->
       <div id="tab-corridors" class="intel-pane">
         <div style="margin-bottom:16px;">
-          <h2 style="font-size:1.3rem; margin:0;">🛣️ Arterial Corridor Intelligence & Delay Analytics</h2>
+          <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-road-horizon"></i> Arterial Corridor Intelligence & Delay Analytics</h2>
           <div style="font-size:0.75rem; color:var(--text-muted);">Real-time monitoring of travel times, abnormal delays, and bottleneck choke points</div>
         </div>
 
         <div id="corridors-full-list" style="display:flex; flex-direction:column; gap:14px;">
-          <!-- Dynamic Detailed Corridors -->
         </div>
       </div>
 
@@ -706,7 +643,7 @@
       <div id="tab-signal-sim" class="intel-pane">
         <div style="margin-bottom:16px;">
           <div style="display:flex; align-items:center; gap:8px;">
-            <h2 style="font-size:1.3rem; margin:0;">🚦 Signal Timing Optimization Simulator</h2>
+            <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-traffic-cone"></i> Signal Timing Optimization Simulator</h2>
             <span class="sim-badge">SIMULATION</span>
           </div>
           <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Simulates Webster-formula adaptive phase splits and emergency green-wave clearance</div>
@@ -714,11 +651,11 @@
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
           <div class="intel-card">
-            <h3 style="font-size:0.95rem; margin-top:0; color:#fff;">⚙️ Simulation Parameters</h3>
+            <h3 style="font-size:0.95rem; margin-top:0; color:var(--text-primary);"><i class="ph ph-gear"></i> Simulation Parameters</h3>
             
             <div style="margin-bottom:14px;">
               <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">Select Intersection Node:</label>
-              <select id="sim-intersection-select" class="btn btn-outline" style="width:100%;">
+              <select id="sim-intersection-select" class="btn btn-secondary" style="width:100%;">
                 <option value="C01">Silk Board Junction North (C01)</option>
                 <option value="C03">Koramangala 80ft Road Crossing (C03)</option>
                 <option value="C05">MG Road Metro Station Grid (C05)</option>
@@ -729,7 +666,7 @@
             <div style="margin-bottom:14px;">
               <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px;">
                 <span style="color:var(--text-muted);">Traffic Density (%):</span>
-                <b id="sim-density-val" style="color:var(--intel-cyan);">75%</b>
+                <b id="sim-density-val" style="color:var(--accent);">75%</b>
               </div>
               <input type="range" id="sim-density-range" min="10" max="100" value="75" style="width:100%;" oninput="document.getElementById('sim-density-val').textContent=this.value+'%'">
             </div>
@@ -737,21 +674,21 @@
             <div style="margin-bottom:14px;">
               <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px;">
                 <span style="color:var(--text-muted);">Queue Length (Vehicles):</span>
-                <b id="sim-queue-val" style="color:var(--saffron);">40</b>
+                <b id="sim-queue-val" style="color:var(--warning);">40</b>
               </div>
               <input type="range" id="sim-queue-range" min="5" max="120" value="40" style="width:100%;" oninput="document.getElementById('sim-queue-val').textContent=this.value">
             </div>
 
             <div style="margin-bottom:18px; display:flex; align-items:center; gap:8px;">
               <input type="checkbox" id="sim-emergency-check">
-              <label for="sim-emergency-check" style="font-size:0.82rem; color:#ff6b6b; font-weight:700;">🚨 Priority Ambulance / Green Corridor Approaching</label>
+              <label for="sim-emergency-check" style="font-size:0.82rem; color:var(--error); font-weight:700;"><i class="ph ph-megaphone"></i> Priority Ambulance / Green Corridor Approaching</label>
             </div>
 
-            <button class="btn btn-primary" onclick="runSignalSimulation()" style="width:100%;">⚡ Compute Optimized Phase Splits</button>
+            <button class="btn btn-primary" onclick="runSignalSimulation()" style="width:100%;"><i class="ph ph-lightning"></i> Compute Optimized Phase Splits</button>
           </div>
 
           <div class="intel-card" id="sim-result-box">
-            <h3 style="font-size:0.95rem; margin-top:0; color:#fff;">📊 Recommended Phase Schedule</h3>
+            <h3 style="font-size:0.95rem; margin-top:0; color:var(--text-primary);"><i class="ph ph-chart-bar"></i> Recommended Phase Schedule</h3>
             <div style="color:var(--text-dim); font-size:0.8rem; text-align:center; padding:40px 0;">Configure parameters and run simulation to view Webster phase timings.</div>
           </div>
         </div>
@@ -763,14 +700,13 @@
       <div id="tab-effectiveness" class="intel-pane">
         <div style="margin-bottom:16px;">
           <div style="display:flex; align-items:center; gap:8px;">
-            <h2 style="font-size:1.3rem; margin:0;">📈 Enforcement Intervention Effectiveness</h2>
+            <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-chart-bar"></i> Enforcement Intervention Effectiveness</h2>
             <span class="obs-badge">OBSERVED CHANGE</span>
           </div>
           <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Empirical Before vs After metric shifts across designated enforcement corridors</div>
         </div>
 
         <div id="effectiveness-container" style="display:flex; flex-direction:column; gap:16px;">
-          <!-- Dynamic Before/After Cards -->
         </div>
       </div>
 
@@ -780,7 +716,7 @@
       <div id="tab-policy-sim" class="intel-pane">
         <div style="margin-bottom:16px;">
           <div style="display:flex; align-items:center; gap:8px;">
-            <h2 style="font-size:1.3rem; margin:0;">🔬 Policy & Deployment What-If Simulator</h2>
+            <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-flask"></i> Policy & Deployment What-If Simulator</h2>
             <span class="sim-badge">SIMULATION ESTIMATE</span>
           </div>
           <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Forecast the quantitative impact of officer redeployment, turbo inference, and preemption corridors</div>
@@ -788,11 +724,11 @@
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
           <div class="intel-card">
-            <h3 style="font-size:0.95rem; margin-top:0; color:#fff;">📋 Scenario Configuration</h3>
+            <h3 style="font-size:0.95rem; margin-top:0; color:var(--text-primary);"><i class="ph ph-clipboard-text"></i> Scenario Configuration</h3>
             
             <div style="margin-bottom:14px;">
               <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">Policy Intervention Type:</label>
-              <select id="policy-type-select" class="btn btn-outline" style="width:100%;">
+              <select id="policy-type-select" class="btn btn-secondary" style="width:100%;">
                 <option value="OFFICER_DEPLOYMENT">Additional Interceptor Patrol Units (+N)</option>
                 <option value="INCREASED_MONITORING">Turbo 60 FPS High-Resolution Inference Coverage</option>
                 <option value="HOTSPOT_PRIORITIZATION">Automated Blackspot Interceptor Pre-positioning</option>
@@ -802,14 +738,14 @@
 
             <div style="margin-bottom:14px;">
               <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">Parameter Value (e.g. 2, 4, 8 units):</label>
-              <input type="number" id="policy-param-input" value="3" min="1" max="10" class="btn btn-outline" style="width:100%;">
+              <input type="number" id="policy-param-input" value="3" min="1" max="10" class="btn btn-secondary" style="width:100%;">
             </div>
 
-            <button class="btn btn-saffron" onclick="runPolicySimulation()" style="width:100%;">🔬 Compute Policy Forecast</button>
+            <button class="btn btn-primary" onclick="runPolicySimulation()" style="width:100%;"><i class="ph ph-flask"></i> Compute Policy Forecast</button>
           </div>
 
           <div class="intel-card" id="policy-result-box">
-            <h3 style="font-size:0.95rem; margin-top:0; color:#fff;">📊 Projected Operational Impact</h3>
+            <h3 style="font-size:0.95rem; margin-top:0; color:var(--text-primary);"><i class="ph ph-chart-line-up"></i> Projected Operational Impact</h3>
             <div style="color:var(--text-dim); font-size:0.8rem; text-align:center; padding:40px 0;">Select a scenario to project response time gains and deterrence effects.</div>
           </div>
         </div>
@@ -820,26 +756,26 @@
       <!-- ======================================================== -->
       <div id="tab-copilot" class="intel-pane">
         <div style="margin-bottom:16px;">
-          <h2 style="font-size:1.3rem; margin:0;">🤖 TrafficGuard Copilot — Operational AI Assistant</h2>
+          <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-robot"></i> TrafficGuard Copilot — Operational AI Assistant</h2>
           <div style="font-size:0.75rem; color:var(--text-muted);">Grounded operational query parser answering priority command questions strictly from live SQLite records</div>
         </div>
 
         <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
           <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">Tactile Hotkeys:</span>
           <button class="copilot-hotkey-chip" onclick="askCopilot('Which location needs attention right now?')">
-            <span class="hotkey-badge">1</span> 📍 Which location needs attention?
+            <span class="hotkey-badge">1</span> <i class="ph ph-map-pin"></i> Which location needs attention?
           </button>
           <button class="copilot-hotkey-chip" onclick="askCopilot('Which incidents are critical?')">
-            <span class="hotkey-badge">2</span> 🚨 Which incidents are critical?
+            <span class="hotkey-badge">2</span> <i class="ph ph-megaphone"></i> Which incidents are critical?
           </button>
           <button class="copilot-hotkey-chip" onclick="askCopilot('Why is vehicle DL09WR6392 high risk?')">
-            <span class="hotkey-badge">3</span> 🔍 Why is DL09WR6392 high risk?
+            <span class="hotkey-badge">3</span> <i class="ph ph-magnifying-glass"></i> Why is DL09WR6392 high risk?
           </button>
           <button class="copilot-hotkey-chip" onclick="askCopilot('What violations increased today?')">
-            <span class="hotkey-badge">4</span> 📊 What violations increased today?
+            <span class="hotkey-badge">4</span> <i class="ph ph-chart-line-up"></i> What violations increased today?
           </button>
           <button class="copilot-hotkey-chip" onclick="askCopilot('What should I prioritize?')">
-            <span class="hotkey-badge">5</span> ⚡ What should I prioritize?
+            <span class="hotkey-badge">5</span> <i class="ph ph-lightning"></i> What should I prioritize?
           </button>
         </div>
 
@@ -851,18 +787,18 @@
               <span class="terminal-dot green"></span>
             </div>
             <div class="terminal-title">TRAFFICGUARD-COPILOT-CORE // v2.4-GROUNDED</div>
-            <div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--intel-cyan); display:flex; align-items:center; gap:5px;">
+            <div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--accent); display:flex; align-items:center; gap:5px;">
               <span class="pulse-dot"></span> LIVE PARSER READY
             </div>
           </div>
           <div class="copilot-messages" id="copilot-msg-box">
             <div class="copilot-msg bot">
-              <b>🤖 TrafficGuard Copilot Online.</b><br/>
+              <b><i class="ph ph-robot"></i> TrafficGuard Copilot Online.</b><br/>
               Ready to answer operational queries grounded strictly in live database records. Ask about critical incidents, high-risk vehicles, patrol dispatch priorities, or corridor congestion.
             </div>
           </div>
           <div class="copilot-input-bar">
-            <input type="text" id="copilot-input" class="form-input" style="background:rgba(0,0,0,0.5);" placeholder="Ask TrafficGuard Copilot (e.g. Which incidents are critical right now?)..." onkeydown="if(event.key==='Enter') sendCopilotQuery()">
+            <input type="text" id="copilot-input" style="background:var(--bg-surface) !important; border:1px solid var(--border) !important; border-radius:10px; color:var(--text); padding:10px 14px; font-size:0.86rem;" placeholder="Ask TrafficGuard Copilot (e.g. Which incidents are critical right now?)..." onkeydown="if(event.key==='Enter') sendCopilotQuery()">
             <button class="btn btn-primary" onclick="sendCopilotQuery()">Send Query</button>
           </div>
         </div>
@@ -873,13 +809,13 @@
       <!-- ======================================================== -->
       <div id="tab-evidence" class="intel-pane">
         <div style="margin-bottom:16px;">
-          <h2 style="font-size:1.3rem; margin:0;">🔍 Cryptographic Evidence & Digest Verification</h2>
+          <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-magnifying-glass"></i> Cryptographic Evidence & Digest Verification</h2>
           <div style="font-size:0.75rem; color:var(--text-muted);">Compute and verify SHA-256 cryptographic digests of violation frame screenshots</div>
         </div>
 
         <div class="intel-card">
           <div style="display:flex; gap:10px; margin-bottom:16px;">
-            <input type="number" id="evidence-vid-input" placeholder="Violation ID (e.g. 1)" class="btn btn-outline" style="flex:1;">
+            <input type="number" id="evidence-vid-input" placeholder="Violation ID (e.g. 1)" class="btn btn-secondary" style="flex:1;">
             <button class="btn btn-primary" onclick="verifyEvidenceSha()">Compute & Verify SHA-256</button>
           </div>
           <div id="evidence-result-box" style="font-size:0.85rem;"></div>
@@ -892,10 +828,10 @@
       <div id="tab-audit" class="intel-pane">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <div>
-            <h2 style="font-size:1.3rem; margin:0;">⛓️ Immutable Cryptographic Audit Ledger</h2>
+            <h2 style="font-size:1.3rem; margin:0;"><i class="ph ph-chain"></i> Immutable Cryptographic Audit Ledger</h2>
             <div style="font-size:0.75rem; color:var(--text-muted);">Traverse SHA-256 block hash chain from Genesis Block #0 with zero-tamper verification</div>
           </div>
-          <button class="btn btn-green" onclick="verifyFullChainAudit()">🛡️ Traverse & Verify Full Ledger</button>
+          <button class="btn btn-primary" onclick="verifyFullChainAudit()"><i class="ph ph-shield-check"></i> Traverse & Verify Full Ledger</button>
         </div>
 
         <div id="audit-result-box" class="intel-card">
@@ -906,7 +842,7 @@
     </main>
   </div>
 
-  <!-- JavaScript Modules -->
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
   <script>
     function updateClock() {
       const now = new Date();
@@ -945,14 +881,14 @@
         const cList = document.getElementById('overview-corridor-list');
         if (cList) {
           cList.innerHTML = Object.values(d.corridors || {}).map(c => `
-            <div style="background:rgba(0,0,0,0.25); padding:10px 12px; border-radius:8px; border:1px solid var(--intel-border); display:flex; justify-content:space-between; align-items:center;">
+            <div style="background:var(--bg); padding:10px 12px; border-radius:8px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <div style="font-weight:700; font-size:0.85rem; color:#fff;">${c.name}</div>
+                <div style="font-weight:700; font-size:0.85rem; color:var(--text-primary);">${c.name}</div>
                 <div style="font-size:0.72rem; color:var(--text-muted);">Length: ${c.length_km} km · Bottlenecks: ${(c.bottlenecks||[]).join(', ')}</div>
               </div>
               <div style="text-align:right;">
-                <span class="badge ${c.status==='CONGESTED'?'badge-red':c.status==='HEAVY'?'badge-orange':'badge-green'}">${c.status} (${c.traffic_density})</span>
-                <div style="font-size:0.7rem; color:var(--saffron); margin-top:2px;">Delay: +${c.abnormal_delay_min} min</div>
+                <span class="badge ${c.status==='CONGESTED'?'badge-red':c.status==='HEAVY'?'badge-yellow':'badge-green'}">${c.status} (${c.traffic_density})</span>
+                <div style="font-size:0.7rem; color:var(--warning); margin-top:2px;">Delay: +${c.abnormal_delay_min} min</div>
               </div>
             </div>
           `).join('');
@@ -961,12 +897,12 @@
         const aList = document.getElementById('overview-priority-alerts');
         if (aList) {
           aList.innerHTML = `
-            <div style="background:rgba(255,51,75,0.08); border:1px solid #ff334b; padding:10px; border-radius:8px;">
-              <div style="font-weight:700; font-size:0.8rem; color:#ff334b;">🚨 Opposing Flow Hazard Detected</div>
+            <div style="background:var(--error-muted); border:1px solid var(--error); padding:10px; border-radius:8px;">
+              <div style="font-weight:700; font-size:0.8rem; color:var(--error);"><i class="ph ph-megaphone"></i> Opposing Flow Hazard Detected</div>
               <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Wrong-way two-wheeler observed at Silk Board North Ramp. Interceptor Unit 4 dispatched.</div>
             </div>
-            <div style="background:rgba(255,153,51,0.08); border:1px solid var(--saffron); padding:10px; border-radius:8px;">
-              <div style="font-weight:700; font-size:0.8rem; color:var(--saffron);">⚠️ Density Threshold Exceeded</div>
+            <div style="background:var(--warning-muted); border:1px solid var(--warning); padding:10px; border-radius:8px;">
+              <div style="font-weight:700; font-size:0.8rem; color:var(--warning);"><i class="ph ph-warning"></i> Density Threshold Exceeded</div>
               <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Outer Ring Road IT Corridor at 78% capacity. Cycle split expansion recommended.</div>
             </div>
           `;
@@ -995,14 +931,14 @@
             <div style="display:flex; align-items:center; gap:10px;">
               <span class="plate-chip">${j.plate}</span>
               <span style="font-weight:700; font-size:0.88rem;">${j.owner_name}</span>
-              <span class="badge ${j.risk_level==='CRITICAL'?'badge-red':j.risk_level==='HIGH'?'badge-orange':'badge-green'}">${j.risk_level} RISK</span>
+              <span class="badge ${j.risk_level==='CRITICAL'?'badge-red':j.risk_level==='HIGH'?'badge-yellow':'badge-green'}">${j.risk_level} RISK</span>
             </div>
-            <div style="font-size:0.75rem; color:var(--intel-cyan); font-family:var(--font-mono);">
+            <div style="font-size:0.75rem; color:var(--accent); font-family:var(--font-mono);">
               Estimated Travel Time: <b>${j.estimated_travel_time}</b> · First: ${j.first_seen} · Last: ${j.last_seen}
             </div>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-top:1px solid var(--intel-border); padding-top:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-top:1px solid var(--border); padding-top:10px;">
             <div class="journey-sequence">
               <span style="font-size:0.72rem; color:var(--text-muted); margin-right:4px;">CAMERA TRAJECTORY:</span>
               ${(j.camera_sequence||[]).map((node, i) => `
@@ -1011,7 +947,7 @@
               `).join('')}
             </div>
             <div style="font-size:0.75rem; color:var(--text-muted);">
-              Violations: <b style="color:#ff6b6b;">${(j.violations||[]).join(', ') || 'CLEAN TRANSIT'}</b> · ANPR Confidence: <b>${j.confidence}%</b>
+              Violations: <b style="color:var(--error);">${(j.violations||[]).join(', ') || 'CLEAN TRANSIT'}</b> · ANPR Confidence: <b>${j.confidence}%</b>
             </div>
           </div>
         </div>
@@ -1042,13 +978,13 @@
         rows = allRisks[tier] || [];
       }
       tbody.innerHTML = rows.map(r => `
-        <tr style="border-bottom:1px solid var(--intel-border);">
-          <td style="padding:10px; font-family:var(--font-mono); color:var(--intel-cyan);">${r.challan_ref}</td>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px; font-family:var(--font-mono); color:var(--accent);">${r.challan_ref}</td>
           <td style="padding:10px;"><b>${r.plate}</b><br/><span style="font-size:0.7rem; color:var(--text-dim);">${r.owner_name}</span></td>
-          <td style="padding:10px;"><span class="badge ${r.risk_tier==='CRITICAL'?'badge-red':r.risk_tier==='HIGH'?'badge-orange':'badge-green'}">${r.risk_tier}</span></td>
+          <td style="padding:10px;"><span class="badge ${r.risk_tier==='CRITICAL'?'badge-red':r.risk_tier==='HIGH'?'badge-yellow':'badge-green'}">${r.risk_tier}</span></td>
           <td style="padding:10px; font-size:0.75rem; color:var(--text-muted);">${r.risk_factor}</td>
           <td style="padding:10px;">${r.location}</td>
-          <td style="padding:10px; font-weight:700; color:#ff6b6b;">${r.violation}</td>
+          <td style="padding:10px; font-weight:700; color:var(--error);">${r.violation}</td>
           <td style="padding:10px; font-size:0.72rem; color:var(--text-dim);">${r.timestamp}</td>
         </tr>
       `).join('');
@@ -1063,16 +999,16 @@
         const c = document.getElementById('incidents-container');
         if (!c) return;
         c.innerHTML = (d.incidents || []).map(inc => `
-          <div class="intel-card" style="border-color:${inc.severity==='CRITICAL'?'rgba(255,51,75,0.45)':'rgba(255,153,51,0.4)'};">
+          <div class="intel-card" style="border-color:${inc.severity==='CRITICAL'?'var(--error)':'var(--warning)'};">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <div style="display:flex; align-items:center; gap:8px;">
-                <span class="badge ${inc.severity==='CRITICAL'?'badge-red':'badge-orange'}">${inc.severity} (${inc.risk_score}/100)</span>
-                <b style="font-size:0.92rem; color:#fff;">${inc.type.replace(/_/g, ' ')}</b>
+                <span class="badge ${inc.severity==='CRITICAL'?'badge-red':'badge-yellow'}">${inc.severity} (${inc.risk_score}/100)</span>
+                <b style="font-size:0.92rem; color:var(--text-primary);">${inc.type.replace(/_/g, ' ')}</b>
               </div>
               <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">${inc.timestamp} · Location: ${inc.location}</span>
             </div>
             <div style="font-size:0.8rem; color:var(--text); margin-bottom:6px;">${inc.description}</div>
-            <div style="font-size:0.75rem; color:var(--intel-green); background:rgba(0,230,118,0.06); padding:8px; border-radius:6px;">
+            <div style="font-size:0.75rem; color:var(--success); background:var(--success-muted); padding:8px; border-radius:6px;">
               <b>Automated Protocol Recommendation:</b> ${inc.recommended_response}
             </div>
           </div>
@@ -1089,13 +1025,13 @@
         list.innerHTML = (d.officers || []).map(o => `
           <div class="intel-card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <b style="color:#fff; font-size:0.9rem;">${o.name}</b>
-              <span class="badge ${o.status==='AVAILABLE'?'badge-green':o.status==='ON_PATROL'?'badge-blue':'badge-orange'}">${o.status.replace(/_/g,' ')}</span>
+              <b style="color:var(--text-primary); font-size:0.9rem;">${o.name}</b>
+              <span class="badge ${o.status==='AVAILABLE'?'badge-green':o.status==='ON_PATROL'?'badge-blue':'badge-yellow'}">${o.status.replace(/_/g,' ')}</span>
             </div>
-            <div style="font-size:0.72rem; color:var(--intel-cyan); font-family:var(--font-mono); margin:4px 0;">Badge: ${o.badge} · Unit: ${o.vehicle_unit}</div>
+            <div style="font-size:0.72rem; color:var(--accent); font-family:var(--font-mono); margin:4px 0;">Badge: ${o.badge} · Unit: ${o.vehicle_unit}</div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px;">Sector: <b>${o.current_sector}</b></div>
-            <div style="font-size:0.72rem; color:var(--text-dim); border-top:1px solid var(--intel-border); padding-top:6px;">
-              Dispatch ETA: <b style="color:var(--saffron);">${o.estimated_eta_min} min</b> · Shift: ${o.shift}
+            <div style="font-size:0.72rem; color:var(--text-dim); border-top:1px solid var(--border); padding-top:6px;">
+              Dispatch ETA: <b style="color:var(--warning);">${o.estimated_eta_min} min</b> · Shift: ${o.shift}
             </div>
           </div>
         `).join('');
@@ -1110,18 +1046,18 @@
           <div class="intel-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <div>
-                <b style="font-size:1.05rem; color:#fff;">${cor.name}</b>
+                <b style="font-size:1.05rem; color:var(--text-primary);">${cor.name}</b>
                 <div style="font-size:0.72rem; color:var(--text-muted);">Corridor ID: ${cor.id} · Length: ${cor.length_km} km</div>
               </div>
-              <span class="badge ${cor.status==='CONGESTED'?'badge-red':cor.status==='HEAVY'?'badge-orange':'badge-green'}">${cor.status} (${cor.traffic_density})</span>
+              <span class="badge ${cor.status==='CONGESTED'?'badge-red':cor.status==='HEAVY'?'badge-yellow':'badge-green'}">${cor.status} (${cor.traffic_density})</span>
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin:10px 0; font-size:0.8rem;">
-              <div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:6px;">Base Transit: <b>${cor.base_travel_time_min} min</b></div>
-              <div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:6px;">Current Transit: <b style="color:var(--saffron);">${cor.current_travel_time_min} min</b></div>
-              <div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:6px;">Abnormal Delay: <b style="color:#ff6b6b;">+${cor.abnormal_delay_min} min</b></div>
+              <div style="background:var(--bg); padding:8px; border-radius:6px;">Base Transit: <b>${cor.base_travel_time_min} min</b></div>
+              <div style="background:var(--bg); padding:8px; border-radius:6px;">Current Transit: <b style="color:var(--warning);">${cor.current_travel_time_min} min</b></div>
+              <div style="background:var(--bg); padding:8px; border-radius:6px;">Abnormal Delay: <b style="color:var(--error);">+${cor.abnormal_delay_min} min</b></div>
             </div>
             <div style="font-size:0.75rem; color:var(--text-muted);">
-              Key Bottlenecks: <b style="color:var(--intel-cyan);">${(cor.bottlenecks||[]).join(', ')}</b>
+              Key Bottlenecks: <b style="color:var(--accent);">${(cor.bottlenecks||[]).join(', ')}</b>
             </div>
           </div>
         `).join('');
@@ -1148,25 +1084,25 @@
         const t = d.recommended_timing;
         out.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <b style="color:var(--intel-cyan); font-size:0.95rem;">${d.intersection.name}</b>
+            <b style="color:var(--accent); font-size:0.95rem;">${d.intersection.name}</b>
             <span class="sim-badge">${d.mode}</span>
           </div>
           <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:12px;">${d.disclaimer}</div>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:8px; margin-bottom:12px;">
-            <div style="background:rgba(0,230,118,0.1); border:1px solid #00e676; padding:8px; border-radius:6px; text-align:center;">
+            <div style="background:var(--success-muted); border:1px solid var(--success); padding:8px; border-radius:6px; text-align:center;">
               <div style="font-size:0.7rem; color:var(--text-muted);">GREEN SPLIT</div>
-              <div style="font-size:1.4rem; font-weight:800; color:#00e676;">${t.green_split_seconds}s</div>
+              <div style="font-size:1.4rem; font-weight:800; color:var(--success);">${t.green_split_seconds}s</div>
             </div>
-            <div style="background:rgba(255,51,75,0.1); border:1px solid #ff334b; padding:8px; border-radius:6px; text-align:center;">
+            <div style="background:var(--error-muted); border:1px solid var(--error); padding:8px; border-radius:6px; text-align:center;">
               <div style="font-size:0.7rem; color:var(--text-muted);">RED SPLIT</div>
-              <div style="font-size:1.4rem; font-weight:800; color:#ff334b;">${t.red_split_seconds}s</div>
+              <div style="font-size:1.4rem; font-weight:800; color:var(--error);">${t.red_split_seconds}s</div>
             </div>
-            <div style="background:rgba(255,153,51,0.1); border:1px solid var(--saffron); padding:8px; border-radius:6px; text-align:center;">
+            <div style="background:var(--warning-muted); border:1px solid var(--warning); padding:8px; border-radius:6px; text-align:center;">
               <div style="font-size:0.7rem; color:var(--text-muted);">CYCLE TOTAL</div>
-              <div style="font-size:1.4rem; font-weight:800; color:var(--saffron);">${t.cycle_length_seconds}s</div>
+              <div style="font-size:1.4rem; font-weight:800; color:var(--warning);">${t.cycle_length_seconds}s</div>
             </div>
           </div>
-          <div style="font-size:0.8rem; color:var(--intel-green); background:rgba(0,0,0,0.25); padding:10px; border-radius:6px; margin-bottom:8px;">
+          <div style="font-size:0.8rem; color:var(--success); background:var(--bg); padding:10px; border-radius:6px; margin-bottom:8px;">
             <b>Estimated Network Delay Reduction:</b> ${t.estimated_delay_reduction}
           </div>
           <div style="font-size:0.75rem; color:var(--text-muted);"><b>AI Webster Formulation Basis:</b> ${d.ai_rationale}</div>
@@ -1182,26 +1118,26 @@
           <div class="intel-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <div>
-                <b style="font-size:1rem; color:#fff;">${item.zone}</b>
-                <div style="font-size:0.75rem; color:var(--intel-cyan);">${item.intervention}</div>
+                <b style="font-size:1rem; color:var(--text-primary);">${item.zone}</b>
+                <div style="font-size:0.75rem; color:var(--accent);">${item.intervention}</div>
               </div>
               <span class="obs-badge">OBSERVED CHANGE · ${item.evaluation_window}</span>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:12px 0;">
-              <div style="background:rgba(255,82,82,0.06); border:1px solid rgba(255,82,82,0.2); padding:10px; border-radius:8px;">
-                <b style="color:#ff6b6b; font-size:0.82rem;">BEFORE INTERVENTION</b>
+              <div style="background:var(--error-muted); border:1px solid var(--error); padding:10px; border-radius:8px;">
+                <b style="color:var(--error); font-size:0.82rem;">BEFORE INTERVENTION</b>
                 <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
-                  • Daily Violations: <b>${item.before.daily_violations}</b><br/>
-                  • Risk Score: <b>${item.before.risk_score}/100</b><br/>
-                  • Near-Miss Incidents: <b>${item.before.near_miss_events_per_day}/day</b>
+                  · Daily Violations: <b>${item.before.daily_violations}</b><br/>
+                  · Risk Score: <b>${item.before.risk_score}/100</b><br/>
+                  · Near-Miss Incidents: <b>${item.before.near_miss_events_per_day}/day</b>
                 </div>
               </div>
-              <div style="background:rgba(0,230,118,0.06); border:1px solid rgba(0,230,118,0.2); padding:10px; border-radius:8px;">
-                <b style="color:#00e676; font-size:0.82rem;">AFTER INTERVENTION</b>
+              <div style="background:var(--success-muted); border:1px solid var(--success); padding:10px; border-radius:8px;">
+                <b style="color:var(--success); font-size:0.82rem;">AFTER INTERVENTION</b>
                 <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
-                  • Daily Violations: <b>${item.after.daily_violations}</b> (<span style="color:#00e676;">${item.observed_change.violation_reduction}</span>)<br/>
-                  • Risk Score: <b>${item.after.risk_score}/100</b> (<span style="color:#00e676;">${item.observed_change.risk_score_reduction}</span>)<br/>
-                  • Near-Miss Incidents: <b>${item.after.near_miss_events_per_day}/day</b> (<span style="color:#00e676;">${item.observed_change.near_miss_reduction}</span>)
+                  · Daily Violations: <b>${item.after.daily_violations}</b> (<span style="color:var(--success);">${item.observed_change.violation_reduction}</span>)<br/>
+                  · Risk Score: <b>${item.after.risk_score}/100</b> (<span style="color:var(--success);">${item.observed_change.risk_score_reduction}</span>)<br/>
+                  · Near-Miss Incidents: <b>${item.after.near_miss_events_per_day}/day</b> (<span style="color:var(--success);">${item.observed_change.near_miss_reduction}</span>)
                 </div>
               </div>
             </div>
@@ -1225,16 +1161,16 @@
         const imp = s.estimated_impact || {};
         out.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <b style="color:var(--saffron); font-size:0.95rem;">${s.title}</b>
+            <b style="color:var(--warning); font-size:0.95rem;">${s.title}</b>
             <span class="sim-badge">${d.mode}</span>
           </div>
           <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:12px;">${d.disclaimer}</div>
-          <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:8px; font-size:0.8rem; margin-bottom:10px;">
+          <div style="background:var(--bg); padding:10px; border-radius:8px; font-size:0.8rem; margin-bottom:10px;">
             <div style="color:var(--text-muted);">Current Base: <b>${s.base_metric}</b></div>
-            <div style="color:var(--intel-cyan); margin-top:2px;">Simulated Scenario: <b>${s.simulated_metric}</b></div>
+            <div style="color:var(--accent); margin-top:2px;">Simulated Scenario: <b>${s.simulated_metric}</b></div>
           </div>
           <div style="display:flex; flex-direction:column; gap:4px; font-size:0.8rem; margin-bottom:10px;">
-            ${Object.entries(imp).map(([k,v]) => `<div style="color:#00e676;">✔ <b>${k.replace(/_/g,' ')}:</b> ${v}</div>`).join('')}
+            ${Object.entries(imp).map(([k,v]) => `<div style="color:var(--success);"><i class="ph ph-check-circle"></i> <b>${k.replace(/_/g,' ')}:</b> ${v}</div>`).join('')}
           </div>
           <div style="font-size:0.75rem; color:var(--text-muted);"><b>Strategic Directive:</b> ${s.recommendation}</div>
         `;
@@ -1247,7 +1183,7 @@
       let s = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       s = s.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
       s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
-      s = s.replace(/(?:^|\n)[-*]\s+(.+)/g, '<br/>• $1');
+      s = s.replace(/(?:^|\n)[-*]\s+(.+)/g, '<br/>· $1');
       s = s.replace(/\n/g, '<br/>');
       return s;
     }
@@ -1268,7 +1204,6 @@
       inp.value = '';
       box.scrollTop = box.scrollHeight;
 
-      // Real-time typing indicator
       const typingId = 'copilot-typing-' + Date.now();
       box.innerHTML += `
         <div class="copilot-typing" id="${typingId}">
@@ -1290,7 +1225,7 @@
         box.innerHTML += `
           <div class="copilot-msg bot">
             <div>${formatted}</div>
-            <div style="font-size:0.68rem; color:var(--intel-cyan); margin-top:8px; border-top:1px solid var(--intel-border); padding-top:4px; font-family:var(--font-mono); display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:0.68rem; color:var(--accent); margin-top:8px; border-top:1px solid var(--border); padding-top:4px; font-family:var(--font-mono); display:flex; justify-content:space-between; align-items:center;">
               <span>Grounded Basis: ${d.basis || 'Live SQLite Records'}</span>
               <span style="color:var(--text-dim);">Copilot Core v2.4</span>
             </div>
@@ -1300,12 +1235,11 @@
       }).catch(err => {
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
-        box.innerHTML += `<div class="copilot-msg bot" style="border-color:#ff334b; color:#ff6b6b;">Copilot communication error: ${err.message}</div>`;
+        box.innerHTML += `<div class="copilot-msg bot" style="border-color:var(--error); color:var(--error);">Copilot communication error: ${err.message}</div>`;
         box.scrollTop = box.scrollHeight;
       });
     }
 
-    // Keyboard Shortcuts for Copilot Hotkeys
     window.addEventListener('keydown', (e) => {
       const activeTab = document.querySelector('.intel-pane.active');
       if (!activeTab || activeTab.id !== 'tab-copilot') return;
@@ -1335,33 +1269,33 @@
         const out = document.getElementById('evidence-result-box');
         if (d.verified) {
           out.innerHTML = `
-            <div style="color:#00e676; background:rgba(0,230,118,0.1); padding:12px; border-radius:8px; border:1px solid #00e676;">
-              <b>✅ Cryptographic Evidence Verified</b><br/>
+            <div style="color:var(--success); background:var(--success-muted); padding:12px; border-radius:8px; border:1px solid var(--success);">
+              <b><i class="ph ph-check-circle"></i> Cryptographic Evidence Verified</b><br/>
               Violation ID: <b>${d.violation_id}</b> · Plate: <b>${d.plate}</b><br/>
               SHA-256 Digest: <code>${d.evidence_sha256}</code><br/>
               Status: ${d.status}
             </div>
           `;
         } else {
-          out.innerHTML = `<div style="color:#ff5252; padding:10px;">${d.error || 'Verification failed'}</div>`;
+          out.innerHTML = `<div style="color:var(--error); padding:10px;">${d.error || 'Verification failed'}</div>`;
         }
       });
     }
 
     function verifyFullChainAudit() {
       const out = document.getElementById('audit-result-box');
-      out.innerHTML = '<div style="color:var(--intel-cyan);">Traversing cryptographic block hashes from Genesis Block #0...</div>';
+      out.innerHTML = '<div style="color:var(--accent);">Traversing cryptographic block hashes from Genesis Block #0...</div>';
       fetch('/api/blockchain/verify-ledger').then(r => r.json()).then(d => {
         if (d.is_valid) {
           out.innerHTML = `
-            <div style="color:#00e676; background:rgba(0,230,118,0.1); padding:14px; border-radius:8px; border:1px solid #00e676;">
-              <b style="font-size:1rem;">🛡️ LEDGER VALID — 100% CRYPTOGRAPHIC CONTINUITY</b><br/>
+            <div style="color:var(--success); background:var(--success-muted); padding:14px; border-radius:8px; border:1px solid var(--success);">
+              <b style="font-size:1rem;"><i class="ph ph-shield-check"></i> LEDGER VALID — 100% CRYPTOGRAPHIC CONTINUITY</b><br/>
               Total Blocks Checked: <b>${d.total_blocks}</b> · Genesis Root Verified · Merkle Chain Intact.<br/>
               <span style="font-size:0.75rem; color:var(--text-muted);">Zero unauthorized tampering detected across SQLite database records.</span>
             </div>
           `;
         } else {
-          out.innerHTML = `<div style="color:#ff5252; padding:14px; background:rgba(255,82,82,0.1); border-radius:8px;">🚨 Ledger Tampered Warning: ${d.message}</div>`;
+          out.innerHTML = `<div style="color:var(--error); padding:14px; background:var(--error-muted); border-radius:8px;"><i class="ph ph-megaphone"></i> Ledger Tampered Warning: ${d.message}</div>`;
         }
       });
     }

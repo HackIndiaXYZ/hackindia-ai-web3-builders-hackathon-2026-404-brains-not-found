@@ -5,15 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ app_name }} — Citizen Traffic Portal & E-Challan Settle</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
   <style>
     .citizen-hero {
       padding: 48px 32px 38px;
-      background: #080c16;
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
       position: relative;
     }
 
-    /* ── INTERACTIVE HSRP PLATE PREVIEW ── */
     .hsrp-preview-card {
       display: inline-flex;
       align-items: center;
@@ -22,18 +23,16 @@
       border-radius: 8px;
       padding: 0;
       margin: 20px auto 0;
-      box-shadow: 0 12px 35px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.15), inset 0 2px 3px rgba(255,255,255,0.9), inset 0 -2px 3px rgba(0,0,0,0.25);
       position: relative;
       overflow: hidden;
       min-width: 290px;
       max-width: 360px;
       height: 64px;
       user-select: none;
-      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+      transition: transform 0.2s var(--ease);
     }
     .hsrp-preview-card:hover {
       transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.7), 0 0 20px rgba(0, 229, 255, 0.25);
     }
     .hsrp-band {
       width: 44px;
@@ -55,10 +54,9 @@
       border-radius: 50%;
       display: inline-block;
       margin-bottom: 2px;
-      box-shadow: inset 0 0 4px rgba(255,255,255,0.5);
     }
     .hsrp-ind {
-      font-family: var(--font-heading);
+      font-family: var(--font-mono);
       font-size: 0.65rem;
       font-weight: 900;
       letter-spacing: 0.12em;
@@ -68,18 +66,11 @@
     .hsrp-hologram {
       width: 13px;
       height: 13px;
-      background: radial-gradient(circle at 35% 35%, #fff 10%, #60a5fa 40%, #1e40af 80%);
+      background: #60a5fa;
       border-radius: 2px;
       margin: 0 10px 0 12px;
-      box-shadow: 0 0 6px rgba(0,180,255,0.4);
       flex-shrink: 0;
       position: relative;
-    }
-    .hsrp-hologram::after {
-      content: "🇮🇳";
-      position: absolute;
-      top: -2px; left: -1px;
-      font-size: 8px;
     }
     .hsrp-plate-text {
       font-family: var(--font-mono);
@@ -91,7 +82,6 @@
       flex: 1;
       text-align: center;
       padding-right: 14px;
-      text-shadow: 1px 1px 0 rgba(255,255,255,0.9), -0.5px -0.5px 0 rgba(0,0,0,0.4);
     }
 
     .search-box-wrap {
@@ -99,13 +89,10 @@
       margin: 20px auto 0;
       display: flex;
       gap: 10px;
-      background: rgba(14, 22, 38, 0.9);
+      background: var(--bg-surface);
       padding: 8px;
       border-radius: 14px;
-      border: 1px solid var(--border-cyan);
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55), 0 0 24px rgba(0, 229, 255, 0.12), var(--glass-highlight);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
     }
     .search-input {
       flex: 1;
@@ -113,7 +100,7 @@
       border-radius: 10px;
       border: 1px solid transparent;
       background: transparent !important;
-      color: var(--text-primary);
+      color: var(--text);
       font-size: 1.15rem;
       font-family: var(--font-mono);
       font-weight: 800;
@@ -129,7 +116,6 @@
       color: var(--text-dim);
     }
 
-    /* ── QUICK SAMPLE PILLS ── */
     .quick-samples {
       display: flex;
       justify-content: center;
@@ -139,22 +125,20 @@
       flex-wrap: wrap;
     }
     .quick-sample-pill {
-      background: rgba(0, 229, 255, 0.06);
-      border: 1px solid rgba(0, 229, 255, 0.22);
-      color: var(--cyan);
+      background: var(--accent-muted);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       font-family: var(--font-mono);
       font-size: 0.73rem;
       font-weight: 700;
       padding: 4px 10px;
       border-radius: 9999px;
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.2s var(--ease);
     }
     .quick-sample-pill:hover {
-      background: rgba(0, 229, 255, 0.18);
-      border-color: var(--cyan);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 10px rgba(0, 229, 255, 0.25);
+      background: var(--accent);
+      color: var(--accent-fg);
     }
 
     .portal-container {
@@ -163,14 +147,13 @@
       padding: 0 24px 70px;
     }
 
-    /* ── STATUS TABS ── */
     .filter-tabs {
       display: flex;
       gap: 8px;
       margin-bottom: 16px;
     }
     .filter-tab {
-      background: rgba(14, 22, 38, 0.7);
+      background: var(--bg-surface);
       border: 1px solid var(--border);
       color: var(--text-muted);
       padding: 7px 14px;
@@ -181,17 +164,15 @@
       transition: all 0.2s ease;
     }
     .filter-tab:hover {
-      color: #fff;
-      border-color: rgba(255, 255, 255, 0.15);
+      color: var(--text);
+      border-color: var(--text-dim);
     }
     .filter-tab.active {
-      background: rgba(0, 229, 255, 0.12);
-      border-color: var(--cyan);
-      color: #fff;
-      box-shadow: 0 2px 10px rgba(0, 229, 255, 0.15);
+      background: var(--accent-muted);
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
-    /* ── TOAST NOTIFICATIONS ── */
     .toast-stack {
       position: fixed;
       bottom: 24px;
@@ -205,79 +186,70 @@
     }
     .toast-card {
       pointer-events: auto;
-      background: #0d1527;
-      border: 1px solid var(--border-light);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
       border-radius: 10px;
       padding: 12px 16px;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
       display: flex;
       align-items: flex-start;
       gap: 12px;
     }
-    .toast-card.success { border-color: rgba(0, 230, 118, 0.4); }
-    .toast-card.danger { border-color: rgba(255, 51, 75, 0.4); }
-    .toast-card.warning { border-color: rgba(255, 153, 51, 0.4); }
+    .toast-card.success { border-color: var(--success); }
+    .toast-card.danger { border-color: var(--error); }
+    .toast-card.warning { border-color: var(--warning); }
 
-    /* ── MODALS ── */
     .modal-backdrop {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(3, 7, 15, 0.85);
-      backdrop-filter: blur(16px) saturate(180%);
-      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      background: rgba(0, 0, 0, 0.6);
       z-index: 5000;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      animation: fadeIn 0.2s ease;
     }
     .modal-backdrop.show {
       display: flex;
     }
     .modal-window {
-      background: rgba(14, 22, 38, 0.96);
-      border: 1px solid var(--border-light);
-      border-radius: 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       max-width: 520px;
       width: 100%;
       padding: 28px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), var(--glass-highlight);
-      animation: modalPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
   </style>
 </head>
 <body class="citizen-shell">
 
-  <div class="tricolor-stripe"></div>
-
   <!-- Citizen Topbar -->
-  <header style="background:var(--surface); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; justify-content:space-between; align-items:center;">
+  <header class="topbar">
     <div style="display:flex; align-items:center; gap:12px;">
-      <span style="font-size:1.6rem;">🏛️</span>
+      <i class="ph ph-buildings" style="font-size:1.6rem; color:var(--accent);"></i>
       <div>
-        <div style="font-weight:800;font-size:1.1rem;color:var(--text);">{{ app_name }} <span style="color:var(--saffron);">CITIZEN SERVICES</span></div>
+        <div style="font-weight:800;font-size:1.1rem;color:var(--text);">{{ app_name }} <span style="color:var(--accent);">CITIZEN SERVICES</span></div>
         <div style="font-size:0.68rem;color:var(--text-muted);">Ministry of Road Transport & Highways · National E-Challan Portal</div>
       </div>
     </div>
     <div style="display:flex; gap:10px; align-items:center;">
-      <a href="/intelligence/login" class="btn btn-outline" style="font-size:0.75rem; color:var(--cyan); border-color:rgba(0,229,255,0.4);">🛡️ Intelligence Command</a>
-      <a href="/login" class="btn btn-outline" style="font-size:0.75rem;">👮 Officer Login</a>
-      <a href="/citizen/logout" class="btn btn-outline" style="font-size:0.75rem;">↪ Logout</a>
-      <button class="btn btn-outline" onclick="toggleTheme()" style="padding:6px 10px;">🌓</button>
+      <a href="/intelligence/login" class="btn btn-secondary btn-sm"><i class="ph ph-shield-check"></i> Intelligence Command</a>
+      <a href="/login" class="btn btn-secondary btn-sm"><i class="ph ph-user"></i> Officer Login</a>
+      <a href="/citizen/logout" class="btn btn-secondary btn-sm"><i class="ph ph-sign-out"></i> Logout</a>
+      <button class="btn btn-secondary btn-sm" data-theme-toggle><i class="ph ph-circle-half-tilt"></i></button>
     </div>
   </header>
 
-  <!-- Institutional Editorial Masthead (Anti-Slop Asymmetrical Split Layout) -->
+  <!-- Institutional Editorial Masthead -->
   <section class="citizen-hero">
     <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 36px; align-items: start;">
-      
+
       <!-- Left Column: Search & Live HSRP Plate Deck -->
       <div>
-        <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--saffron); font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px;">
+        <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--accent); font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px;">
           MINISTRY OF ROAD TRANSPORT & HIGHWAYS // CENTRAL MOTOR VEHICLES RULES 1989
         </div>
-        <h1 style="font-size:clamp(1.75rem, 3.2vw, 2.4rem); color:#fff; font-weight:800; line-height:1.2; letter-spacing:-0.03em; margin:0 0 10px;">
+        <h1 style="font-size:clamp(1.75rem, 3.2vw, 2.4rem); color:var(--text-primary); font-weight:800; line-height:1.2; letter-spacing:-0.03em; margin:0 0 10px;">
           Vehicle Infraction Audit & Settlement
         </h1>
         <p style="color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:20px;">
@@ -303,7 +275,7 @@
         <!-- Search Input Bar -->
         <div class="search-box-wrap" style="margin:0 0 12px 0;">
           <input type="text" id="citizen-plate-search" placeholder="ENTER REGISTRATION MARK (e.g. KA03MX4521)" class="search-input" onkeydown="if(event.key==='Enter') searchCitizenChallans()" oninput="updateHsrpPreview(this.value)">
-          <button class="btn btn-saffron" style="padding:0 24px; font-size:0.92rem;" onclick="searchCitizenChallans()">Audit Vehicle</button>
+          <button class="btn btn-primary" style="padding:0 24px; font-size:0.92rem;" onclick="searchCitizenChallans()">Audit Vehicle</button>
         </div>
 
         <!-- Quick Sample Pills -->
@@ -313,17 +285,17 @@
           <span class="quick-sample-pill" onclick="setSamplePlate('DL01AB1234')">DL01AB1234</span>
           <span class="quick-sample-pill" onclick="setSamplePlate('MH12DE3344')">MH12DE3344</span>
           <span class="quick-sample-pill" onclick="setSamplePlate('TN09BQ7788')">TN09BQ7788</span>
-          <span class="quick-sample-pill" onclick="setSamplePlate('')" style="color:var(--saffron); border-color:rgba(255,153,51,0.3);">All Vehicles</span>
+          <span class="quick-sample-pill" onclick="setSamplePlate('')" style="color:var(--accent); border-color:var(--accent);">All Vehicles</span>
         </div>
       </div>
 
-      <!-- Right Column: Asymmetrical Statutory Directives Docket -->
+      <!-- Right Column: Statutory Directives Docket -->
       <div style="display:flex; flex-direction:column; gap:12px;">
-        <!-- Primary Panel: Rule 167A Review Tribunal Statutory Rights -->
-        <div style="background:#0c1322; border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+        <!-- Primary Panel: Rule 167A Review Tribunal -->
+        <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <div style="font-size:0.75rem; font-family:var(--font-mono); font-weight:800; color:var(--saffron); letter-spacing:0.06em;">RULE 167A TRIBUNAL RIGHTS</div>
-            <span style="font-size:0.68rem; background:rgba(255,153,51,0.1); color:var(--saffron); padding:2px 8px; border-radius:4px; font-family:var(--font-mono); font-weight:700;">15-DAY STATUTORY WINDOW</span>
+            <div style="font-size:0.75rem; font-family:var(--font-mono); font-weight:800; color:var(--accent); letter-spacing:0.06em;">RULE 167A TRIBUNAL RIGHTS</div>
+            <span class="badge badge-yellow">15-DAY STATUTORY WINDOW</span>
           </div>
           <p style="font-size:0.84rem; color:var(--text); line-height:1.5; margin:0 0 10px;">
             Motorists maintain statutory entitlement to contest wrongful citations. The Traffic Review Tribunal reviews disputes within 7 business days using cryptographic CCTV frame SHA-256 digests.
@@ -334,16 +306,16 @@
           </div>
         </div>
 
-        <!-- Asymmetrical Split Sub-Panels -->
+        <!-- Sub-Panels -->
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div style="background:#0c1322; border:1px solid var(--border); border-radius:12px; padding:14px;">
-            <div style="font-size:0.68rem; font-family:var(--font-mono); font-weight:700; color:var(--cyan); margin-bottom:4px;">SETTLEMENT RAILS</div>
-            <div style="font-size:0.85rem; font-weight:700; color:#fff; margin-bottom:2px;">NPCI Bharat BillPay</div>
+          <div class="card-flat">
+            <div style="font-size:0.68rem; font-family:var(--font-mono); font-weight:700; color:var(--accent); margin-bottom:4px;">SETTLEMENT RAILS</div>
+            <div style="font-size:0.85rem; font-weight:700; color:var(--text); margin-bottom:2px;">NPCI Bharat BillPay</div>
             <div style="font-size:0.72rem; color:var(--text-dim);">Zero-convenience fee settlement via RuPay, UPI, and NetBanking.</div>
           </div>
-          <div style="background:#0c1322; border:1px solid var(--border); border-radius:12px; padding:14px;">
-            <div style="font-size:0.68rem; font-family:var(--font-mono); font-weight:700; color:var(--green); margin-bottom:4px;">LEDGER STATUS</div>
-            <div style="font-size:0.85rem; font-weight:700; color:#fff; margin-bottom:2px;">Cryptographic Sync</div>
+          <div class="card-flat">
+            <div style="font-size:0.68rem; font-family:var(--font-mono); font-weight:700; color:var(--success); margin-bottom:4px;">LEDGER STATUS</div>
+            <div style="font-size:0.85rem; font-weight:700; color:var(--text); margin-bottom:2px;">Cryptographic Sync</div>
             <div style="font-size:0.72rem; color:var(--text-dim);">Every remittance generates a tamper-evident SHA-256 receipt.</div>
           </div>
         </div>
@@ -359,10 +331,10 @@
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:12px;">
       <div class="filter-tabs">
         <button class="filter-tab active" id="filter-all" onclick="setChallanStatusFilter('ALL')">All Infractions</button>
-        <button class="filter-tab" id="filter-unpaid" onclick="setChallanStatusFilter('UNPAID')">⏳ Unpaid Only</button>
-        <button class="filter-tab" id="filter-paid" onclick="setChallanStatusFilter('PAID')">✅ Settled Records</button>
+        <button class="filter-tab" id="filter-unpaid" onclick="setChallanStatusFilter('UNPAID')"><i class="ph ph-clock"></i> Unpaid Only</button>
+        <button class="filter-tab" id="filter-paid" onclick="setChallanStatusFilter('PAID')"><i class="ph ph-check-circle"></i> Settled Records</button>
       </div>
-      <span style="font-size:0.75rem; color:var(--text-muted);" id="result-status-text">Displaying recent records (plates masked for privacy)</span>
+      <span class="text-sm text-muted" id="result-status-text">Displaying recent records (plates masked for privacy)</span>
     </div>
 
     <div id="citizen-challans-list" style="display:flex; flex-direction:column; gap:14px;">
@@ -371,58 +343,57 @@
 
   </main>
 
-  <!-- ── TOAST STACK ── -->
+  <!-- Toast Stack -->
   <div class="toast-stack" id="citizen-toast-stack"></div>
 
-  <!-- ── PAYMENT MODAL ── -->
+  <!-- Payment Modal -->
   <div class="modal-backdrop" id="pay-modal">
     <div class="modal-window">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
         <div>
-          <h3 style="font-size:1.18rem;margin:0 0 4px;color:var(--text);font-family:var(--font-heading);">💳 Settle Traffic E-Challan</h3>
-          <div style="font-size:0.75rem;color:var(--text-muted);">Ministry of Road Transport & Highways · NPCI Bharat BillPay / UPI Gateway</div>
+          <h3 style="font-size:1.18rem;margin:0 0 4px;color:var(--text);"><i class="ph ph-credit-card"></i> Settle Traffic E-Challan</h3>
+          <div class="text-sm text-muted">Ministry of Road Transport & Highways · NPCI Bharat BillPay / UPI Gateway</div>
         </div>
-        <button onclick="closePayModal()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;line-height:1;">✕</button>
+        <button onclick="closePayModal()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;line-height:1;"><i class="ph ph-x"></i></button>
       </div>
 
       <!-- Challan Breakdown Summary -->
-      <div style="background:rgba(0,0,0,0.3);padding:14px;border-radius:12px;border:1px solid var(--border);margin-bottom:16px;">
+      <div class="card-flat" style="margin-bottom:16px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.82rem;">
-          <span style="color:var(--text-muted);">Challan Reference:</span>
-          <b id="pay-modal-challan" style="font-family:var(--font-mono);color:var(--cyan);">RX-000000</b>
+          <span class="text-muted">Challan Reference:</span>
+          <b id="pay-modal-challan" class="text-mono" style="color:var(--accent);">RX-000000</b>
         </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.82rem;">
-          <span style="color:var(--text-muted);">Vehicle HSRP:</span>
-          <b id="pay-modal-plate" style="font-family:var(--font-mono);letter-spacing:0.06em;">KA03MX4521</b>
+          <span class="text-muted">Vehicle HSRP:</span>
+          <b id="pay-modal-plate" class="text-mono" style="letter-spacing:0.06em;">KA03MX4521</b>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px dashed var(--border);margin-top:6px;">
           <span style="font-size:0.85rem;color:var(--text-muted);">Statutory Fine:</span>
-          <b id="pay-modal-amount" style="font-size:1.35rem;color:var(--saffron);font-family:var(--font-heading);">₹1,000</b>
+          <b id="pay-modal-amount" style="font-size:1.35rem;color:var(--accent);font-weight:800;">₹1,000</b>
         </div>
       </div>
 
       <!-- UPI QR Simulation Widget -->
-      <div style="background:rgba(0, 229, 255, 0.04); border:1px solid rgba(0, 229, 255, 0.2); border-radius:12px; padding:14px; margin-bottom:16px; display:flex; align-items:center; gap:14px;">
-        <div style="width:72px; height:72px; background:#fff; border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.4); flex-shrink:0;">
-          <!-- Simulated Stylized QR -->
-          <div style="font-size:1.8rem; line-height:1;">🏁</div>
+      <div class="card-flat" style="margin-bottom:16px; display:flex; align-items:center; gap:14px;">
+        <div style="width:72px; height:72px; background:#fff; border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0;">
+          <i class="ph ph-qr-code" style="font-size:1.8rem; color:#000;"></i>
           <div style="font-size:0.5rem; font-weight:800; color:#000; font-family:var(--font-mono); margin-top:2px;">BHIM UPI</div>
         </div>
         <div style="flex:1;">
-          <div style="font-size:0.78rem; font-weight:700; color:#fff;">Scan via Any UPI App</div>
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text);">Scan via Any UPI App</div>
           <div style="font-size:0.7rem; color:var(--text-muted); margin:2px 0 6px;">Google Pay · PhonePe · Paytm · BHIM · Cred</div>
-          <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:6px; border:1px solid var(--border); font-family:var(--font-mono); font-size:0.68rem; color:var(--cyan);">
+          <div style="display:inline-flex; align-items:center; gap:6px; background:var(--bg); padding:3px 8px; border-radius:6px; border:1px solid var(--border); font-family:var(--font-mono); font-size:0.68rem; color:var(--accent);">
             VPA: echallan.morth@sbi
           </div>
         </div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
-        <label style="font-size:0.75rem;color:var(--text-muted);font-weight:600;">Payer Full Name (for E-Receipt):</label>
-        <input type="text" id="payer-name-input" value="Citizen Motorist" class="form-input" style="background:rgba(6,9,15,0.7); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:#fff; font-size:0.88rem;">
+        <label class="text-sm text-muted" style="font-weight:600;">Payer Full Name (for E-Receipt):</label>
+        <input type="text" id="payer-name-input" value="Citizen Motorist">
 
-        <label style="font-size:0.75rem;color:var(--text-muted);font-weight:600;">Payment Mode:</label>
-        <select id="pay-mode-select" class="form-input" style="background:rgba(6,9,15,0.7); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:#fff; font-size:0.88rem;">
+        <label class="text-sm text-muted" style="font-weight:600;">Payment Mode:</label>
+        <select id="pay-mode-select">
           <option value="UPI (Google Pay / PhonePe / Paytm / BHIM)">UPI (Google Pay / PhonePe / Paytm / BHIM)</option>
           <option value="Debit / Credit Card (RuPay / Visa / Mastercard)">Debit / Credit Card (RuPay / Visa / Mastercard)</option>
           <option value="NetBanking (SBI / HDFC / ICICI / PNB)">NetBanking (SBI / HDFC / ICICI / PNB)</option>
@@ -430,34 +401,34 @@
       </div>
 
       <div style="display:flex;gap:10px;">
-        <button class="btn btn-success" style="flex:1;" onclick="submitPayment()">✔ Settle Challan Now</button>
-        <button class="btn btn-outline" onclick="closePayModal()">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="submitPayment()"><i class="ph ph-check"></i> Settle Challan Now</button>
+        <button class="btn btn-secondary" onclick="closePayModal()">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- ── DISPUTE MODAL ── -->
+  <!-- Dispute Modal -->
   <div class="modal-backdrop" id="dispute-modal">
     <div class="modal-window">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
         <div>
-          <h3 style="font-size:1.18rem;margin:0 0 4px;color:var(--text);font-family:var(--font-heading);">⚖️ File Citizen Dispute</h3>
-          <div style="font-size:0.75rem;color:var(--text-muted);">Central Motor Vehicles Rule 167A · Traffic Review Tribunal</div>
+          <h3 style="font-size:1.18rem;margin:0 0 4px;color:var(--text);"><i class="ph ph-scales"></i> File Citizen Dispute</h3>
+          <div class="text-sm text-muted">Central Motor Vehicles Rule 167A · Traffic Review Tribunal</div>
         </div>
-        <button onclick="closeDisputeModal()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;line-height:1;">✕</button>
+        <button onclick="closeDisputeModal()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;line-height:1;"><i class="ph ph-x"></i></button>
       </div>
 
       <input type="hidden" id="dispute-vid-input">
       <input type="hidden" id="dispute-plate-input">
 
-      <div style="background:rgba(255,153,51,0.08); border:1px solid rgba(255,153,51,0.25); border-radius:10px; padding:12px; margin-bottom:16px; font-size:0.75rem; color:var(--text-muted);">
-        ℹ️ <b>Statutory Notice:</b> Disputes are reviewed by the District Traffic Magistrate. Cryptographic CCTV camera logs and Merkle roots will be re-computed during adjudication.
+      <div style="background:var(--warning-muted); border:1px solid var(--warning); border-radius:10px; padding:12px; margin-bottom:16px; font-size:0.75rem; color:var(--text-muted);">
+        <i class="ph ph-info"></i> <b>Statutory Notice:</b> Disputes are reviewed by the District Traffic Magistrate. Cryptographic CCTV camera logs and Merkle roots will be re-computed during adjudication.
       </div>
 
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px;">
         <div>
           <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:600;">Dispute Category:</label>
-          <select id="dispute-reason-select" class="form-input" style="width:100%; background:rgba(6,9,15,0.7); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:#fff; font-size:0.85rem;">
+          <select id="dispute-reason-select" style="width:100%;">
             <option value="Incorrect Plate Character Recognition">Incorrect Plate Character Recognition (ANPR Misread)</option>
             <option value="Emergency Vehicle / Medical Exemption">Emergency Vehicle / Medical Exemption</option>
             <option value="Vehicle Sold / Stolen Prior to Incident">Vehicle Sold / Stolen Prior to Incident</option>
@@ -468,18 +439,18 @@
 
         <div>
           <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:600;">Explanation & Proof Reference:</label>
-          <textarea id="dispute-explanation-input" rows="3" class="form-input" style="width:100%; background:rgba(6,9,15,0.7); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:#fff; font-size:0.85rem; resize:vertical;" placeholder="Describe the circumstance, dashcam timestamp, or registration certificate details..."></textarea>
+          <textarea id="dispute-explanation-input" rows="3" style="width:100%; resize:vertical;" placeholder="Describe the circumstance, dashcam timestamp, or registration certificate details..."></textarea>
         </div>
       </div>
 
       <div style="display:flex;gap:10px;">
-        <button class="btn btn-saffron" style="flex:1;" onclick="submitCitizenDispute()">Submit Dispute Ticket</button>
-        <button class="btn btn-outline" onclick="closeDisputeModal()">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="submitCitizenDispute()">Submit Dispute Ticket</button>
+        <button class="btn btn-secondary" onclick="closeDisputeModal()">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- ── SCRIPTS ── -->
+  <!-- Scripts -->
   <script>
     let activePayVid = null;
     let allCitizenViolations = [];
@@ -494,17 +465,16 @@
     const savedTheme = localStorage.getItem('tg_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
-    // Toast Notification System
     function showCitizenToast(title, message, type = 'info') {
       const stack = document.getElementById('citizen-toast-stack');
       if (!stack) return;
       const toast = document.createElement('div');
       toast.className = `toast-card ${type}`;
-      const icon = type === 'success' ? '✅' : type === 'danger' ? '🚨' : type === 'warning' ? '⚠️' : '🛡️';
+      const icon = type === 'success' ? '<i class="ph ph-check-circle"></i>' : type === 'danger' ? '<i class="ph ph-warning-circle"></i>' : type === 'warning' ? '<i class="ph ph-warning"></i>' : '<i class="ph ph-shield-check"></i>';
       toast.innerHTML = `
-        <div style="font-size:1.2rem; line-height:1;">${icon}</div>
+        <div style="font-size:1.2rem; line-height:1; color:var(--${type === 'success' ? 'success' : type === 'danger' ? 'error' : 'accent'});">${icon}</div>
         <div style="flex:1;">
-          <div style="font-weight:700; font-size:0.85rem; color:#fff;">${title}</div>
+          <div style="font-weight:700; font-size:0.85rem; color:var(--text);">${title}</div>
           <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${message}</div>
         </div>
       `;
@@ -517,7 +487,6 @@
       }, 4200);
     }
 
-    // Live HSRP Plate Preview updater
     function updateHsrpPreview(plate) {
       const display = document.getElementById('hsrp-preview-text');
       const clean = (plate || '').toUpperCase().trim();
@@ -534,23 +503,22 @@
       searchCitizenChallans();
     }
 
-    // MVA 2019 Statutory Section Mapper
     function getMvaStatutorySection(violation) {
       const v = (violation || '').toLowerCase();
       if (v.includes('speed') || v.includes('overspeed')) {
-        return { sec: 'Sec 183 MVA 2019', desc: 'Speed Limit Violation', icon: '⚡' };
+        return { sec: 'Sec 183 MVA 2019', desc: 'Speed Limit Violation', icon: 'ph-lightning' };
       } else if (v.includes('helmet')) {
-        return { sec: 'Sec 129 MVA 2019', desc: 'Protective Headgear Mandate', icon: '⛑️' };
+        return { sec: 'Sec 129 MVA 2019', desc: 'Protective Headgear Mandate', icon: 'ph-hard-hat' };
       } else if (v.includes('triple') || v.includes('pillion')) {
-        return { sec: 'Sec 128 MVA 2019', desc: 'Pillion Rider Limit', icon: '👥' };
+        return { sec: 'Sec 128 MVA 2019', desc: 'Pillion Rider Limit', icon: 'ph-users' };
       } else if (v.includes('signal') || v.includes('red light')) {
-        return { sec: 'Sec 184 MVA 2019', desc: 'Signal Jump / Dangerous Driving', icon: '🚦' };
+        return { sec: 'Sec 184 MVA 2019', desc: 'Signal Jump / Dangerous Driving', icon: 'ph-traffic-sign' };
       } else if (v.includes('opposing') || v.includes('wrong way')) {
-        return { sec: 'Sec 184(f) MVA 2019', desc: 'Driving Against Flow', icon: '⚠️' };
+        return { sec: 'Sec 184(f) MVA 2019', desc: 'Driving Against Flow', icon: 'ph-warning' };
       } else if (v.includes('phone') || v.includes('mobile')) {
-        return { sec: 'Sec 184(c) MVA 2019', desc: 'Handheld Device Operation', icon: '📱' };
+        return { sec: 'Sec 184(c) MVA 2019', desc: 'Handheld Device Operation', icon: 'ph-device-mobile' };
       }
-      return { sec: 'Sec 177 MVA 2019', desc: 'General Traffic Contravention', icon: '📋' };
+      return { sec: 'Sec 177 MVA 2019', desc: 'General Traffic Contravention', icon: 'ph-list-checks' };
     }
 
     function setChallanStatusFilter(status) {
@@ -569,9 +537,9 @@
 
       if (!filtered.length) {
         container.innerHTML = `
-          <div class="glass-card" style="text-align:center;padding:36px 20px;">
-            <div style="font-size:2.2rem;margin-bottom:8px;">🛡️</div>
-            <h3 style="color:var(--green);font-size:1.1rem;margin-bottom:6px;">Zero Infractions Found</h3>
+          <div class="card" style="text-align:center;padding:36px 20px;">
+            <div style="margin-bottom:8px;"><i class="ph ph-shield-check" style="font-size:2.2rem; color:var(--success);"></i></div>
+            <h3 style="color:var(--success);font-size:1.1rem;margin-bottom:6px;">Zero Infractions Found</h3>
             <p style="color:var(--text-muted);font-size:0.85rem;max-width:480px;margin:auto;">
               ${currentStatusFilter === 'UNPAID' ? 'No unpaid e-challans are outstanding for this vehicle record.' : 'No traffic violations match your filter criteria.'}
             </p>
@@ -583,39 +551,39 @@
       container.innerHTML = filtered.map(r => {
         const mva = getMvaStatutorySection(r.violation);
         return `
-          <div class="glass-card" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;">
+          <div class="card" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;">
             <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:280px;">
               <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                 <span class="plate-chip">${r.plate}</span>
-                <span class="badge ${r.paid ? 'badge-green' : 'badge-red'}">${r.paid ? '✅ PAID & SETTLED' : '⏳ UNPAID / DUE'}</span>
-                <span style="font-size:0.75rem;color:var(--cyan);font-family:var(--font-mono);font-weight:700;">#${r.challan}</span>
+                <span class="badge ${r.paid ? 'badge-green' : 'badge-red'}">${r.paid ? 'PAID & SETTLED' : 'UNPAID / DUE'}</span>
+                <span class="text-mono text-sm" style="color:var(--accent);font-weight:700;">#${r.challan}</span>
               </div>
               <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
-                <span style="font-size:1.1rem;">${mva.icon}</span>
+                <i class="ph ${mva.icon}" style="font-size:1.1rem; color:var(--accent);"></i>
                 <span style="font-weight:800;color:var(--text);font-size:0.95rem;">${r.violation}</span>
-                <span style="font-size:0.7rem;color:var(--text-muted);background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;font-family:var(--font-mono);">${mva.sec}</span>
+                <span class="badge badge-blue">${mva.sec}</span>
               </div>
-              <div style="font-size:0.74rem;color:var(--text-muted);">
-                📅 ${r.timestamp} · 📍 Camera Node: <span style="color:var(--cyan);font-family:var(--font-mono);">${r.camera}</span>
+              <div class="text-sm text-muted">
+                <i class="ph ph-calendar"></i> ${r.timestamp} · <i class="ph ph-video-camera"></i> Camera Node: <span class="text-mono" style="color:var(--accent);">${r.camera}</span>
               </div>
             </div>
 
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
               <div style="text-align:right;">
-                <div style="font-size:0.7rem;color:var(--text-muted);letter-spacing:0.04em;text-transform:uppercase;">Statutory Penalty</div>
-                <div style="font-size:1.4rem;font-weight:900;color:${r.paid ? 'var(--green)' : 'var(--saffron)'};font-family:var(--font-heading);letter-spacing:-0.02em;">
+                <div class="text-xs text-muted" style="letter-spacing:0.04em;text-transform:uppercase;">Statutory Penalty</div>
+                <div style="font-size:1.4rem;font-weight:900;color:${r.paid ? 'var(--success)' : 'var(--accent)'};letter-spacing:-0.02em;">
                   ₹${r.fine.toLocaleString('en-IN')}
                 </div>
               </div>
 
               <div style="display:flex;gap:8px;align-items:center;">
                 ${r.paid ? `
-                  <a href="/receipt/${r.id}" target="_blank" class="btn btn-success" style="padding:8px 14px;font-size:0.8rem;">⬇ Receipt</a>
+                  <a href="/receipt/${r.id}" target="_blank" class="btn btn-primary btn-sm"><i class="ph ph-download-simple"></i> Receipt</a>
                 ` : `
-                  <button class="btn btn-primary" onclick="openPayModal(${r.id}, '${r.challan}', '${r.plate}', ${r.fine})">💳 Pay Online</button>
-                  <button class="btn btn-outline" onclick="openDisputeModal(${r.id}, '${r.plate}')">⚖️ Dispute</button>
+                  <button class="btn btn-primary" onclick="openPayModal(${r.id}, '${r.challan}', '${r.plate}', ${r.fine})"><i class="ph ph-credit-card"></i> Pay Online</button>
+                  <button class="btn btn-secondary" onclick="openDisputeModal(${r.id}, '${r.plate}')"><i class="ph ph-scales"></i> Dispute</button>
                 `}
-                <a href="/challan/${r.id}" target="_blank" class="btn btn-outline" style="padding:8px 12px;font-size:0.8rem;" title="Download Official Challan Notice">PDF</a>
+                <a href="/challan/${r.id}" target="_blank" class="btn btn-secondary btn-sm" title="Download Official Challan Notice">PDF</a>
               </div>
             </div>
           </div>
@@ -639,7 +607,6 @@
       loadCitizenViolations(p);
     }
 
-    // Payment Modal Functions
     function openPayModal(vid, challan, plate, fine) {
       activePayVid = vid;
       document.getElementById('pay-modal-challan').textContent = challan;
@@ -679,7 +646,6 @@
       });
     }
 
-    // Dispute Modal Functions
     function openDisputeModal(vid, plate) {
       document.getElementById('dispute-vid-input').value = vid;
       document.getElementById('dispute-plate-input').value = plate;
