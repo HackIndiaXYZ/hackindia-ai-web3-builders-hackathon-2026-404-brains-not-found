@@ -28,6 +28,8 @@ ADMIN_PASSWORD      = os.environ.get("ADMIN_PASSWORD", "pawan123")
 INSPECTOR_PASSWORD  = os.environ.get("INSPECTOR_PASSWORD", "inspector123")
 OFFICER_PASSWORD    = os.environ.get("OFFICER_PASSWORD", "officer123")
 DEMO_PASSWORD       = os.environ.get("DEMO_PASSWORD", "demo123")
+CITIZEN_USERNAME    = os.environ.get("CITIZEN_USERNAME", "citizen")
+CITIZEN_PASSWORD    = os.environ.get("CITIZEN_PASSWORD", "citizen123")
 
 # Directories
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
