@@ -246,6 +246,8 @@ class TestFlaskEndpoints:
         assert "reviews" in data
 
     def test_citizen_violations_and_pay(self, client):
+        with client.session_transaction() as sess:
+            sess['is_citizen'] = True
         res = client.get('/citizen/violations')
         assert res.status_code == 200
         data = res.get_json()
