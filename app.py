@@ -91,6 +91,7 @@ from safety_intelligence import (
 from violation_engine import ViolationEngine
 from camera_routes import bp as camera_bp
 from demo_catalog import build_demo_catalog
+from realtime_traffic import get_history as get_realtime_history, get_snapshot as get_realtime_snapshot
 from demo_analyzer import safe_video_path, analyze_demo_video, get_video_metadata, get_ai_models
 from intelligence_engine import (
     get_intelligence_overview,
@@ -1469,6 +1470,15 @@ def analytics():
 def map_view():
     _log_visitor('/map')
     return render_template('map.html')
+
+@app.route('/api/realtime/traffic')
+def realtime_traffic_api():
+    """Return live provider data or the interactive offline simulation."""
+    return jsonify(get_realtime_snapshot(force=request.args.get('refresh') == '1'))
+
+@app.route('/api/realtime/history')
+def realtime_traffic_history_api():
+    return jsonify({"history": get_realtime_history()})
 
 @app.route('/ai-safety')
 @require_admin
