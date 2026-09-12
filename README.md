@@ -23,11 +23,10 @@ pinned: true
 ## 👤 Project Founder & Lead Architect
 **Pawan Singh** — Founder & Full-Stack AI Engineer  
 - **Education:** B.Tech Computer Science & Engineering (CSE), Delhi Technical Campus (DTC), Greater Noida  
-- **University:** Guru Gobind Singh Indraprastha University (GGSIPU)  
-- **Academic Merit:** **9.16 CGPA** | Expected Graduation: **2028**  
+- **University:** Guru Gobind Singh Indraprastha University (GGSIPU)    
 - **Email:** [pawan9140582015@gmail.com](mailto:pawan9140582015@gmail.com)  
 - **GitHub:** [github.com/pawan00207](https://github.com/pawan00207)  
-- **LinkedIn:** Pawan Singh  
+- **LinkedIn:** (https://www.linkedin.com/in/pawan-singh-555423322/)
 
 ---
 
