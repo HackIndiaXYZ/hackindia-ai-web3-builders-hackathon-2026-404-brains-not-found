@@ -224,3 +224,31 @@ class TestNotifications:
     def test_bot_rules_query(self):
         res = process_bot_message("RULES")
         assert "Sec 129" in res["reply"]
+
+
+# ── 8. DEMO CATALOG & VIDEO ANALYSIS TESTS ─────────────────────
+from demo_catalog import build_demo_catalog
+from demo_analyzer import safe_video_path, get_video_metadata, analyze_demo_video
+
+class TestDemoCatalogAndAnalysis:
+    def test_demo_catalog_lists_all_videos(self):
+        catalog = build_demo_catalog("videos")
+        assert len(catalog) >= 7
+        video_names = [d["video_name"] for d in catalog]
+        assert any("helmet" in name.lower() for name in video_names)
+        assert any(d["is_new"] for d in catalog)
+
+    def test_safe_video_path_resolution(self):
+        vname = "Driving without helmet...!! How it looks vs How it feels..!! #bike #helmet #shorts #youtubeshorts.mp4"
+        resolved = safe_video_path(vname)
+        assert resolved is not None
+        assert os.path.isfile(resolved)
+
+    def test_video_metadata_extraction(self):
+        vname = "Driving without helmet...!! How it looks vs How it feels..!! #bike #helmet #shorts #youtubeshorts.mp4"
+        meta = get_video_metadata(vname)
+        assert meta["exists"] is True
+        assert meta["total_frames"] > 0
+        assert meta["duration_seconds"] > 0
+        assert "1080" in meta["resolution"] or "1920" in meta["resolution"]
+

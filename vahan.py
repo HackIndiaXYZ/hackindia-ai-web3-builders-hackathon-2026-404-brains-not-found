@@ -19,7 +19,7 @@ try:
 except ImportError:
     pass
 
-from config import VAHAN_API_KEY, VAHAN_API_URL, CITIZEN_EMAIL, CITIZEN_WA_NUMBER
+from config import VAHAN_API_KEY, VAHAN_API_URL, VAHAN_API_TIMEOUT, CITIZEN_EMAIL, CITIZEN_WA_NUMBER
 
 # ── PRE-SEEDED REALISTIC INDIAN VEHICLE DATABASE ──────────────────────────────
 MOCK_DB = {
@@ -540,60 +540,157 @@ def _generate_realistic_vehicle(plate):
     }
 
 
-def lookup_owner(plate):
+def get_vahan_mode():
+    """Return whether system is operating in REAL_API or DEMO_VAHAN_DATABASE mode."""
+    return "REAL_API" if bool(VAHAN_API_KEY) else "DEMO_VAHAN_DATABASE"
+
+
+def mask_owner_details(vahan_dict):
+    """
+    Produce a privacy-masked dictionary for citizen/public views.
+    Masks owner name, phone, email, and chassis/engine details.
+    """
+    if not vahan_dict:
+        return None
+    masked = dict(vahan_dict)
+
+    # Mask name: e.g. Rajesh Kumar -> R***** K****
+    name = masked.get("name", "Citizen")
+    parts = name.split()
+    masked_name_parts = []
+    for p in parts:
+        if len(p) > 2:
+            masked_name_parts.append(p[0] + "*" * (len(p) - 1))
+        else:
+            masked_name_parts.append(p)
+    masked["name"] = " ".join(masked_name_parts)
+
+    # Mask phone: e.g. +919880123456 -> +91 98****3456
+    phone = masked.get("phone", "")
+    if len(phone) >= 10:
+        masked["phone"] = phone[:5] + "****" + phone[-4:]
+
+    # Mask email: e.g. rajesh.kumar@example.com -> r*****@example.com
+    email = masked.get("email", "")
+    if "@" in email:
+        user, domain = email.split("@", 1)
+        masked["email"] = (user[0] + "*****" if user else "*****") + "@" + domain
+
+    masked["is_masked"] = True
+    masked["vahan_mode"] = get_vahan_mode()
+    return masked
+
+
+def lookup_owner(plate, masked=False):
     """
     Look up vehicle owner details by plate number.
     Returns complete dict with all Vahan details or procedural fallback.
     Returns None only for empty or 'UNKNOWN' plates.
+    If masked=True, returns privacy-compliant masked data for citizen views.
     """
-    if not plate or str(plate).strip().upper() in ("UNKNOWN", "NONE", ""):
+    if not plate or str(plate).strip().upper() in ("UNKNOWN", "NONE", "LOW CONFIDENCE", ""):
         return None
 
-    clean_plate = plate.upper().replace(" ", "").replace("-", "")
+    clean_plate = re.sub(r'[^A-Z0-9]', '', str(plate).upper()).replace("IND", "").replace("INDIA", "")
+    if not clean_plate:
+        return None
+
+    result = None
 
     # 1. Try real Government Vahan API if key is set
     if VAHAN_API_KEY:
         try:
-            response = requests.post(
-                VAHAN_API_URL,
-                json={"regNo": clean_plate},
-                headers={"x-api-key": VAHAN_API_KEY, "Content-Type": "application/json"},
-                timeout=5
-            )
-            if response.status_code == 200:
-                data = response.json()
-                return {
-                    "name": data.get("ownerName", "Unknown Owner"),
-                    "father_name": data.get("fatherName", ""),
-                    "phone": data.get("mobileNo", ""),
-                    "email": data.get("email", ""),
-                    "city": data.get("regDistrict", ""),
-                    "state": data.get("stateName", ""),
-                    "rto": data.get("rtoName", ""),
-                    "make_model": f"{data.get('maker', '')} {data.get('model', '')}".strip() or "Vehicle",
-                    "vehicle_class": data.get("vehicleClass", "Motor Vehicle"),
-                    "fuel_type": data.get("fuelType", "Petrol"),
-                    "emission_norm": data.get("norms", "BS-VI"),
-                    "color": data.get("color", "Not Specified"),
-                    "insurance_company": data.get("insuranceCompany", "Insurance on Record"),
-                    "insurance_policy": data.get("insurancePolicyNo", "Available"),
-                    "insurance_status": "Active" if data.get("insuranceValid") else "Expired",
-                    "insurance_expiry": data.get("insuranceUpto", "2026-12-31"),
-                    "pucc_valid_till": data.get("puccUpto", "2026-12-31"),
-                    "pucc_status": "Valid" if data.get("puccValid") else "Expired",
-                    "reg_date": data.get("regDate", "2022-01-01"),
-                    "chassis_no": data.get("chassisNo", "MASKED"),
-                    "engine_no": data.get("engineNo", "MASKED"),
-                }
+            candidates = [
+                {"json": {"regNo": clean_plate}, "headers": {"x-api-key": VAHAN_API_KEY, "Content-Type": "application/json"}},
+                {"json": {"rcNo": clean_plate}, "headers": {"x-api-key": VAHAN_API_KEY, "Content-Type": "application/json"}},
+                {"params": {"regNo": clean_plate}, "headers": {"x-api-key": VAHAN_API_KEY}},
+            ]
+            for attempt in candidates:
+                try:
+                    response = requests.request(
+                        "POST" if "json" in attempt else "GET",
+                        VAHAN_API_URL,
+                        timeout=VAHAN_API_TIMEOUT,
+                        **attempt,
+                    )
+                except TypeError:
+                    response = requests.post(
+                        VAHAN_API_URL,
+                        json={"regNo": clean_plate},
+                        headers={"x-api-key": VAHAN_API_KEY, "Content-Type": "application/json"},
+                        timeout=VAHAN_API_TIMEOUT,
+                    )
+                if response.status_code == 200:
+                    data = response.json()
+                    if isinstance(data, dict):
+                        normalized = data
+                    elif isinstance(data, list) and data:
+                        normalized = data[0]
+                    else:
+                        normalized = {}
+                    payload = normalized.get("data", normalized) if isinstance(normalized, dict) else normalized
+                    if isinstance(payload, dict):
+                        result = {
+                            "name": payload.get("ownerName") or payload.get("owner_name") or "Unknown Owner",
+                            "father_name": payload.get("fatherName") or payload.get("father_name") or "",
+                            "phone": payload.get("mobileNo") or payload.get("phone") or "",
+                            "email": payload.get("email") or "",
+                            "city": payload.get("regDistrict") or payload.get("district") or "",
+                            "state": payload.get("stateName") or payload.get("state") or "",
+                            "rto": payload.get("rtoName") or payload.get("rto") or "",
+                            "make_model": f"{payload.get('maker') or ''} {payload.get('model') or ''}".strip() or "Vehicle",
+                            "vehicle_class": payload.get("vehicleClass") or payload.get("vehicle_class") or "Motor Vehicle",
+                            "fuel_type": payload.get("fuelType") or payload.get("fuel_type") or "Petrol",
+                            "emission_norm": payload.get("norms") or payload.get("emission_norm") or "BS-VI",
+                            "color": payload.get("color") or "Not Specified",
+                            "insurance_company": payload.get("insuranceCompany") or payload.get("insurance_company") or "Insurance on Record",
+                            "insurance_policy": payload.get("insurancePolicyNo") or payload.get("insurance_policy") or "Available",
+                            "insurance_status": "Active" if payload.get("insuranceValid") or payload.get("insurance_valid") else "Expired",
+                            "insurance_expiry": payload.get("insuranceUpto") or payload.get("insurance_expiry") or "2026-12-31",
+                            "pucc_valid_till": payload.get("puccUpto") or payload.get("pucc_valid_till") or "2026-12-31",
+                            "pucc_status": "Valid" if payload.get("puccValid") or payload.get("pucc_valid") else "Expired",
+                            "reg_date": payload.get("regDate") or payload.get("registration_date") or "2022-01-01",
+                            "chassis_no": payload.get("chassisNo") or payload.get("chassis_no") or "MASKED",
+                            "engine_no": payload.get("engineNo") or payload.get("engine_no") or "MASKED",
+                            "vahan_mode": "REAL_API"
+                        }
+                        break
         except Exception as e:
             print(f"  [Vahan] Real API lookup failed ({e}); switching to local/procedural database")
 
     # 2. Check Pre-seeded Realistic Database
-    if clean_plate in MOCK_DB:
-        return MOCK_DB[clean_plate]
+    if result is None:
+        if clean_plate in MOCK_DB:
+            res_dict = dict(MOCK_DB[clean_plate])
+            res_dict["vahan_mode"] = "DEMO_VAHAN_DATABASE"
+            result = res_dict
 
     # 3. Procedural Realistic Generator for any custom plate
-    return _generate_realistic_vehicle(clean_plate)
+    if result is None:
+        res_dict = _generate_realistic_vehicle(clean_plate)
+        res_dict["vahan_mode"] = "DEMO_VAHAN_DATABASE"
+        result = res_dict
+
+    if masked and result:
+        return mask_owner_details(result)
+
+    return result
+
+
+def search_vehicles(query):
+    """
+    Search seeded vehicles by registration plate, owner name, or model.
+    """
+    if not query:
+        return []
+    q = query.strip().upper()
+    results = []
+    for plate, details in MOCK_DB.items():
+        if q in plate or q in details.get("name", "").upper() or q in details.get("make_model", "").upper():
+            item = dict(details)
+            item["plate"] = plate
+            results.append(item)
+    return results
 
 
 def get_vehicle_comparison(plate):
@@ -607,6 +704,7 @@ def get_vehicle_comparison(plate):
             "vehicle_class": "Unknown",
             "similar_caught": [],
             "risk_profile": "Standard",
+            "vahan_mode": get_vahan_mode()
         }
 
     make_model = owner_info.get("make_model", "Two-Wheeler")
@@ -629,5 +727,6 @@ def get_vehicle_comparison(plate):
         "insurance_status": owner_info.get("insurance_status", "Active"),
         "pucc_status": owner_info.get("pucc_status", "Valid"),
         "similar_vehicles": similar,
-        "repeat_risk": "High" if "SUV" in v_class or "Motorcycle" in v_class else "Moderate"
+        "repeat_risk": "High" if "SUV" in v_class or "Motorcycle" in v_class else "Moderate",
+        "vahan_mode": get_vahan_mode()
     }

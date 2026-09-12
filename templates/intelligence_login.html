@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrafficGuard Intelligence — Operations Command Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 20%, #151d2a 0%, #0a0d14 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-sans);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+    .intel-login-box {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(18, 24, 38, 0.85);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 229, 255, 0.1);
+      backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
+    }
+    .intel-login-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #ff9933, #00e5ff, #00e676);
+    }
+    .intel-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .intel-logo {
+      font-size: 2.4rem;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.4));
+    }
+    .intel-title {
+      font-family: var(--font-heading);
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+    .intel-title span { color: var(--cyan); }
+    .intel-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.03em;
+    }
+    .form-input {
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .form-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+    }
+    .btn-intel-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #0099ff, #00e5ff);
+      color: #000;
+      font-weight: 800;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+    .btn-intel-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 18px rgba(0, 229, 255, 0.4);
+    }
+    .btn-demo-quick {
+      width: 100%;
+      background: rgba(255, 153, 51, 0.12);
+      border: 1px solid rgba(255, 153, 51, 0.4);
+      color: var(--saffron);
+      font-weight: 700;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      margin-top: 10px;
+      transition: all 0.2s;
+    }
+    .btn-demo-quick:hover {
+      background: rgba(255, 153, 51, 0.22);
+      border-color: var(--saffron);
+    }
+    .intel-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+    .intel-footer a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    .intel-footer a:hover { text-decoration: underline; }
+    .alert-error {
+      background: rgba(255, 82, 82, 0.12);
+      border: 1px solid #ff5252;
+      color: #ff5252;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="intel-login-box">
+    <div class="intel-header">
+      <div class="intel-logo">🛡️</div>
+      <div class="intel-title">TrafficGuard <span>Intelligence</span></div>
+      <div class="intel-sub">AI Traffic Intelligence & Operations Command</div>
+    </div>
+
+    {% if error %}
+    <div class="alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/intelligence/login" id="intel-login-form">
+      <div class="form-group">
+        <label class="form-label">Operator Username</label>
+        <input type="text" name="username" id="username-field" class="form-input" placeholder="e.g. intelligence" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Command Access Password</label>
+        <input type="password" name="password" id="password-field" class="form-input" placeholder="••••••••••••" required>
+      </div>
+
+      <button type="submit" class="btn-intel-submit">Authorize & Enter Command Grid</button>
+      <button type="button" class="btn-demo-quick" onclick="fillDemoCredentials()">⚡ Quick Demo Login (Operator)</button>
+    </form>
+
+    <div class="intel-footer">
+      <div style="margin-bottom:6px;">Restricted to Authorized Police & Intelligence Personnel</div>
+      <a href="/">← Return to Standard Officer Command Center</a> · <a href="/citizen">Citizen Portal</a>
+    </div>
+  </div>
+
+  <script>
+    function fillDemoCredentials() {
+      document.getElementById('username-field').value = 'intelligence';
+      document.getElementById('password-field').value = 'trafficguard2026';
+      document.getElementById('intel-login-form').submit();
+    }
+  </script>
+
+</body>
+</html>

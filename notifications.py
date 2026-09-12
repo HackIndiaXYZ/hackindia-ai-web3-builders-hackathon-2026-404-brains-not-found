@@ -409,7 +409,51 @@ def send_daily_summary(stats, base_url="http://localhost:5001"):
     send_email(ADMIN_EMAIL, f"📊 TrafficGuard Daily Summary — {today}", f"<pre>{msg}</pre>")
 
 
-# ── 6. TWO-WAY WHATSAPP / CITIZEN BOT SIMULATOR ────────────────────────────────
+# ── 6. NOTIFICATION SERVICE ABSTRACTION ───────────────────────────────────────
+class NotificationService:
+    """Unified Notification abstraction handling WhatsApp, SMS, and Email with cascading Real/Demo modes."""
+
+    @staticmethod
+    def send_violation_alert(violation_id, plate, violation_str, total_fine, timestamp, challan_filepath, owner_name="Citizen", owner_phone=None, owner_email=None, base_url="http://localhost:5001"):
+        return notify_violation(violation_id, plate, violation_str, total_fine, timestamp, challan_filepath, owner_name, owner_phone, owner_email, base_url)
+
+    @staticmethod
+    def send_payment_confirmation(violation_id, plate, amount, receipt_path, owner_name="Citizen", owner_phone=None, owner_email=None, base_url="http://localhost:5001"):
+        challan_ref = f"RX-{violation_id:06d}"
+        msg = (
+            f"✅ *PAYMENT CONFIRMED — {APP_NAME}*\n"
+            f"Challan: `{challan_ref}` | Vehicle: `{plate}`\n"
+            f"Amount Paid: *Rs. {amount:,}* (Zero Balance Due)\n"
+            f"Receipt download: {base_url}/receipt/{violation_id}\n"
+            f"Thank you for being a responsible citizen!"
+        )
+        if owner_phone:
+            send_whatsapp(owner_phone, msg)
+            send_sms(owner_phone, f"TrafficGuard Pro: Payment of Rs.{amount} for {challan_ref} ({plate}) successful. Receipt: {base_url}/receipt/{violation_id}")
+        if owner_email:
+            send_email(owner_email, f"✅ Payment Receipt — Challan {challan_ref} Settled", f"<h3>Official Payment Settlement</h3><p>Challan {challan_ref} ({plate}) paid in full (Rs. {amount:,}).</p>", attachment_path=receipt_path)
+        return True
+
+    @staticmethod
+    def send_dispute_update(dispute_id, violation_id, plate, status, officer_notes="", owner_phone=None, owner_email=None):
+        challan_ref = f"RX-{violation_id:06d}"
+        status_text = "ACCEPTED & CHALLAN WAIVED" if status == "ACCEPTED" else "REJECTED"
+        msg = (
+            f"⚖️ *DISPUTE TRIBUNAL DECISION — {APP_NAME}*\n"
+            f"Ticket: `DISP-{dispute_id:04d}` | Challan: `{challan_ref}`\n"
+            f"Status: *{status_text}*\n"
+            f"Tribunal Remarks: {officer_notes or 'Decision rendered by Traffic Review Officer.'}\n"
+        )
+        if owner_phone:
+            send_whatsapp(owner_phone, msg)
+        return True
+
+    @staticmethod
+    def get_audit_feed():
+        return list(RECENT_ALERTS_FEED)
+
+
+# ── 7. TWO-WAY WHATSAPP / CITIZEN BOT SIMULATOR ────────────────────────────────
 def process_bot_message(incoming_text, sender_id="+919876543210", db_conn=None):
     """
     Interactive two-way chatbot processing user queries via WhatsApp.
@@ -418,6 +462,8 @@ def process_bot_message(incoming_text, sender_id="+919876543210", db_conn=None):
     - PAY <challan_id>
     - RULES <topic>
     - DISPUTE <challan_id>
+    - HISTORY <plate>
+    - SCORE <plate>
     - HELP
     """
     text = (incoming_text or "").strip()
@@ -428,23 +474,23 @@ def process_bot_message(incoming_text, sender_id="+919876543210", db_conn=None):
             "reply": (
                 f"🤖 *TrafficGuard Pro Virtual Assistant*\n\n"
                 f"Available Commands:\n"
-                f"1️⃣ `STATUS <Plate>` — Check pending challans (e.g. STATUS KA03MX4521)\n"
-                f"2️⃣ `STATUS <ChallanNo>` — Check specific challan (e.g. STATUS RX-000001)\n"
-                f"3️⃣ `PAY <ChallanNo>` — Get instant payment link\n"
-                f"4️⃣ `RULES` — View traffic fine directory (MV Act)\n"
-                f"5️⃣ `DISPUTE <ChallanNo>` — Initiate a dispute review"
+                f"1️⃣ `STATUS <Plate/ChallanNo>` — Check pending challans (e.g. STATUS KA03MX4521)\n"
+                f"2️⃣ `PAY <ChallanNo>` — Settle online & get instant receipt link\n"
+                f"3️⃣ `DISPUTE <ChallanNo>` — Challenge citation at tribunal\n"
+                f"4️⃣ `SCORE <Plate>` — View Suraksha safe driving score\n"
+                f"5️⃣ `HISTORY <Plate>` — View total violation history\n"
+                f"6️⃣ `RULES` — View Motor Vehicles Act penalty schedule"
             )
         }
 
     if upper.startswith("STATUS"):
         parts = upper.split()
         if len(parts) < 2:
-            return {"reply": "⚠️ Please provide a plate number or Challan No. Example: `STATUS KA03MX4521`"}
+            return {"reply": "⚠️ Please provide a plate number or Challan No. Example: `STATUS KA03MX4521` or `STATUS RX-000001`"}
         query = parts[1].replace("-", "").replace(" ", "")
 
         if db_conn:
             c = db_conn.cursor()
-            # check if query is challan id or plate
             if query.startswith("RX"):
                 try:
                     cid = int(query.replace("RX", ""))
@@ -458,14 +504,15 @@ def process_bot_message(incoming_text, sender_id="+919876543210", db_conn=None):
                 status_str = "✅ PAID" if row[4] else "⏳ UNPAID / PENDING"
                 return {
                     "reply": (
-                        f"📋 *CHALLAN STATUS FOUND:*\n"
+                        f"📋 *CHALLAN STATUS RECORD:*\n"
                         f"• Challan No: `RX-{row[0]:06d}`\n"
-                        f"• Plate: `{row[1]}`\n"
-                        f"• Offence: *{row[2]}*\n"
-                        f"• Fine Amount: *Rs. {row[3]:,}*\n"
-                        f"• Status: *{status_str}*\n"
+                        f"• Vehicle Plate: `{row[1]}`\n"
+                        f"• Infraction: *{row[2]}*\n"
+                        f"• Statutory Fine: *Rs. {row[3]:,}*\n"
+                        f"• Settlement: *{status_str}*\n"
                         f"• Date: {row[5]}\n\n"
-                        f"To pay: Reply `PAY RX-{row[0]:06d}`"
+                        f"To pay: Reply `PAY RX-{row[0]:06d}`\n"
+                        f"To dispute: Reply `DISPUTE RX-{row[0]:06d}`"
                     )
                 }
             return {"reply": f"🔍 No active violation found for `{query}`. Safe driving!"}
@@ -476,26 +523,85 @@ def process_bot_message(incoming_text, sender_id="+919876543210", db_conn=None):
         target = parts[1] if len(parts) > 1 else "RX-000001"
         return {
             "reply": (
-                f"💳 *PAYMENT PORTAL LINK:*\n"
-                f"Challan Ref: `{target}`\n"
-                f"Click to pay via UPI, Card, NetBanking:\n"
+                f"💳 *INSTANT SETTLEMENT PORTAL LINK:*\n"
+                f"Challan Reference: `{target}`\n"
+                f"Click below to pay via UPI (Google Pay / PhonePe / Paytm), Card, or NetBanking:\n"
                 f"👉 http://localhost:5001/citizen?challan={target}"
             )
         }
 
+    if upper.startswith("DISPUTE"):
+        parts = upper.split()
+        target = parts[1] if len(parts) > 1 else "RX-000001"
+        return {
+            "reply": (
+                f"⚖️ *TRAFFIC REVIEW TRIBUNAL — DISPUTE FORM:*\n"
+                f"Challan Reference: `{target}`\n"
+                f"Submit your explanation and dashcam/photographic proof:\n"
+                f"👉 http://localhost:5001/citizen?dispute={target}\n"
+                f"Disputes must be submitted within 15 days of notice."
+            )
+        }
+
+    if upper.startswith("SCORE"):
+        parts = upper.split()
+        if len(parts) < 2:
+            return {"reply": "⚠️ Please provide a plate number. Example: `SCORE KA03MX4521`"}
+        plate_str = parts[1].replace("-", "").replace(" ", "").upper()
+        
+        try:
+            from gamification import calculate_suraksha_score
+            if db_conn:
+                score_data = calculate_suraksha_score(db_conn, plate_str)
+                return {
+                    "reply": (
+                        f"🏆 *SURAKSHA SAFE DRIVING SCORE — {plate_str}*\n"
+                        f"• Rating: *{score_data['score']}/100* ({score_data['tier']})\n"
+                        f"• Grade: *{score_data['grade']}*\n"
+                        f"• Total Violations: {score_data['total_violations']}\n"
+                        f"• Pending Challans: {score_data['unpaid_challans']}\n"
+                        f"• Certificate Status: {'Eligible 🌟' if score_data['eligible_for_certificate'] else 'Not eligible yet'}"
+                    )
+                }
+        except Exception:
+            pass
+        return {"reply": f"Suraksha Score for {plate_str}: 95/100 (Commendable Driver Grade A)."}
+
+    if upper.startswith("HISTORY"):
+        parts = upper.split()
+        if len(parts) < 2:
+            return {"reply": "⚠️ Please provide a plate number. Example: `HISTORY KA03MX4521`"}
+        plate_str = parts[1].replace("-", "").replace(" ", "").upper()
+        if db_conn:
+            c = db_conn.cursor()
+            rows = c.execute("SELECT id, violation, fine, paid, timestamp FROM violations WHERE UPPER(REPLACE(plate, ' ', ''))=? ORDER BY id DESC LIMIT 5", (plate_str,)).fetchall()
+            if rows:
+                history_text = "\n".join([f"• RX-{r[0]:06d}: {r[1]} (Rs. {r[2]:,}) — {'PAID' if r[3] else 'UNPAID'} [{r[4]}]" for r in rows])
+                return {
+                    "reply": (
+                        f"📜 *VIOLATION HISTORY FOR {plate_str}:*\n"
+                        f"Total records found: {len(rows)}\n\n"
+                        f"{history_text}"
+                    )
+                }
+            return {"reply": f"📜 No violation history recorded for vehicle `{plate_str}`. 100% Clean record!"}
+        return {"reply": f"No violation history recorded for `{plate_str}`."}
+
     if upper.startswith("RULES") or "HELMET" in upper or "SPEED" in upper:
         return {
             "reply": (
-                f"📚 *MOTOR VEHICLES ACT PENALTY SCHEDULE:*\n"
-                f"• *No Helmet (Sec 129):* Rs. 1,000 + 3-month DL suspension risk\n"
-                f"• *Triple Riding (Sec 128):* Rs. 1,000\n"
-                f"• *Dangerous / Wrong-Way Driving (Sec 184):* Rs. 5,000\n"
-                f"• *Overspeeding (Sec 183):* Rs. 2,000\n"
-                f"• *Drunk Driving (Sec 185):* Rs. 10,000 / Imprisonment\n"
-                f"• *Habitual Offender:* 2x to 3x fine multiplier applies."
+                f"📚 *MOTOR VEHICLES ACT STATUTORY PENALTY DIRECTORY:*\n"
+                f"• *No Protective Helmet (Sec 129):* Rs. 1,000 + 3-month DL suspension\n"
+                f"• *Triple Riding on 2-Wheeler (Sec 128):* Rs. 1,000\n"
+                f"• *Wrong-Way / Dangerous Driving (Sec 184):* Rs. 5,000 (Repeat: Rs. 10,000)\n"
+                f"• *Overspeeding (Sec 183):* Rs. 1,000 - 2,000 (LMV) / Rs. 2,000 - 4,000 (HMV)\n"
+                f"• *No Seatbelt (Sec 194B):* Rs. 1,000\n"
+                f"• *Pollution / PUCC Non-compliance (Sec 190(2)):* Rs. 10,000\n"
+                f"• *Drunk Driving (Sec 185):* Rs. 10,000 & up to 6 months imprisonment\n"
+                f"• *Habitual Offender Policy:* 2x for 2nd offence, 3x for 3rd+ offence."
             )
         }
 
     return {
-        "reply": f"TrafficGuard Assistant: Command not recognized. Send `HELP` for menu options."
+        "reply": f"TrafficGuard Assistant: Command '{incoming_text}' not recognized. Send `HELP` to view available commands."
     }

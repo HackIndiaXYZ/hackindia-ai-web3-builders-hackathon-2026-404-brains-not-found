@@ -64,7 +64,7 @@
     }
   </style>
 </head>
-<body>
+<body class="citizen-shell">
 
   <div class="tricolor-stripe"></div>
 
@@ -78,6 +78,7 @@
       </div>
     </div>
     <div style="display:flex; gap:10px; align-items:center;">
+      <a href="/intelligence/login" class="btn btn-outline" style="font-size:0.75rem; color:var(--cyan); border-color:rgba(0,229,255,0.4);">🛡️ Intelligence Command</a>
       <a href="/login" class="btn btn-outline" style="font-size:0.75rem;">👮 Officer Login</a>
       <button class="btn btn-outline" onclick="toggleTheme()" style="padding:6px 10px;">🌓</button>
     </div>
@@ -298,11 +299,20 @@
           payer_name: payer,
           payment_mode: mode
         })
-      }).then(r => r.json()).then(d => {
+      }).then(r => r.json().then(d => ({ status: r.status, data: d })))
+      .then(res => {
+        if (res.status >= 400 || res.data.error) {
+          alert('Payment Notice: ' + (res.data.error || 'Could not complete transaction'));
+          return;
+        }
         closePayModal();
-        alert('Payment Settled Successfully! Challan No: ' + d.challan);
+        alert('Payment Settled Successfully! Challan No: ' + res.data.challan);
         searchCitizenChallans();
-        window.open(d.receipt_url, '_blank');
+        if (res.data.receipt_url) {
+          window.open(res.data.receipt_url, '_blank');
+        }
+      }).catch(err => {
+        alert('Payment processing error: ' + err.message);
       });
     }
 
@@ -330,9 +340,17 @@
           reason: reason,
           explanation: exp
         })
-      }).then(r => r.json()).then(d => {
+      }).then(r => r.json().then(d => ({ status: r.status, data: d })))
+      .then(res => {
+        if (res.status >= 400 || res.data.error) {
+          alert('Dispute Submission Notice:\n' + (res.data.error || 'Unable to file dispute at this time.'));
+          return;
+        }
         closeDisputeModal();
-        alert('Dispute Ticket #' + d.dispute_id + ' submitted to Traffic Police Review Tribunal.');
+        alert('Dispute Ticket #' + res.data.dispute_id + ' submitted to Traffic Police Review Tribunal.');
+        searchCitizenChallans();
+      }).catch(err => {
+        alert('Error submitting dispute: ' + err.message);
       });
     }
 
