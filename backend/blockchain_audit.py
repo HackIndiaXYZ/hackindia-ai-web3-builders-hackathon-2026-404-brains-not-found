@@ -67,31 +67,45 @@ def compute_block_hash(block_height, challan_ref, timestamp, plate, violation, f
 def record_challan_on_blockchain(conn, violation_id, plate, violation, fine, evidence_hash, officer_id="POLICE_AI_OFFICER_01", event_type="CHALLAN_ISSUED"):
     """
     Append an immutable block to the cryptographic chain.
+    The tip-read and insert run inside a BEGIN IMMEDIATE transaction so two
+    processes can never fork the chain by racing on the last block.
     """
     init_blockchain_table(conn)
     c = conn.cursor()
 
     challan_ref = f"RX-{violation_id:06d}"
-    last_block = c.execute("SELECT block_height, block_hash FROM blockchain_ledger ORDER BY block_height DESC LIMIT 1").fetchone()
-
-    if last_block:
-        prev_height, prev_hash = last_block
-        block_height = prev_height + 1
-    else:
-        block_height = 1
-        prev_hash = GENESIS_PREV_HASH
-
     ts = datetime.now().isoformat()
     ev_hash = evidence_hash or "NO_EVIDENCE_HASH"
-    block_hash = compute_block_hash(block_height, challan_ref, ts, plate, violation, fine, ev_hash, officer_id, prev_hash, event_type)
 
-    c.execute("""
-        INSERT OR REPLACE INTO blockchain_ledger
-        (block_height, challan_ref, timestamp, plate, violation, fine, evidence_hash, officer_id, event_type, prev_hash, block_hash, is_valid)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-    """, (block_height, challan_ref, ts, plate, violation, fine, ev_hash, officer_id, event_type, prev_hash, block_hash))
+    for attempt in range(3):
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            last_block = c.execute(
+                "SELECT block_height, block_hash FROM blockchain_ledger ORDER BY block_height DESC LIMIT 1"
+            ).fetchone()
 
-    conn.commit()
+            if last_block:
+                prev_height, prev_hash = last_block
+                block_height = prev_height + 1
+            else:
+                block_height = 1
+                prev_hash = GENESIS_PREV_HASH
+
+            block_hash = compute_block_hash(block_height, challan_ref, ts, plate, violation, fine, ev_hash, officer_id, prev_hash, event_type)
+
+            c.execute("""
+                INSERT INTO blockchain_ledger
+                (block_height, challan_ref, timestamp, plate, violation, fine, evidence_hash, officer_id, event_type, prev_hash, block_hash, is_valid)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+            """, (block_height, challan_ref, ts, plate, violation, fine, ev_hash, officer_id, event_type, prev_hash, block_hash))
+            conn.commit()
+            break
+        except sqlite3.IntegrityError:
+            conn.rollback()
+            if attempt == 2:
+                raise
+            # Height or challan_ref collided (concurrent writer) — retry with fresh tip
+
     return {
         "block_height": block_height,
         "challan_ref": challan_ref,
@@ -216,5 +230,40 @@ def verify_ledger_chain(conn):
         "latest_block_hash": rows[-1][9],
         "tampered_block": None,
         "message": f"All {len(rows)} blocks mathematically verified. Cryptographic audit chain is fully intact and valid."
+    }
+
+
+def repair_ledger_chain(conn):
+    """
+    Re-anchor the ledger after a fork: walk blocks in height order, re-link each
+    prev_hash to the recomputed hash of its predecessor and recompute block_hash.
+    Payload data (plate, fine, evidence hash, timestamps) is never modified —
+    only the chain linkage is restored. Requires an admin role to invoke.
+    """
+    init_blockchain_table(conn)
+    c = conn.cursor()
+    rows = c.execute("""
+        SELECT block_height, challan_ref, timestamp, plate, violation, fine, evidence_hash, officer_id, COALESCE(event_type, 'CHALLAN_ISSUED')
+        FROM blockchain_ledger
+        ORDER BY block_height ASC
+    """).fetchall()
+
+    prev_expected = GENESIS_PREV_HASH
+    relinked = 0
+    for (b_height, c_ref, ts, plate, viol, fine, ev_hash, off_id, ev_type) in rows:
+        correct_hash = compute_block_hash(b_height, c_ref, ts, plate, viol, fine, ev_hash, off_id, prev_expected, ev_type)
+        c.execute(
+            "UPDATE blockchain_ledger SET prev_hash = ?, block_hash = ?, is_valid = 1 WHERE block_height = ?",
+            (prev_expected, correct_hash, b_height)
+        )
+        relinked += 1
+        prev_expected = correct_hash
+
+    conn.commit()
+    verification = verify_ledger_chain(conn)
+    return {
+        "status": "REPAIRED" if verification.get("is_valid") else "REPAIR_FAILED",
+        "blocks_relinked": relinked,
+        "verification": verification
     }
 

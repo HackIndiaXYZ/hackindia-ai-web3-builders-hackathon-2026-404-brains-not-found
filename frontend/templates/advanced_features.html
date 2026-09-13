@@ -1,0 +1,1119 @@
+{% extends 'base.html' %}
+
+{% block title %}Advanced Command — {{ app_name }}{% endblock %}
+
+{% block head_extra %}
+<style>
+  .af-topbar {
+    height: 60px;
+    background: var(--surface-overlay);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .af-nav { display: flex; gap: 0.25rem; align-items: center; flex-wrap: wrap; }
+  .af-nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-md);
+    transition: all var(--duration-fast) var(--ease-out);
+    white-space: nowrap;
+  }
+  .af-nav a:hover { color: var(--text); background: var(--surface-raised); }
+  .af-nav a.active { color: var(--accent); background: var(--accent-muted); }
+
+  .af-container { max-width: 1320px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .af-hero { margin-bottom: 1.75rem; }
+  .af-hero h1 {
+    font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.4rem;
+  }
+  .af-hero p { color: var(--text-secondary); max-width: 640px; }
+
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+  }
+  .kpi-tile {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-tile::before {
+    content: '';
+    position: absolute; inset: 0 auto 0 0; width: 2px;
+    background: var(--accent); opacity: 0.6;
+  }
+  .kpi-tile .k-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.35rem; }
+  .kpi-tile .k-value { font-family: var(--font-mono); font-size: 1.35rem; font-weight: 700; color: var(--text); }
+  .kpi-tile .k-sub { font-size: 0.68rem; color: var(--text-dim); margin-top: 0.2rem; }
+
+  .tabbar {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding: 0.4rem;
+    background: var(--surface-inset);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.75rem;
+    position: sticky;
+    top: 68px;
+    z-index: 30;
+    backdrop-filter: blur(20px);
+  }
+  .tabbar::-webkit-scrollbar { height: 4px; }
+  .tabbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .tab-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--duration-fast) var(--ease-out);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface-raised); }
+  .tab-btn.active { color: var(--accent); background: var(--accent-muted); box-shadow: var(--accent-glow); }
+  .tab-panel { display: none; animation: panelIn 0.35s var(--ease-out); }
+  .tab-panel.active { display: block; }
+  @keyframes panelIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.25rem; align-items: start; }
+  @media (max-width: 480px) { .feature-grid { grid-template-columns: 1fr; } }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 1.4rem;
+    transition: border-color var(--duration-normal) var(--ease-out), transform var(--duration-normal) var(--ease-out);
+  }
+  .feature-card:hover { border-color: var(--border-glow); transform: translateY(-2px); }
+  .fc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.4rem; }
+  .fc-title { display: flex; align-items: center; gap: 0.65rem; }
+  .fc-icon {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+    background: var(--accent-muted);
+    border: 1px solid rgba(14,165,233,0.25);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+  }
+  .fc-title h3 { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.01em; }
+  .fc-title .fc-num { font-size: 0.62rem; color: var(--text-dim); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; }
+  .fc-desc { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.5; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+  .chip {
+    background: var(--surface-inset);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.45rem 0.7rem;
+    font-size: 0.72rem;
+  }
+  .chip b { font-family: var(--font-mono); font-size: 0.85rem; display: block; margin-top: 0.15rem; }
+
+  .action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    background: var(--surface-inset);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.7rem;
+    margin-bottom: 0.85rem;
+  }
+  .action-bar .input { padding: 0.45rem 0.6rem; font-size: 0.78rem; width: 130px; }
+  .action-bar .input.wide { flex: 1; min-width: 140px; }
+
+  .result-box {
+    background: var(--surface-inset);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.85rem;
+    font-size: 0.75rem;
+    max-height: 210px;
+    overflow-y: auto;
+  }
+  .result-box::-webkit-scrollbar { width: 4px; }
+  .result-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .result-line { padding: 0.3rem 0; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; gap: 0.75rem; align-items: baseline; }
+  .result-line:last-child { border-bottom: none; }
+  .result-line .rl-k { color: var(--text-muted); }
+  .result-line .rl-v { font-family: var(--font-mono); color: var(--text); text-align: right; }
+  .empty-note { color: var(--text-dim); font-style: italic; padding: 0.4rem 0; }
+  .ok-flash { animation: okFlash 1.2s var(--ease-out); }
+  @keyframes okFlash { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); } 100% { box-shadow: 0 0 0 14px rgba(16,185,129,0); } }
+
+  .live-rail {
+    margin-top: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 1.1rem 1.4rem;
+  }
+  .live-rail h3 { font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .pulse-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--success);
+    display: inline-block;
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.6); } 70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+  .ticker { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.4rem; }
+  .ticker::-webkit-scrollbar { height: 4px; }
+  .ticker::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .tick-item {
+    flex-shrink: 0;
+    max-width: 320px;
+    background: var(--surface-inset);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 0.8rem;
+    font-size: 0.72rem;
+  }
+  .tick-item .t-top { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.25rem; }
+  .tick-item .t-type { font-weight: 700; color: var(--accent); font-family: var(--font-mono); font-size: 0.68rem; }
+  .tick-item .t-sub { color: var(--text-muted); }
+
+  .chart-wrap { position: relative; height: 170px; margin-bottom: 0.85rem; }
+  .section-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin: 0.9rem 0 0.5rem;
+    font-weight: 700;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="af-topbar">
+  <div class="flex items-center gap-3">
+    <span class="font-bold text-base">{{ app_name }}</span>
+    <span class="badge badge-accent">Advanced Command</span>
+  </div>
+  <nav class="af-nav">
+    <a href="/command">Command Centre</a>
+    <a href="/officer">Officer Ops</a>
+    <a href="/map">Heatmap</a>
+    <a href="/analytics">Analytics</a>
+    <a href="/ai-safety">AI Safety</a>
+    <a href="/blockchain">Blockchain</a>
+    <a href="/logout" style="color: var(--danger);">Logout</a>
+  </nav>
+</div>
+
+<div class="af-container">
+  <div class="af-hero">
+    <h1>Advanced Feature Command Grid</h1>
+    <p>Fifteen operational subsystems — emergency response, environmental intelligence, road-safety prediction, traffic control, insurance risk, and citizen fleet services — all live against the enforcement database.</p>
+  </div>
+
+  <div class="kpi-strip" id="kpiStrip"></div>
+
+  <div class="tabbar" id="tabbar">
+    <button class="tab-btn active" data-tab="emergency">🚨 Emergency Response</button>
+    <button class="tab-btn" data-tab="environment">🌱 Environment &amp; EV</button>
+    <button class="tab-btn" data-tab="safety">🛡️ Road Safety Intelligence</button>
+    <button class="tab-btn" data-tab="traffic">🚦 Traffic Control &amp; Toll</button>
+    <button class="tab-btn" data-tab="risk">📊 Insurance &amp; Driver Risk</button>
+    <button class="tab-btn" data-tab="citizen">👥 Citizen &amp; Fleet Services</button>
+  </div>
+
+  <!-- ══════════ TAB 1: EMERGENCY ══════════ -->
+  <div class="tab-panel active" id="tab-emergency">
+    <div class="feature-grid">
+
+      <div class="feature-card" id="card-ambulance">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🚑</div>
+            <div><h3>Ambulance Green Corridor</h3><div class="fc-num">Feature 21</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Siren + visual ambulance detection with automatic route clearance, traffic-signal preemption and nearby-driver notification.</p>
+        <div class="chip-row" id="ambStats"></div>
+        <div class="action-bar">
+          <input class="input" id="ambCam" placeholder="Camera ID" value="CAM-01">
+          <button class="btn btn-primary btn-sm" onclick="runAmbulance()">Detect &amp; Clear Route</button>
+        </div>
+        <div class="result-box" id="ambResult"><div class="empty-note">Trigger a detection to create an emergency corridor event.</div></div>
+        <div class="section-label">Active corridors</div>
+        <div class="result-box" id="ambActive"></div>
+      </div>
+
+      <div class="feature-card" id="card-accident">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">💥</div>
+            <div><h3>Accident Detection &amp; Auto-Dispatch</h3><div class="fc-num">Feature 22</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Vision-based collision detection with severity classification and automatic dispatch of police, ambulance and fire services.</p>
+        <div class="chip-row" id="accStats"></div>
+        <div class="action-bar">
+          <input class="input" id="accCam" placeholder="Camera ID" value="CAM-04">
+          <button class="btn btn-primary btn-sm" onclick="runAccident()">Detect Accident</button>
+        </div>
+        <div class="result-box" id="accResult"><div class="empty-note">Run detection to dispatch emergency services.</div></div>
+        <div class="section-label">Recent incidents</div>
+        <div class="result-box" id="accHistory"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════ TAB 2: ENVIRONMENT ══════════ -->
+  <div class="tab-panel" id="tab-environment">
+    <div class="feature-grid">
+
+      <div class="feature-card" id="card-emission">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🏭</div>
+            <div><h3>Emission Monitoring</h3><div class="fc-num">Feature 23</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Per-vehicle exhaust opacity analysis, BS-VI compliance tracking, pollution hotspot mapping and EV reward incentives.</p>
+        <div class="chip-row" id="emStats"></div>
+        <div class="chart-wrap"><canvas id="aqiChart"></canvas></div>
+        <div class="action-bar">
+          <input class="input wide" id="emPlate" placeholder="Plate e.g. KA03MX4521" value="KA03MX4521">
+          <select class="input" id="emType"><option value="car">Car</option><option value="bike">Bike</option><option value="truck">Truck</option><option value="bus">Bus</option></select>
+          <button class="btn btn-primary btn-sm" onclick="runEmission()">Analyze Emission</button>
+          <button class="btn btn-success btn-sm" onclick="rewardEV()">Reward EV</button>
+        </div>
+        <div class="result-box" id="emResult"><div class="empty-note">Analyze a vehicle to grade its emission profile.</div></div>
+        <div class="section-label">Pollution hotspots</div>
+        <div class="result-box" id="emHotspots"></div>
+      </div>
+
+      <div class="feature-card" id="card-ev">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">⚡</div>
+            <div><h3>EV Charging Intelligence</h3><div class="fc-num">Feature 31</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Charging station discovery, range anxiety prevention, slot reservation and grid usage analytics for electric fleets.</p>
+        <div class="chip-row" id="evStats"></div>
+        <div class="chart-wrap"><canvas id="evChart"></canvas></div>
+        <div class="action-bar">
+          <input class="input" id="evLat" placeholder="Lat" value="12.9352">
+          <input class="input" id="evLng" placeholder="Lng" value="77.6245">
+          <button class="btn btn-primary btn-sm" onclick="findStations()">Find Stations</button>
+        </div>
+        <div class="action-bar">
+          <input class="input" id="evBattery" placeholder="Battery %" value="60">
+          <button class="btn btn-ghost btn-sm" onclick="calcRange()">Range Check</button>
+          <input class="input" id="evStation" placeholder="Station ID" value="EV-01">
+          <button class="btn btn-ghost btn-sm" onclick="reserveSpot()">Reserve</button>
+        </div>
+        <div class="result-box" id="evResult"><div class="empty-note">Search stations or reserve a charging slot.</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════ TAB 3: ROAD SAFETY ══════════ -->
+  <div class="tab-panel" id="tab-safety">
+    <div class="feature-grid">
+
+      <div class="feature-card" id="card-drunk">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🍺</div>
+            <div><h3>Drunk-Driving Detection</h3><div class="fc-num">Feature 24</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Lane-weaving, eye-blink and reaction-time analysis flags impaired drivers; police interceptors are auto-alerted.</p>
+        <div class="chip-row" id="ddStats"></div>
+        <div class="action-bar">
+          <input class="input wide" id="ddPlate" placeholder="Plate e.g. KA03MX4521" value="KA03MX4521">
+          <button class="btn btn-primary btn-sm" onclick="runDrunk()">Impairment Analysis</button>
+        </div>
+        <div class="result-box" id="ddResult"><div class="empty-note">Analyze a vehicle for impairment indicators.</div></div>
+        <div class="section-label">Offender watchlist</div>
+        <div class="result-box" id="ddOffenders"></div>
+      </div>
+
+      <div class="feature-card" id="card-pedestrian">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🚸</div>
+            <div><h3>Pedestrian Safety Grid</h3><div class="fc-num">Feature 27</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Pedestrian detection with near-miss proximity scoring at crossings to prioritise footbridge and signal upgrades.</p>
+        <div class="chip-row" id="pdStats"></div>
+        <div class="action-bar">
+          <button class="btn btn-primary btn-sm" onclick="runPedestrian()">Simulate Crossing Scan</button>
+        </div>
+        <div class="result-box" id="pdResult"><div class="empty-note">Run a scan to detect crossing activity.</div></div>
+        <div class="section-label">Recent near-misses</div>
+        <div class="result-box" id="pdNear"></div>
+        <div class="section-label">Crossing hotspots</div>
+        <div class="result-box" id="pdHotspots"></div>
+      </div>
+
+      <div class="feature-card" id="card-predict">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🔮</div>
+            <div><h3>Accident Risk Prediction</h3><div class="fc-num">Feature 28</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">ML model scoring of accident probability per road segment using time-of-day, weather and traffic density features.</p>
+        <div class="chip-row" id="prStats"></div>
+        <div class="action-bar">
+          <input class="input" id="prLat" placeholder="Lat" value="12.9176">
+          <input class="input" id="prLng" placeholder="Lng" value="77.6238">
+          <select class="input" id="prWeather"><option value="clear">Clear</option><option value="rain">Rain</option><option value="fog">Fog</option></select>
+          <button class="btn btn-primary btn-sm" onclick="runPredict()">Predict Risk</button>
+        </div>
+        <div class="result-box" id="prResult"><div class="empty-note">Evaluate a location's accident risk.</div></div>
+        <div class="section-label">High-risk zones</div>
+        <div class="result-box" id="prZones"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════ TAB 4: TRAFFIC CONTROL ══════════ -->
+  <div class="tab-panel" id="tab-traffic">
+    <div class="feature-grid">
+
+      <div class="feature-card" id="card-parking">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🅿️</div>
+            <div><h3>Smart Parking Enforcement</h3><div class="fc-num">Feature 25</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Illegal-parking detection in managed zones with automated challans, towing workflow and zone-level analytics.</p>
+        <div class="chip-row" id="pkStats"></div>
+        <div class="action-bar">
+          <input class="input wide" id="pkPlate" placeholder="Plate" value="KA03MX4521">
+          <input class="input" id="pkZone" placeholder="Zone ID" value="PK-01">
+          <button class="btn btn-primary btn-sm" onclick="runParking()">Detect Violation</button>
+        </div>
+        <div class="result-box" id="pkResult"><div class="empty-note">Detect an illegally parked vehicle.</div></div>
+        <div class="section-label">Managed zones</div>
+        <div class="result-box" id="pkZones"></div>
+        <div class="section-label">Active violations</div>
+        <div class="result-box" id="pkViolations"></div>
+      </div>
+
+      <div class="feature-card" id="card-v2i">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🚦</div>
+            <div><h3>V2I Signal Optimization</h3><div class="fc-num">Feature 29</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Vehicle-to-infrastructure adaptive signal control: green durations recompute from live queue lengths per approach.</p>
+        <div class="chip-row" id="v2Stats"></div>
+        <div class="action-bar">
+          <input class="input" id="v2Signal" placeholder="Signal ID" value="SIG-01">
+          <button class="btn btn-primary btn-sm" onclick="runV2I()">Optimize Timing</button>
+        </div>
+        <div class="result-box" id="v2Result"><div class="empty-note">Optimize a signal to see AI-adjusted phase timing.</div></div>
+        <div class="section-label">Signal grid</div>
+        <div class="result-box" id="v2Signals"></div>
+      </div>
+
+      <div class="feature-card" id="card-toll">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🎫</div>
+            <div><h3>Automatic Toll Collection</h3><div class="fc-num">Feature 35</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">ANPR-based barrier-free tolling with vehicle-class pricing, instant ledger posting and plaza revenue analytics.</p>
+        <div class="chip-row" id="tlStats"></div>
+        <div class="action-bar">
+          <input class="input wide" id="tlPlate" placeholder="Plate" value="KA03MX4521">
+          <select class="input" id="tlClass"><option value="car">Car</option><option value="bike">Bike</option><option value="truck">Truck</option><option value="bus">Bus</option></select>
+          <button class="btn btn-primary btn-sm" onclick="runToll()">Collect Toll</button>
+        </div>
+        <div class="result-box" id="tlResult"><div class="empty-note">Process a toll transaction via ANPR.</div></div>
+        <div class="section-label">Recent transactions</div>
+        <div class="result-box" id="tlTx"></div>
+        <div class="section-label">Plazas &amp; vehicle mix</div>
+        <div class="result-box" id="tlExtras"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════ TAB 5: INSURANCE & RISK ══════════ -->
+  <div class="tab-panel" id="tab-risk">
+    <div class="feature-grid">
+
+      <div class="feature-card" id="card-risk">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">📉</div>
+            <div><h3>Driver Risk Profiling</h3><div class="fc-num">Feature 26</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Behavioural risk scoring (green → red) from violation history, with dynamic insurance premium multipliers.</p>
+        <div class="chip-row" id="drStats"></div>
+        <div class="action-bar">
+          <input class="input wide" id="drPlate" placeholder="Plate e.g. KA03MX4521" value="KA03MX4521">
+          <button class="btn btn-primary btn-sm" onclick="runRisk()">Score Driver</button>
+          <button class="btn btn-ghost btn-sm" onclick="runPremium()">Premium Quote</button>
+          <button class="btn btn-success btn-sm" onclick="syncScores()">Sync Fleet Scores</button>
+        </div>
+        <div class="result-box" id="drResult"><div class="empty-note">Score any registered vehicle's driver risk.</div></div>
+        <div class="section-label">Fleet distribution</div>
+        <div class="result-box" id="drDist"></div>
+        <div class="section-label">Highest-risk profiles</div>
+        <div class="result-box" id="drProfiles"></div>
+      </div>
+
+      <div class="feature-card" id="card-insurance">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🛡️</div>
+            <div><h3>Insurance Claim Automation</h3><div class="fc-num">Feature 30</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Violation-linked claims auto-generate with fraud checks; officers approve or escalate from a unified queue.</p>
+        <div class="chip-row" id="inStats"></div>
+        <div class="action-bar">
+          <input class="input wide" id="inPlate" placeholder="Plate" value="KA03MX4521">
+          <button class="btn btn-primary btn-sm" onclick="fileClaim()">File Claim</button>
+        </div>
+        <div class="result-box" id="inResult"><div class="empty-note">File a claim to enter the approval queue.</div></div>
+        <div class="section-label">Pending claims</div>
+        <div class="result-box" id="inPending"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════ TAB 6: CITIZEN & FLEET ══════════ -->
+  <div class="tab-panel" id="tab-citizen">
+    <div class="feature-grid">
+
+      <div class="feature-card" id="card-hazard">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">⚠️</div>
+            <div><h3>Crowdsourced Hazard Reporting</h3><div class="fc-num">Feature 32</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Citizens report potholes, waterlogging and debris; municipalities get tracked work orders, reporters earn rewards.</p>
+        <div class="chip-row" id="hzStats"></div>
+        <div class="action-bar">
+          <select class="input" id="hzType"><option value="pothole">Pothole</option><option value="waterlogging">Waterlogging</option><option value="debris">Debris</option><option value="broken_signal">Broken Signal</option></select>
+          <input class="input" id="hzSev" placeholder="Severity 1-5" value="3">
+          <input class="input wide" id="hzLoc" placeholder="Location name" value="MG Road">
+          <button class="btn btn-primary btn-sm" onclick="reportHazard()">Report Hazard</button>
+        </div>
+        <div class="result-box" id="hzResult"><div class="empty-note">Submit a hazard report for municipal dispatch.</div></div>
+        <div class="section-label">Active hazards &amp; work orders</div>
+        <div class="result-box" id="hzActive"></div>
+        <div class="section-label">Reporter rewards &amp; municipal work orders</div>
+        <div class="result-box" id="hzExtras"></div>
+      </div>
+
+      <div class="feature-card" id="card-health">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🔧</div>
+            <div><h3>Vehicle Health Monitoring</h3><div class="fc-num">Feature 33</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Vision inspection of brakes, lights and tyres at checkpoints; faulty vehicles get maintenance alerts and roadworthiness certificates.</p>
+        <div class="chip-row" id="vhStats"></div>
+        <div class="action-bar">
+          <input class="input wide" id="vhPlate" placeholder="Plate" value="KA03MX4521">
+          <button class="btn btn-primary btn-sm" onclick="inspectVehicle()">Inspect Vehicle</button>
+          <button class="btn btn-ghost btn-sm" onclick="roadworthyCert()">Certificate</button>
+        </div>
+        <div class="result-box" id="vhResult"><div class="empty-note">Inspect a vehicle's roadworthiness.</div></div>
+        <div class="section-label">Flagged vehicles</div>
+        <div class="result-box" id="vhFaulty"></div>
+      </div>
+
+      <div class="feature-card" id="card-school">
+        <div class="fc-head">
+          <div class="fc-title">
+            <div class="fc-icon">🏫</div>
+            <div><h3>School Zone Protection</h3><div class="fc-num">Feature 34</div></div>
+          </div>
+          <span class="badge badge-success">LIVE</span>
+        </div>
+        <p class="fc-desc">Geo-fenced school zones with speed enforcement, live bus tracking and automated parent alerts.</p>
+        <div class="chip-row" id="scStats"></div>
+        <div class="action-bar">
+          <select class="input" id="scSchool"><option value="SCH-001">SCH-001</option><option value="SCH-002">SCH-002</option></select>
+          <select class="input" id="scAlert"><option value="bus_departed">Bus Departed</option><option value="bus_arriving">Bus Arriving</option><option value="zone_violation">Zone Violation</option></select>
+          <button class="btn btn-primary btn-sm" onclick="parentAlert()">Send Parent Alert</button>
+        </div>
+        <div class="result-box" id="scResult"><div class="empty-note">Broadcast a parent notification.</div></div>
+        <div class="section-label">Monitored zones &amp; buses</div>
+        <div class="result-box" id="scZones"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="live-rail">
+    <h3><span class="pulse-dot"></span> Live City Event Stream <span class="text-muted text-xs" style="margin-left:auto">auto-refresh 10s</span></h3>
+    <div class="ticker" id="ticker"><div class="empty-note">Connecting to event stream…</div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const inr = (n) => '₹' + Number(n || 0).toLocaleString('en-IN');
+
+  async function api(path, opts) {
+    const res = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    return data;
+  }
+
+  function kv(key, val) {
+    return '<div class="result-line"><span class="rl-k">' + esc(key) + '</span><span class="rl-v">' + esc(val) + '</span></div>';
+  }
+  function chips(el, items) {
+    $(el).innerHTML = items.map(i => '<div class="chip">' + esc(i[0]) + '<b>' + esc(i[1]) + '</b></div>').join('');
+  }
+  function listInto(el, rows, emptyMsg) {
+    if (!rows || !rows.length) { $(el).innerHTML = '<div class="empty-note">' + esc(emptyMsg || 'No records yet.') + '</div>'; return; }
+    $(el).innerHTML = rows.join('');
+  }
+  function flash(elId) {
+    const el = $(elId); if (!el) return;
+    el.classList.remove('ok-flash'); void el.offsetWidth; el.classList.add('ok-flash');
+  }
+  async function action(btn, fn) {
+    const old = btn.textContent; btn.disabled = true; btn.textContent = 'Working…';
+    try { await fn(); } catch (e) { alert('Operation failed: ' + e.message); }
+    btn.disabled = false; btn.textContent = old;
+  }
+
+  /* ── Tabs ── */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      $('tab-' + btn.dataset.tab).classList.add('active');
+      if (window.lenis) window.lenis.scrollTo(0, { immediate: true });
+    });
+  });
+
+  /* ── KPI strip ── */
+  async function loadKpis() {
+    try {
+      const [k, c] = await Promise.all([api('/api/ai-dataset/kpis'), api('/api/ai-dataset/city-stats')]);
+      const tiles = [
+        ['Challans Today', k.challans_issued_today ?? '—', 'citywide'],
+        ['Fines Collected Today', inr(k.fines_collected_today), 'citywide'],
+        ['Corridors Cleared', k.ambulances_cleared_today ?? '—', 'ambulances'],
+        ['Impairment Alerts', k.drunk_driving_alerts_today ?? '—', 'today'],
+        ['Hazards Reported', k.hazards_reported_today ?? '—', 'citizen'],
+        ['EV Sessions', k.ev_sessions_today ?? '—', 'charging'],
+        ['Active Cameras', k.cameras_active ?? c.cameras_deployed, c.city || ''],
+      ];
+      $('kpiStrip').innerHTML = tiles.map(t =>
+        '<div class="kpi-tile"><div class="k-label">' + esc(t[0]) + '</div><div class="k-value">' + esc(t[1]) + '</div><div class="k-sub">' + esc(t[2]) + '</div></div>'
+      ).join('');
+    } catch (e) { console.warn('KPI load failed', e); }
+  }
+
+  /* ══ FEATURE 21 — AMBULANCE ══ */
+  async function loadAmbulance() {
+    try {
+      const s = await api('/api/ambulance/stats');
+      chips('ambStats', [['Total Responses', s.total_emergency_responses], ['Avg Time Saved', (s.avg_time_saved_minutes || 0) + ' min'], ['Today', s.today_responses]]);
+      const act = await api('/api/ambulance/active');
+      listInto('ambActive', (act || []).slice(0, 6).map(a => {
+        const id = a.ambulance_id || a.id || a.vehicle_id || '—';
+        return kv(id + (a.hospital ? ' → ' + a.hospital : ''), (a.status || 'active') + (a.eta_minutes != null ? ' · ETA ' + a.eta_minutes + 'm' : ''));
+      }), 'No active corridors right now.');
+    } catch (e) { console.warn(e); }
+  }
+  function runAmbulance() { action(event.target, async () => {
+    const r = await api('/api/ambulance/detect', { method: 'POST', body: JSON.stringify({ camera_id: $('ambCam').value }) });
+    const rows = [];
+    Object.keys(r).forEach(k => {
+      if (k === 'route' || k === 'signals') return;
+      rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]) : r[k]));
+    });
+    (r.signals || r.signals_cleared != null) && rows.push(kv('signals cleared', r.signals_cleared ?? (r.signals || []).length));
+    $('ambResult').innerHTML = rows.join('');
+    flash('card-ambulance'); loadAmbulance();
+  }); }
+
+  /* ══ FEATURE 22 — ACCIDENT ══ */
+  async function loadAccident() {
+    try {
+      const s = await api('/api/accident/stats');
+      chips('accStats', [['Detected', s.total_accidents_detected], ['Avg Response', (s.avg_response_time_seconds || 0) + ' s']]);
+      const h = await api('/api/accident/history');
+      listInto('accHistory', (h || []).slice(0, 6).map(a =>
+        kv((a.location || a.accident_id) + ' · ' + (a.severity || ''), (a.timestamp || '') + (a.dispatch_count != null ? ' · ' + a.dispatch_count + ' dispatched' : ''))
+      ), 'No incidents recorded yet.');
+    } catch (e) { console.warn(e); }
+  }
+  function runAccident() { action(event.target, async () => {
+    const r = await api('/api/accident/detect', { method: 'POST', body: JSON.stringify({ camera_id: $('accCam').value }) });
+    const rows = [];
+    ['accident_id', 'location', 'severity', 'confidence', 'vehicles_involved', 'injuries'].forEach(k => r[k] != null && rows.push(kv(k.replace(/_/g, ' '), r[k])));
+    if (r.dispatch) Object.keys(r.dispatch).forEach(k => rows.push(kv('dispatch · ' + k.replace(/_/g, ' '), typeof r.dispatch[k] === 'object' ? JSON.stringify(r.dispatch[k]).slice(0, 60) : r.dispatch[k])));
+    $('accResult').innerHTML = rows.join('') || '<div class="empty-note">No detail returned.</div>';
+    flash('card-accident'); loadAccident();
+  }); }
+
+  /* ══ FEATURE 23 — EMISSION ══ */
+  let aqiChart = null;
+  async function loadEmission() {
+    try {
+      const s = await api('/api/emission/stats');
+      chips('emStats', [['Readings', s.total_readings], ['BS-VI Compliance', (s.bs_vi_compliance_rate || 0) + '%'], ['Current AQI', Math.round((aqiLast || 0))]]);
+      const w = await api('/api/emission/weekly-report');
+      if (w && w.labels && window.Chart) {
+        aqiLast = w.current_aqi;
+        if (aqiChart) aqiChart.destroy();
+        aqiChart = new Chart($('aqiChart'), {
+          type: 'line',
+          data: { labels: w.labels, datasets: [{ label: 'AQI', data: w.data, borderColor: '#0EA5E9', backgroundColor: 'rgba(14,165,233,0.12)', fill: true, tension: 0.35, pointRadius: 2, borderWidth: 2 }]},
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }}, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717A', font: { size: 9 }}} , x: { grid: { display: false }, ticks: { color: '#71717A', font: { size: 9 }}}}}
+        });
+      }
+    } catch (e) { console.warn(e); }
+  }
+  let aqiLast = 0;
+  function runEmission() { action(event.target, async () => {
+    const r = await api('/api/emission/analyze', { method: 'POST', body: JSON.stringify({ plate: $('emPlate').value.trim(), vehicle_type: $('emType').value }) });
+    const rows = [];
+    ['plate', 'emission_level', 'bs_norm', 'compliant', 'fine', 'recommendation'].forEach(k => r[k] != null && rows.push(kv(k.replace(/_/g, ' '), r[k])));
+    $('emResult').innerHTML = rows.join('') || '<pre style="margin:0;white-space:pre-wrap;">' + esc(JSON.stringify(r, null, 1)) + '</pre>';
+    flash('card-emission');
+  }); }
+  function rewardEV() { action(event.target, async () => {
+    const r = await api('/api/ev/reward', { method: 'POST', body: JSON.stringify({ plate: $('emPlate').value.trim() }) });
+    const rows = []; Object.keys(r).slice(0, 8).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]) : r[k])));
+    $('emResult').innerHTML = rows.join('');
+    flash('card-emission');
+  }); }
+
+  /* ══ FEATURE 31 — EV ══ */
+  let evChart = null;
+  async function loadEv() {
+    try {
+      const s = await api('/api/ev/stats');
+      chips('evStats', [['Stations', s.total_stations], ['Sessions Today', s.charging_sessions_today]]);
+      const u = await api('/api/ev/usage-chart');
+      if (u && u.labels && window.Chart) {
+        if (evChart) evChart.destroy();
+        evChart = new Chart($('evChart'), {
+          type: 'bar',
+          data: { labels: u.labels.filter((_, i) => i % 2 === 0), datasets: [{ label: 'Sessions', data: u.data.filter((_, i) => i % 2 === 0), backgroundColor: 'rgba(16,185,129,0.55)', borderRadius: 3 }]},
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }}, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717A', font: { size: 9 }}} , x: { grid: { display: false }, ticks: { color: '#71717A', font: { size: 8 }}}}}
+        });
+      }
+    } catch (e) { console.warn(e); }
+  }
+  function findStations() { action(event.target, async () => {
+    const r = await api('/api/ev/nearby-charging?lat=' + encodeURIComponent($('evLat').value) + '&lng=' + encodeURIComponent($('evLng').value) + '&radius_km=15');
+    listInto('evResult', (r || []).slice(0, 6).map(s =>
+      kv((s.station_name || s.station_id || 'Station') + (s.distance_km != null ? ' · ' + s.distance_km + ' km' : ''),
+         (s.available_spots != null ? s.available_spots + ' spots' : (s.status || '')) + (s.price_per_kwh != null ? ' · ₹' + s.price_per_kwh + '/kWh' : ''))
+    ), 'No stations within radius.');
+  }); }
+  function calcRange() { action(event.target, async () => {
+    const r = await api('/api/ev/range?battery_pct=' + encodeURIComponent($('evBattery').value));
+    const rows = []; Object.keys(r).forEach(k => rows.push(kv(k.replace(/_/g, ' '), r[k])));
+    $('evResult').innerHTML = rows.join('');
+  }); }
+  function reserveSpot() { action(event.target, async () => {
+    const r = await api('/api/ev/reserve', { method: 'POST', body: JSON.stringify({ station_id: $('evStation').value.trim(), plate: 'KA03EV1234', duration_minutes: 60 }) });
+    const rows = []; Object.keys(r).slice(0, 8).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]) : r[k])));
+    $('evResult').innerHTML = rows.join(''); flash('card-ev');
+  }); }
+
+  /* ══ FEATURE 24 — DRUNK DRIVING ══ */
+  async function loadDrunk() {
+    try {
+      const s = await api('/api/drunk-drive/stats');
+      chips('ddStats', [['Alerts Today', s.today_alerts], ['This Month', s.this_month_alerts]]);
+      const o = await api('/api/drunk-drive/offenders');
+      listInto('ddOffenders', (o || []).slice(0, 6).map(x =>
+        kv((x.plate || x.vehicle_plate || '—') + ' · ' + (x.offense_date || x.timestamp || ''), 'BAC ' + (x.bac_level ?? x.confidence ?? '—') + (x.status ? ' · ' + x.status : ''))
+      ), 'Watchlist empty.');
+    } catch (e) { console.warn(e); }
+  }
+  function runDrunk() { action(event.target, async () => {
+    const r = await api('/api/drunk-drive/detect', { method: 'POST', body: JSON.stringify({ plate: $('ddPlate').value.trim() }) });
+    const rows = []; ['plate', 'impairment_score', 'lane_deviations', 'eye_blink_rate', 'verdict', 'action'].forEach(k => r[k] != null && rows.push(kv(k.replace(/_/g, ' '), r[k])));
+    $('ddResult').innerHTML = rows.join('') || '<pre style="margin:0;white-space:pre-wrap;">' + esc(JSON.stringify(r, null, 1)) + '</pre>';
+    flash('card-drunk'); loadDrunk();
+  }); }
+
+  /* ══ FEATURE 27 — PEDESTRIAN ══ */
+  async function loadPedestrian() {
+    try {
+      const s = await api('/api/pedestrian/stats');
+      chips('pdStats', [['Incidents Today', s.today_incidents], ['Critical', s.critical_count]]);
+      const n = await api('/api/pedestrian/near-misses');
+      listInto('pdNear', (n || []).slice(0, 6).map(x =>
+        kv((x.location_name || x.location || 'Crossing') + (x.timestamp ? ' · ' + x.timestamp : ''), 'risk ' + (x.risk_score ?? '—') + (x.risk_level ? ' · ' + x.risk_level : ''))
+      ), 'No near-misses recorded.');
+    } catch (e) { console.warn(e); }
+  }
+  function runPedestrian() { action(event.target, async () => {
+    const r = await api('/api/pedestrian/detect', { method: 'POST', body: JSON.stringify({}) });
+    const rows = []; Object.keys(r).slice(0, 10).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 70) : r[k])));
+    $('pdResult').innerHTML = rows.join(''); flash('card-pedestrian'); loadPedestrian();
+  }); }
+
+  /* ══ FEATURE 28 — PREDICTION ══ */
+  async function loadPredict() {
+    try {
+      const s = await api('/api/predict/stats');
+      chips('prStats', [['Model Accuracy', (s.model_accuracy_pct || 0) + '%'], ['High-Risk Zones', s.high_risk_zones]]);
+      const z = await api('/api/predict/risk-zones');
+      listInto('prZones', (z || []).slice(0, 6).map(x =>
+        kv(x.location_name || x.zone_name || x.name || 'Zone', 'risk ' + (x.risk_score ?? '—') + (x.risk_zone ? ' · ' + x.risk_zone : '') + (x.peak_hour != null ? ' · peak ' + x.peak_hour + ':00' : ''))
+      ), 'No predicted zones yet.');
+    } catch (e) { console.warn(e); }
+  }
+  function runPredict() { action(event.target, async () => {
+    const r = await api('/api/predict/accident-risk?lat=' + encodeURIComponent($('prLat').value) + '&lng=' + encodeURIComponent($('prLng').value) + '&weather=' + $('prWeather').value);
+    const rows = [kv('location', r.location), kv('risk score', r.risk_score + ' / 100'), kv('risk zone', r.risk_zone), kv('confidence', (r.confidence || 0) + '%')];
+    (r.contributing_factors || []).forEach(f => rows.push(kv('factor', f)));
+    (r.recommended_actions || []).forEach(a => rows.push(kv('action', a)));
+    $('prResult').innerHTML = rows.join(''); flash('card-predict');
+  }); }
+
+  /* ══ FEATURE 25 — PARKING ══ */
+  async function loadParking() {
+    try {
+      const s = await api('/api/parking/stats');
+      chips('pkStats', [['Violations Today', s.today_violations], ['Fines', inr(s.total_fines)]]);
+      const z = await api('/api/parking/zones');
+      listInto('pkZones', (z || []).slice(0, 6).map(x =>
+        kv((x.zone_name || x.zone_id) + (x.zone_type ? ' · ' + x.zone_type : ''), 'fine ' + inr(x.fine_amount))
+      ), 'No zones configured.');
+    } catch (e) { console.warn(e); }
+  }
+  function runParking() { action(event.target, async () => {
+    const r = await api('/api/parking/detect', { method: 'POST', body: JSON.stringify({ plate: $('pkPlate').value.trim(), zone_id: $('pkZone').value.trim() }) });
+    const rows = []; Object.keys(r).slice(0, 10).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 70) : r[k])));
+    if (r.violation_id) rows.push('<div class="result-line"><span class="rl-k">enforcement</span><span class="rl-v"><button class="btn btn-danger btn-sm" style="padding:0.2rem 0.55rem;font-size:0.65rem;" onclick="towVehicle(\'' + esc(r.violation_id) + '\', this)">Request Towing</button></span></div>');
+    $('pkResult').innerHTML = rows.join(''); flash('card-parking'); loadParking();
+  }); }
+  function towVehicle(vid, btn) { guardBtn(btn, async () => {
+    const r = await api('/api/parking/tow', { method: 'POST', body: JSON.stringify({ violation_id: vid }) });
+    const rows = []; Object.keys(r).slice(0, 8).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 60) : r[k])));
+    $('pkResult').innerHTML = rows.join('');
+  }); }
+
+  /* ══ FEATURE 29 — V2I ══ */
+  async function loadV2I() {
+    try {
+      const s = await api('/api/v2i/stats');
+      chips('v2Stats', [['Signals', s.total_signals], ['Efficiency Gain', '+' + (s.efficiency_improvement_pct || 0) + '%']]);
+      const g = await api('/api/v2i/signals');
+      listInto('v2Signals', (g || []).slice(0, 8).map(x =>
+        kv(x.intersection_name || x.signal_id, (x.current_phase || '—') + ' · NS ' + (x.vehicle_count_ns ?? '—') + ' / EW ' + (x.vehicle_count_ew ?? '—') + (x.ai_optimized ? ' · AI' : ''))
+      ), 'Signal grid empty.');
+    } catch (e) { console.warn(e); }
+  }
+  function runV2I() { action(event.target, async () => {
+    const r = await api('/api/v2i/optimize', { method: 'POST', body: JSON.stringify({ signal_id: $('v2Signal').value.trim() }) });
+    const rows = []; Object.keys(r).slice(0, 10).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 70) : r[k])));
+    $('v2Result').innerHTML = rows.join(''); flash('card-v2i'); loadV2I();
+  }); }
+
+  /* ══ FEATURE 35 — TOLL ══ */
+  async function loadToll() {
+    try {
+      const s = await api('/api/toll/stats');
+      const rv = await api('/api/toll/revenue');
+      chips('tlStats', [['Transactions', s.total_transactions], ['Revenue', inr(s.total_revenue)], ['Today', inr(rv.daily_revenue)]]);
+      const t = await api('/api/toll/transactions');
+      listInto('tlTx', (t || []).slice(0, 6).map(x =>
+        kv((x.plate || x.vehicle_plate || '—') + ' · ' + (x.timestamp || ''), inr(x.amount ?? x.toll_amount) + (x.payment_status ? ' · ' + x.payment_status : ''))
+      ), 'No transactions yet.');
+    } catch (e) { console.warn(e); }
+  }
+  function runToll() { action(event.target, async () => {
+    const r = await api('/api/toll/collect', { method: 'POST', body: JSON.stringify({ plate: $('tlPlate').value.trim(), plaza_id: 'TOLL-01', vehicle_category: $('tlClass').value }) });
+    const rows = []; Object.keys(r).slice(0, 10).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 70) : r[k])));
+    $('tlResult').innerHTML = rows.join(''); flash('card-toll'); loadToll();
+  }); }
+
+  /* ══ FEATURE 26 — DRIVER RISK ══ */
+  async function loadRisk() {
+    try {
+      const s = await api('/api/driver/risk-stats');
+      chips('drStats', [['Profiles', s.total_profiles], ['Avg Fleet Risk', s.avg_fleet_risk]]);
+      const d = await api('/api/driver/risk-distribution');
+      const order = ['green', 'yellow', 'orange', 'red'];
+      const total = Object.values(d).reduce((a, b) => a + b, 0) || 1;
+      listInto('drDist', order.filter(k => d[k] != null).map(k =>
+        '<div class="result-line"><span class="rl-k">' + k.toUpperCase() + '</span><span class="rl-v">' + d[k] + ' · ' + Math.round(d[k] / total * 100) + '%</span></div>'
+      ));
+    } catch (e) { console.warn(e); }
+  }
+  function runRisk() { action(event.target, async () => {
+    const r = await api('/api/driver/risk-score?plate=' + encodeURIComponent($('drPlate').value.trim()));
+    const rows = [kv('risk score', r.risk_score + ' / 100'), kv('category', (r.category || '').toUpperCase()), kv('insurance multiplier', r.insurance_multiplier + 'x')];
+    (r.factors || []).forEach(f => rows.push(kv('factor', typeof f === 'string' ? f : JSON.stringify(f))));
+    $('drResult').innerHTML = rows.join(''); flash('card-risk');
+  }); }
+  function runPremium() { action(event.target, async () => {
+    const r = await api('/api/driver/insurance-premium?plate=' + encodeURIComponent($('drPlate').value.trim()));
+    const rows = []; Object.keys(r).slice(0, 10).forEach(k => rows.push(kv(k.replace(/_/g, ' '), r[k])));
+    $('drResult').innerHTML = rows.join('');
+  }); }
+  function syncScores() { action(event.target, async () => {
+    const r = await api('/api/driver/sync-scores', { method: 'POST' });
+    const rows = []; Object.keys(r).slice(0, 6).forEach(k => rows.push(kv(k.replace(/_/g, ' '), r[k])));
+    $('drResult').innerHTML = rows.join(''); loadRisk();
+  }); }
+
+  /* ══ FEATURE 30 — INSURANCE ══ */
+  async function loadInsurance() {
+    try {
+      const s = await api('/api/insurance/stats');
+      chips('inStats', [['Total Claims', s.total_claims], ['Pending', s.pending_count]]);
+      const p = await api('/api/insurance/pending');
+      listInto('inPending', (p || []).slice(0, 6).map(x =>
+        '<div class="result-line"><span class="rl-k">' + esc((x.plate || x.vehicle_plate || x.claim_id) + ' · ' + inr(x.claim_amount ?? x.amount)) + '</span>' +
+        '<span class="rl-v"><button class="btn btn-success btn-sm" style="padding:0.2rem 0.55rem;font-size:0.65rem;" onclick="approveClaim(\'' + esc(x.claim_id) + '\', this)">Approve</button></span></div>'
+      ), 'Queue clear.');
+    } catch (e) { console.warn(e); }
+  }
+  function approveClaim(claimId, btn) { guardBtn(btn, async () => {
+    const r = await api('/api/insurance/approve/' + encodeURIComponent(claimId), { method: 'POST' });
+    const rows = []; Object.keys(r).slice(0, 8).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 60) : r[k])));
+    $('inResult').innerHTML = rows.join(''); flash('card-insurance'); loadInsurance();
+  }); }
+  function guardBtn(btn, fn) {
+    if (!btn) return fn();
+    const old = btn.textContent; btn.disabled = true; btn.textContent = '…';
+    fn().catch(e => alert('Failed: ' + e.message)).finally(() => { btn.disabled = false; btn.textContent = old; });
+  }
+  function fileClaim() { action(event.target, async () => {
+    const r = await api('/api/insurance/file-claim', { method: 'POST', body: JSON.stringify({ plate: $('inPlate').value.trim(), claim_type: 'violation' }) });
+    const rows = []; Object.keys(r).slice(0, 10).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 70) : r[k])));
+    $('inResult').innerHTML = rows.join(''); flash('card-insurance'); loadInsurance();
+  }); }
+
+  /* ══ FEATURE 32 — HAZARD ══ */
+  async function loadHazard() {
+    try {
+      const s = await api('/api/hazard/stats');
+      chips('hzStats', [['Reports', s.total_reports], ['Resolved', s.resolved_count]]);
+      const a = await api('/api/hazard/active');
+      listInto('hzActive', (a || []).slice(0, 6).map(x =>
+        kv((x.hazard_type || 'hazard') + ' · ' + (x.location_name || ''), 'severity ' + (x.severity ?? '—') + (x.status ? ' · ' + x.status : ''))
+      ), 'No active hazards.');
+    } catch (e) { console.warn(e); }
+  }
+  function reportHazard() { action(event.target, async () => {
+    const r = await api('/api/hazard/report', { method: 'POST', body: JSON.stringify({
+      hazard_type: $('hzType').value, severity: parseInt($('hzSev').value || '3', 10),
+      location_name: $('hzLoc').value.trim(), lat: 12.9352, lng: 77.6245
+    })});
+    const rows = []; Object.keys(r).slice(0, 10).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 70) : r[k])));
+    $('hzResult').innerHTML = rows.join(''); flash('card-hazard'); loadHazard();
+  }); }
+
+  /* ══ FEATURE 33 — VEHICLE HEALTH ══ */
+  async function loadHealth() {
+    try {
+      const s = await api('/api/vehicle-health/stats');
+      chips('vhStats', [['Inspected', s.total_inspected], ['Maintenance Due', s.maintenance_required]]);
+      const f = await api('/api/vehicle-health/faulty');
+      listInto('vhFaulty', (f || []).slice(0, 6).map(x =>
+        kv((x.plate || x.vehicle_plate || '—'), (x.faults || x.issues || 'flagged') + (x.status ? ' · ' + x.status : ''))
+      ), 'No flagged vehicles.');
+    } catch (e) { console.warn(e); }
+  }
+  function inspectVehicle() { action(event.target, async () => {
+    const r = await api('/api/vehicle-health/inspect', { method: 'POST', body: JSON.stringify({ plate: $('vhPlate').value.trim() }) });
+    const rows = []; Object.keys(r).slice(0, 10).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 70) : r[k])));
+    $('vhResult').innerHTML = rows.join(''); flash('card-health'); loadHealth();
+  }); }
+  function roadworthyCert() { action(event.target, async () => {
+    const r = await api('/api/vehicle-health/certificate', { method: 'POST', body: JSON.stringify({ plate: $('vhPlate').value.trim() }) });
+    const rows = []; Object.keys(r).slice(0, 10).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 70) : r[k])));
+    $('vhResult').innerHTML = rows.join('');
+  }); }
+
+  /* ══ FEATURE 34 — SCHOOL ══ */
+  async function loadSchool() {
+    try {
+      const s = await api('/api/school/stats');
+      chips('scStats', [['Schools Monitored', s.total_schools_monitored], ['Violations Today', s.violations_today]]);
+      const z = await api('/api/school/zones');
+      const b = await api('/api/school/bus-tracking');
+      const rows = (z || []).slice(0, 4).map(x => kv(x.name || x.school_id || 'School', 'zone active' + (x.speed_limit ? ' · limit ' + x.speed_limit + ' km/h' : '')));
+      (b || []).slice(0, 4).forEach(x => rows.push(kv('BUS ' + (x.bus_id || x.id || '—'), (x.status || 'tracked') + (x.school_id ? ' · ' + x.school_id : ''))));
+      listInto('scZones', rows, 'No zones configured.');
+    } catch (e) { console.warn(e); }
+  }
+  function parentAlert() { action(event.target, async () => {
+    const r = await api('/api/school/parent-alert', { method: 'POST', body: JSON.stringify({ school_id: $('scSchool').value, alert_type: $('scAlert').value }) });
+    const rows = []; Object.keys(r).slice(0, 8).forEach(k => rows.push(kv(k.replace(/_/g, ' '), typeof r[k] === 'object' ? JSON.stringify(r[k]).slice(0, 70) : r[k])));
+    $('scResult').innerHTML = rows.join(''); flash('card-school');
+  }); }
+
+  /* ── Live ticker ── */
+  async function loadTicker() {
+    try {
+      const items = await api('/api/ai-dataset/live-feed?limit=14');
+      listInto('ticker', (items || []).map(x =>
+        '<div class="tick-item"><div class="t-top"><span>' + (x.icon || '•') + '</span><span class="t-type">' + esc((x.event_type || 'event').replace(/_/g, ' ')) + '</span><span class="badge badge-accent" style="margin-left:auto">' + (x.confidence || 0) + '%</span></div><div class="t-sub">' + esc(x.camera_id || '') + (x.location_name ? ' · ' + esc(x.location_name) : '') + (x.action ? ' · ' + esc(x.action) : '') + '</div></div>'
+      ), 'Awaiting events…');
+    } catch (e) { console.warn(e); }
+  }
+
+  /* ══ FEATURE 23 — EMISSION (hotspots) ══ */
+  async function loadEmissionHotspots() {
+    try {
+      const h = await api('/api/emission/hotspots');
+      listInto('emHotspots', (h || []).slice(0, 5).map(x =>
+        kv((x.area_name || x.hotspot_id || 'Zone'), 'AQI ' + (x.aqi_index ?? '—') + (x.health_advisory ? ' · ' + x.health_advisory : ''))
+      ), 'No hotspot data.');
+    } catch (e) { console.warn(e); }
+  }
+
+  /* ══ FEATURE 26 — DRIVER RISK (fleet) ══ */
+  async function loadFleetProfiles() {
+    try {
+      const p = await api('/api/driver/all-profiles');
+      listInto('drProfiles', (p || []).slice(0, 6).map(x =>
+        kv((x.plate || x.vehicle_plate || '—'), 'risk ' + (x.risk_score ?? '—') + (x.risk_category ? ' · ' + x.risk_category : ''))
+      ), 'No fleet profiles yet — run Sync Fleet Scores.');
+    } catch (e) { console.warn(e); }
+  }
+
+  /* ══ FEATURE 27 — PEDESTRIAN (hotspots) ══ */
+  async function loadPedHotspots() {
+    try {
+      const h = await api('/api/pedestrian/hotspots');
+      listInto('pdHotspots', (h || []).slice(0, 5).map(x =>
+        kv(x.location_name || x.area_name || 'Crossing', 'near-misses ' + (x.near_miss_count ?? x.incident_count ?? '—'))
+      ), 'No hotspot data.');
+    } catch (e) { console.warn(e); }
+  }
+
+  /* ══ FEATURE 32 — HAZARD (leaderboard + work orders) ══ */
+  async function loadHazardExtras() {
+    try {
+      const lb = await api('/api/hazard/leaderboard');
+      const wo = await api('/api/hazard/work-orders');
+      const rows = (lb || []).slice(0, 3).map(x => kv('🏅 ' + (x.phone || x.reporter || 'Citizen'), (x.points ?? x.total_points ?? '—') + ' pts'));
+      (wo || []).slice(0, 4).forEach(x => rows.push(kv((x.work_order_id || 'WO') + ' · ' + (x.assigned_to || ''), x.status || 'open')));
+      listInto('hzExtras', rows, 'No reward activity or work orders yet.');
+    } catch (e) { console.warn(e); }
+  }
+
+  /* ══ FEATURE 35 — TOLL (plazas + breakdown) ══ */
+  async function loadTollExtras() {
+    try {
+      const pl = await api('/api/toll/plazas');
+      const vb = await api('/api/toll/vehicle-breakdown');
+      const rows = (pl || []).slice(0, 4).map(x => kv(x.name || x.plaza_id || 'Plaza', x.location || 'operational'));
+      (vb || []).slice(0, 5).forEach(x => rows.push(kv(x.category || x.vehicle_category || '—', (x.count ?? x.transactions ?? '—') + ' · ' + inr(x.revenue ?? 0))));
+      listInto('tlExtras', rows, 'No plaza data yet.');
+    } catch (e) { console.warn(e); }
+  }
+
+  /* ══ FEATURE 25 — PARKING (violations feed) ══ */
+  async function loadParkingViolations() {
+    try {
+      const v = await api('/api/parking/violations');
+      listInto('pkViolations', (v || []).slice(0, 5).map(x =>
+        kv((x.plate || x.vehicle_plate || '—') + ' · ' + (x.zone_name || x.zone_id || ''), (x.status || 'active') + (x.fine_amount != null ? ' · ' + inr(x.fine_amount) : ''))
+      ), 'No active parking violations.');
+    } catch (e) { console.warn(e); }
+  }
+
+  /* ── Boot ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    loadKpis(); loadTicker();
+    loadAmbulance(); loadAccident(); loadEmission(); loadEv();
+    loadDrunk(); loadPedestrian(); loadPredict();
+    loadParking(); loadV2I(); loadToll();
+    loadRisk(); loadInsurance();
+    loadHazard(); loadHealth(); loadSchool();
+    loadEmissionHotspots(); loadFleetProfiles(); loadPedHotspots();
+    loadHazardExtras(); loadTollExtras(); loadParkingViolations();
+    setInterval(loadTicker, 10000);
+    setInterval(loadKpis, 30000);
+  });
+
+  // expose inline onclick handlers
+  ['runAmbulance','runAccident','runEmission','rewardEV','findStations','calcRange','reserveSpot',
+   'runDrunk','runPedestrian','runPredict','runParking','runV2I','runToll','runRisk','runPremium',
+   'syncScores','fileClaim','reportHazard','inspectVehicle','roadworthyCert','parentAlert',
+   'approveClaim','towVehicle'
+  ].forEach(fn => { window[fn] = eval(fn); });
+})();
+</script>
+{% endblock %}

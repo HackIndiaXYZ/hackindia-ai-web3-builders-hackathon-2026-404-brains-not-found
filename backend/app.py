@@ -77,7 +77,8 @@ from reports import generate_monthly_report
 from chatbot import answer_traffic_query
 from gamification import calculate_suraksha_score, get_safest_zones_leaderboard, generate_certificate_data
 from blockchain_audit import (
-    init_blockchain_table, record_challan_on_blockchain, verify_challan_block, verify_ledger_chain
+    init_blockchain_table, record_challan_on_blockchain, verify_challan_block, verify_ledger_chain,
+    repair_ledger_chain
 )
 from event_bus import publish_event
 from officer_management import init_officers_table, get_officer_leaderboard, OFFICER_ROSTER
@@ -221,6 +222,7 @@ _static_folder = os.path.join(_frontend_dir, 'static') if os.path.isdir(os.path.
 app = Flask(__name__, template_folder=_template_folder, static_folder=_static_folder)
 app.register_blueprint(camera_bp)
 app.secret_key = SECRET_KEY
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 # Reverse proxy compatibility (HF Spaces / Nginx TLS termination)
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
@@ -365,6 +367,14 @@ def init_db():
         page       TEXT,
         referrer   TEXT,
         ua         TEXT
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS heatmap_cells (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        grid_lat REAL,
+        grid_lng REAL,
+        vehicle_count INTEGER,
+        timestamp_hour TIMESTAMP
     )''')
 
     c.execute('''CREATE TABLE IF NOT EXISTS ai_dataset_events (
@@ -1330,8 +1340,8 @@ def login():
             session['username'] = "Superintendent Pawan Singh" if user_role in ('admin', 'superadmin') else "Field Inspector"
             session['is_demo'] = (user_role == 'demo')
             logger.info(f"User logged in successfully as {user_role}")
-            next_url = request.args.get('next', '/')
-            return redirect(next_url if next_url.startswith('/') else '/')
+            next_url = request.args.get('next', '/command')
+            return redirect(next_url if next_url.startswith('/') else '/command')
         else:
             error = "Invalid credentials for selected role."
 
@@ -1465,6 +1475,12 @@ def intelligence_dashboard():
     )
 
 @app.route('/')
+def landing():
+    """Public landing page — unauthenticated."""
+    _log_visitor('/')
+    return render_template('landing.html')
+
+@app.route('/command')
 @require_admin
 def index():
     _log_visitor('/dashboard')
@@ -1492,10 +1508,33 @@ def map_view():
     _log_visitor('/map')
     return render_template('map.html')
 
+@app.route('/blockchain')
+@require_admin
+def blockchain_page():
+    _log_visitor('/blockchain')
+    return render_template('blockchain.html')
+
+@app.route('/officer')
+@require_admin
+def officer_ops():
+    """Officer operations: dispute tribunal, review queue, leaderboard, blacklist, cameras."""
+    _log_visitor('/officer')
+    return render_template(
+        'officer.html',
+        user_role=session.get('user_role', 'admin'),
+        username=session.get('username', 'Officer')
+    )
+
+@app.route('/admin')
+@require_admin
+def admin_page():
+    return redirect('/officer')
+
 @app.route('/api/realtime/traffic')
 def realtime_traffic_api():
     """Return live provider data or the interactive offline simulation."""
-    return jsonify(get_realtime_snapshot(force=request.args.get('refresh') == '1'))
+    area = request.args.get('area')
+    return jsonify(get_realtime_snapshot(force=request.args.get('refresh') == '1', area=area))
 
 @app.route('/api/realtime/history')
 def realtime_traffic_history_api():
@@ -1954,6 +1993,28 @@ def peak_hours_api():
     finally:
         conn.close()
 
+@app.route('/api/analytics/trend')
+@require_admin_api
+def analytics_trend_api():
+    """Daily violation counts for the last 7 days, for the analytics trend chart."""
+    conn = _get_conn()
+    try:
+        rows = conn.execute("""
+            SELECT DATE(timestamp) AS day, COUNT(*) AS cnt
+            FROM violations
+            WHERE timestamp >= DATE('now', '-6 days')
+            GROUP BY DATE(timestamp)
+        """).fetchall()
+        counts = {r[0]: r[1] for r in rows}
+        days, data = [], []
+        for i in range(6, -1, -1):
+            day = (date.today() - timedelta(days=i)).isoformat()
+            days.append(day[5:])  # MM-DD
+            data.append(counts.get(day, 0))
+        return jsonify({"days": days, "data": data, "total_week": sum(data)})
+    finally:
+        conn.close()
+
 @app.route('/api/predictive/recommendations')
 @require_admin_api
 def predictive_recommendations_api():
@@ -2004,12 +2065,22 @@ def blockchain_verify_api(challan_ref):
     finally:
         conn.close()
 
-@app.route('/api/blockchain/verify-ledger')
+@app.route('/api/blockchain/verify-ledger', methods=['GET', 'POST'])
 def blockchain_verify_ledger_api():
     """Verify entire cryptographic blockchain audit ledger from genesis block."""
     conn = _get_conn()
     try:
         return jsonify(verify_ledger_chain(conn))
+    finally:
+        conn.close()
+
+@app.route('/api/blockchain/repair', methods=['POST'])
+@require_admin_api
+def blockchain_repair_api():
+    """Re-anchor ledger linkage after a detected fork (admin only, payload data untouched)."""
+    conn = _get_conn()
+    try:
+        return jsonify(repair_ledger_chain(conn))
     finally:
         conn.close()
 
@@ -2109,7 +2180,7 @@ def recommendations_api():
 def system_health_api():
     """Comprehensive system health diagnostics and ML pipeline status."""
     with cameras_lock:
-        cam_count = len(cameras)
+        cam_count = sum(1 for s in cameras.values() if s["running"])
     conn = _get_conn()
     try:
         ledger_status = "TAMPER_PROOF_SECURED"
@@ -2208,21 +2279,35 @@ def export_csv():
 def get_heatmap():
     conn = _get_conn()
     c = conn.cursor()
-    cells = c.execute('''
-        SELECT grid_lat, grid_lng, vehicle_count FROM heatmap_cells 
-        WHERE vehicle_count > 0 ORDER BY vehicle_count DESC LIMIT 100
-    ''').fetchall()
-    conn.close()
+    try:
+        cells = c.execute('''
+            SELECT grid_lat, grid_lng, vehicle_count FROM heatmap_cells 
+            WHERE vehicle_count > 0 ORDER BY vehicle_count DESC LIMIT 100
+        ''').fetchall()
+    except sqlite3.OperationalError:
+        cells = []
+    finally:
+        conn.close()
+    
+    area = request.args.get('area')
+    
     if not cells:
         # Pre-seed sample hotspots around Bengaluru / Delhi
-        return jsonify([
+        dummy_data = [
             {"grid_lat": 12.9176, "grid_lng": 77.6238, "vehicle_count": 48, "zone": "Silk Board Junction"},
             {"grid_lat": 12.9352, "grid_lng": 77.6245, "vehicle_count": 36, "zone": "Koramangala 80ft Road"},
             {"grid_lat": 12.9756, "grid_lng": 77.6066, "vehicle_count": 29, "zone": "MG Road Crossing"},
             {"grid_lat": 12.9569, "grid_lng": 77.7011, "vehicle_count": 41, "zone": "Marathahalli Flyover"},
             {"grid_lat": 12.9784, "grid_lng": 77.6408, "vehicle_count": 22, "zone": "Indiranagar 100ft Road"}
-        ])
-    return jsonify([{'grid_lat': c[0], 'grid_lng': c[1], 'vehicle_count': c[2]} for c in cells])
+        ]
+        if area:
+            area_lower = area.lower()
+            dummy_data = [d for d in dummy_data if area_lower in d["zone"].lower()]
+        return jsonify(dummy_data)
+        
+    result = [{'grid_lat': c[0], 'grid_lng': c[1], 'vehicle_count': c[2]} for c in cells]
+    # No zone string is available in heatmap_cells by default, so we can't easily filter real db records by area name
+    return jsonify(result)
 
 @app.route('/violation/<int:vid>/paid', methods=['PATCH', 'POST'])
 def mark_violation_paid(vid):
@@ -2335,6 +2420,48 @@ def api_intelligence_copilot():
 
 # ── INITIALIZATION ────────────────────────────────────────────
 init_db()
+
+def _bootstrap_advanced_schema():
+    """Create feature 21-35 tables and seed demo data. Idempotent; disable
+    with TRAFFICGUARD_AUTO_SEED=false."""
+    if os.environ.get('TRAFFICGUARD_AUTO_SEED', 'true').lower() != 'true':
+        return
+    try:
+        import migrations  # executes idempotent CREATE TABLE IF NOT EXISTS DDL
+    except Exception as e:
+        logger.warning(f"Advanced schema migration skipped: {e}")
+        return
+    # Column drift repair for databases created by older migrations
+    try:
+        import sqlite3 as _sq
+        _c = _sq.connect(DB_PATH)
+        _cols = [r[1] for r in _c.execute("PRAGMA table_info(vehicle_health_status)").fetchall()]
+        if 'fine_amount' not in _cols:
+            _c.execute("ALTER TABLE vehicle_health_status ADD COLUMN fine_amount REAL DEFAULT 0")
+            _c.commit()
+        _c.close()
+    except Exception as e:
+        logger.warning(f"Column drift repair skipped: {e}")
+    seeders = [
+        'seed_emergency_data', 'seed_emission_data', 'seed_drunk_driving_data',
+        'seed_parking_zones', 'seed_pedestrian_data', 'seed_risk_predictions',
+        'seed_traffic_signals', 'seed_insurance_data', 'seed_charging_stations',
+        'seed_hazard_data', 'seed_schools_and_buses', 'seed_toll_data',
+    ]
+    seeded = 0
+    for name in seeders:
+        fn = globals().get(name)
+        if fn is None:
+            continue
+        try:
+            fn()
+            seeded += 1
+        except Exception as e:
+            logger.warning(f"Seeding {name} skipped: {e}")
+    logger.info(f"Advanced feature schema ready ({seeded}/{len(seeders)} seeders applied).")
+
+_bootstrap_advanced_schema()
+
 try:
     start_generator(interval_seconds=8)
     logger.info("AI real-time dataset generator started.")
@@ -2675,7 +2802,7 @@ def api_insurance_claim():
 @require_admin_api
 def api_insurance_approve(claim_id):
     try:
-        return jsonify(approve_claim(claim_id, approver=session.get('user_name', 'admin')))
+        return jsonify(approve_claim(claim_id, approver=session.get('username', 'admin')))
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

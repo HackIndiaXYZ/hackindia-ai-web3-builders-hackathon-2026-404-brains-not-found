@@ -77,14 +77,25 @@ def _build_snapshot(now=None):
     return {"timestamp": datetime.now(timezone.utc).isoformat(), "provider": _provider_status(), "center": {"lat": CITY_CENTER[0], "lng": CITY_CENTER[1]}, "heatmap": heatmap, "hotspots": hotspots[:10], "flows": flows, "predictions": predictions, "violations": violations, "kpis": {"current_violations": len(violations), "total_vehicles": sum(item["vehicle_count"] for item in hotspots), "average_speed": round(sum(item["avg_speed"] for item in hotspots) / len(hotspots), 1), "hotspots": sum(item["congestion"] >= 40 for item in hotspots), "prediction_alerts": sum(item["risk_score"] >= 60 for item in predictions)}}
 
 
-def get_snapshot(force=False):
+def get_snapshot(force=False, area=None):
     now = time.time()
     with _LOCK:
         if force or not _STATE["snapshot"] or now - _STATE["updated_at"] >= 0.5:
             _STATE["snapshot"] = _build_snapshot(now)
             _STATE["updated_at"] = now
             _STATE["history"] = (_STATE["history"] + [_STATE["snapshot"]])[-120:]
-        return _STATE["snapshot"]
+        
+        snapshot = _STATE["snapshot"]
+        if area:
+            area_lower = area.lower()
+            filtered = snapshot.copy()
+            filtered["heatmap"] = [x for x in snapshot["heatmap"] if area_lower in x.get("location", "").lower()]
+            filtered["hotspots"] = [x for x in snapshot["hotspots"] if area_lower in x.get("location", "").lower()]
+            filtered["flows"] = [x for x in snapshot["flows"] if area_lower in x.get("name", "").lower()]
+            filtered["predictions"] = [x for x in snapshot["predictions"] if area_lower in x.get("location", "").lower()]
+            return filtered
+            
+        return snapshot
 
 
 def get_history():

@@ -1,363 +1,530 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ app_name }} — Citizen Traffic Portal & E-Challan Settle</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
-  <style>
-    .citizen-hero {
-      padding: 48px 24px;
-      text-align: center;
-      background: radial-gradient(circle at 50% 30%, rgba(255, 153, 51, 0.12), transparent 70%);
-      border-bottom: 1px solid var(--border);
-    }
-    .search-box-wrap {
-      max-width: 540px;
-      margin: 24px auto 0;
-      display: flex;
-      gap: 8px;
-    }
-    .search-input {
-      flex: 1;
-      padding: 14px 20px;
-      border-radius: 10px;
-      border: 2px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      font-size: 1.1rem;
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .search-input:focus {
-      border-color: var(--saffron);
-    }
-    .portal-container {
-      max-width: 1080px;
-      margin: 30px auto;
-      padding: 0 20px 60px;
-    }
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(8px);
-      z-index: 5000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .modal-backdrop.show {
-      display: flex;
-    }
-    .modal-window {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      max-width: 480px;
-      width: 100%;
-      padding: 24px;
-      box-shadow: var(--shadow);
-    }
-  </style>
-</head>
-<body class="citizen-shell">
+{% extends 'base.html' %}
 
-  <div class="tricolor-stripe"></div>
+{% block title %}Citizen Portal — {{ app_name }}{% endblock %}
 
-  <!-- Citizen Topbar -->
-  <header style="background:var(--surface); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; justify-content:space-between; align-items:center;">
-    <div style="display:flex; align-items:center; gap:12px;">
-      <span style="font-size:1.6rem;">🏛️</span>
-      <div>
-        <div style="font-weight:800;font-size:1.1rem;color:var(--text);">{{ app_name }} <span style="color:var(--saffron);">CITIZEN SERVICES</span></div>
-        <div style="font-size:0.68rem;color:var(--text-muted);">Ministry of Road Transport & Highways · National E-Challan Portal</div>
-      </div>
-    </div>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <a href="/intelligence/login" class="btn btn-outline" style="font-size:0.75rem; color:var(--cyan); border-color:rgba(0,229,255,0.4);">🛡️ Intelligence Command</a>
-      <a href="/login" class="btn btn-outline" style="font-size:0.75rem;">👮 Officer Login</a>
-      <a href="/citizen/logout" class="btn btn-outline" style="font-size:0.75rem;">↪ Logout</a>
-      <button class="btn btn-outline" onclick="toggleTheme()" style="padding:6px 10px;">🌓</button>
-    </div>
-  </header>
+{% block head_extra %}
+<style>
+  .topbar {
+    height: 64px;
+    background: var(--surface-overlay);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 
-  <!-- Hero Section -->
-  <section class="citizen-hero">
-    <div class="badge badge-orange" style="margin-bottom:12px;">🇮🇳 सत्यमेव जयते · DIGITAL INDIA ROAD SAFETY</div>
-    <h1 style="font-size:clamp(1.8rem, 4vw, 2.8rem); color:var(--text); margin-bottom:8px;">
-      Check & Settle Traffic E-Challans
-    </h1>
-    <p style="color:var(--text-muted); font-size:0.95rem; max-width:620px; margin:auto;">
-      Instant verification against the National Vahan Ledger. Pay via UPI, submit dispute with dashcam proof, or view your Suraksha safe driving score.
-    </p>
+  .citizen-container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 40px 1.5rem 90px;
+  }
 
-    <div class="search-box-wrap">
-      <input type="text" id="citizen-plate-search" placeholder="ENTER VEHICLE NUMBER (e.g. KA03MX4521)" class="search-input">
-      <button class="btn btn-saffron" style="padding:0 24px; font-size:1rem;" onclick="searchCitizenChallans()">Search</button>
-    </div>
-  </section>
+  .search-section {
+    background: var(--surface-raised);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 2rem;
+  }
+  .search-section h2 { font-size: 1.75rem; margin-bottom: 0.5rem; }
 
-  <!-- Main Container -->
-  <main class="portal-container">
-    
-    <!-- Quick Action Cards -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:30px;">
-      <div class="glass-card" style="text-align:center;">
-        <div style="font-size:1.8rem; margin-bottom:6px;">💳</div>
-        <h3 style="font-size:0.95rem;">Instant UPI Settlement</h3>
-        <p style="font-size:0.75rem; color:var(--text-muted);">Zero convenience fee on digital payments with official PDF receipt.</p>
-      </div>
-      <div class="glass-card" style="text-align:center;">
-        <div style="font-size:1.8rem; margin-bottom:6px;">⚖️</div>
-        <h3 style="font-size:0.95rem;">15-Day Dispute Right</h3>
-        <p style="font-size:0.75rem; color:var(--text-muted);">Challenge wrongful infractions directly to the Traffic Review Tribunal.</p>
-      </div>
-      <div class="glass-card" style="text-align:center;">
-        <div style="font-size:1.8rem; margin-bottom:6px;">🏆</div>
-        <h3 style="font-size:0.95rem;">Suraksha Rewards</h3>
-        <p style="font-size:0.75rem; color:var(--text-muted);">Get 10% citizen reward pool payout for reporting traffic violations.</p>
-      </div>
-    </div>
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  @media (max-width: 640px) { .stat-row { grid-template-columns: 1fr; } }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg); padding: 1.1rem 1.3rem;
+  }
+  .stat-card .s-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.3rem; }
+  .stat-card .s-value { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700; }
 
-    <!-- Challan Results Area -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 style="font-size:1.2rem;">📋 Recorded Traffic Infractions</h2>
-      <span style="font-size:0.75rem; color:var(--text-muted);" id="result-status-text">Displaying recent records (plates masked for privacy)</span>
-    </div>
+  .violation-card {
+    padding: 1.5rem; margin-bottom: 1rem;
+    display: flex; flex-direction: column; gap: 1rem;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .violation-card:hover { transform: translateY(-2px); border-color: var(--border-glow); }
+  .violation-card-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .violation-card-mid { display: flex; flex-direction: column; gap: 0.25rem; }
+  .violation-card-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 1.25rem; margin-top: 0.25rem; gap: 0.75rem; flex-wrap: wrap;
+  }
+  .violation-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
-    <div id="citizen-challans-list" style="display:flex; flex-direction:column; gap:14px;">
-      <!-- Dynamic Citizen Challan Cards -->
-    </div>
+  .hidden { display: none !important; }
 
-  </main>
+  /* ── Suraksha / RC panels ── */
+  .side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+  @media (max-width: 760px) { .side-grid { grid-template-columns: 1fr; } }
+  .info-panel {
+    background: var(--surface); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl); padding: 1.4rem;
+  }
+  .info-panel h3 { font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.9rem; }
+  .score-ring {
+    width: 110px; height: 110px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 0 auto 0.9rem; position: relative;
+  }
+  .score-ring .sr-val { font-family: var(--font-mono); font-size: 1.9rem; font-weight: 800; line-height: 1; }
+  .score-ring .sr-sub { font-size: 0.6rem; letter-spacing: 0.08em; color: var(--text-muted); margin-top: 0.25rem; }
+  .score-row { display: flex; justify-content: space-between; gap: 0.75rem; font-size: 0.75rem; padding: 0.3rem 0; border-bottom: 1px solid var(--border-subtle); }
+  .score-row:last-child { border-bottom: none; }
+  .score-row .k { color: var(--text-muted); }
+  .score-row .v { font-family: var(--font-mono); text-align: right; }
+  .zone-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-subtle); font-size: 0.78rem; }
+  .zone-row:last-child { border-bottom: none; }
+  .zone-rank {
+    width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700;
+    background: var(--accent-muted); color: var(--accent);
+  }
+  .rc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1rem; font-size: 0.75rem; }
+  .rc-cell .k { color: var(--text-muted); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .rc-cell .v { font-family: var(--font-mono); margin-top: 0.1rem; }
+  .empty-note { color: var(--text-dim); font-style: italic; font-size: 0.8rem; padding: 0.4rem 0; }
 
-  <!-- ── PAYMENT MODAL ── -->
-  <div class="modal-backdrop" id="pay-modal">
-    <div class="modal-window">
-      <h3 style="font-size:1.15rem;margin-bottom:4px;color:var(--text);">💳 Settle Traffic E-Challan</h3>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">Direct Settlement via Razorpay / Unified Payments Interface (UPI)</div>
+  /* ── Chatbot widget ── */
+  .chat-fab {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 60;
+    width: 58px; height: 58px; border-radius: 50%;
+    background: var(--accent); color: #00121f;
+    border: none; cursor: pointer;
+    font-size: 1.5rem;
+    box-shadow: var(--shadow-lg), var(--accent-glow);
+    transition: transform var(--duration-fast) var(--ease-spring);
+  }
+  .chat-fab:hover { transform: scale(1.08); }
+  .chat-window {
+    position: fixed; bottom: 5.75rem; right: 1.5rem; z-index: 60;
+    width: 370px; max-width: calc(100vw - 2rem);
+    height: 500px; max-height: calc(100vh - 8rem);
+    background: var(--surface-overlay);
+    backdrop-filter: blur(24px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    display: flex; flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .chat-head {
+    padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--border-subtle);
+    display: flex; align-items: center; gap: 0.6rem;
+    background: var(--surface);
+  }
+  .chat-head .ch-title { font-weight: 800; font-size: 0.88rem; }
+  .chat-head .ch-sub { font-size: 0.65rem; color: var(--text-muted); }
+  .chat-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .chat-body::-webkit-scrollbar { width: 4px; }
+  .chat-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .msg { max-width: 82%; padding: 0.6rem 0.85rem; border-radius: var(--radius-md); font-size: 0.78rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  .msg.bot { background: var(--surface-raised); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 2px; }
+  .msg.user { background: var(--accent-muted); border: 1px solid rgba(14,165,233,0.3); align-self: flex-end; border-bottom-right-radius: 2px; }
+  .chat-foot { padding: 0.7rem; border-top: 1px solid var(--border-subtle); display: flex; gap: 0.5rem; background: var(--surface); }
+  .chat-foot input { flex: 1; font-size: 0.78rem; }
+  .mode-switch { margin-left: auto; display: flex; gap: 0.25rem; }
+  .mode-btn {
+    border: 1px solid var(--border-subtle); background: transparent; color: var(--text-muted);
+    font-size: 0.6rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 999px; cursor: pointer;
+    font-family: var(--font-sans);
+  }
+  .mode-btn.active { color: var(--accent); border-color: rgba(14,165,233,0.4); background: var(--accent-muted); }
+  .typing-dots { display: inline-flex; gap: 3px; padding: 0.4rem 0.2rem; }
+  .typing-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); animation: blink 1.2s infinite; }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+</style>
+{% endblock %}
 
-      <div style="background:rgba(0,0,0,0.2);padding:12px;border-radius:8px;border:1px solid var(--border);margin-bottom:16px;font-size:0.85rem;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-          <span style="color:var(--text-muted);">Challan Reference:</span>
-          <b id="pay-modal-challan">RX-000000</b>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-          <span style="color:var(--text-muted);">Vehicle Number:</span>
-          <b id="pay-modal-plate">KA03MX4521</b>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:1.1rem;color:var(--saffron);">
-          <span>Fine Amount:</span>
-          <b id="pay-modal-amount">₹1,000</b>
-        </div>
-      </div>
+{% block content %}
+<div class="topbar flex items-center justify-between">
+  <div class="flex items-center gap-4">
+    <span class="font-bold text-lg">{{ app_name }}</span>
+    <span class="text-muted text-sm">Citizen Services</span>
+  </div>
+  <a href="/citizen/logout" class="btn btn-ghost btn-sm">Logout</a>
+</div>
 
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
-        <label style="font-size:0.75rem;color:var(--text-muted);">Payer Full Name:</label>
-        <input type="text" id="payer-name-input" value="Citizen Motorist" class="btn btn-outline" style="text-align:left;">
-
-        <label style="font-size:0.75rem;color:var(--text-muted);">Payment Channel:</label>
-        <select id="pay-mode-select" class="btn btn-outline">
-          <option value="UPI (Google Pay / PhonePe / Paytm)">UPI (Google Pay / PhonePe / Paytm)</option>
-          <option value="Debit / Credit Card (RuPay / Visa)">Debit / Credit Card (RuPay / Visa)</option>
-          <option value="NetBanking (SBI / HDFC / ICICI)">NetBanking (SBI / HDFC / ICICI)</option>
-        </select>
-      </div>
-
-      <div style="display:flex;gap:10px;">
-        <button class="btn btn-success" style="flex:1;" onclick="submitPayment()">✔ Confirm & Pay</button>
-        <button class="btn btn-outline" onclick="closePayModal()">Cancel</button>
-      </div>
+<div class="citizen-container">
+  <div class="search-section">
+    <h2>Vehicle Infraction Lookup</h2>
+    <p class="text-secondary mb-4">Enter your vehicle registration to view, settle or dispute challans — and check your Suraksha safety score.</p>
+    <div class="flex gap-4">
+      <input type="text" id="plateSearch" class="input input-mono flex-1" placeholder="KA 03 MX 4521" autocomplete="off">
+      <button id="searchBtn" class="btn btn-primary">Search</button>
     </div>
   </div>
 
-  <!-- ── DISPUTE MODAL ── -->
-  <div class="modal-backdrop" id="dispute-modal">
-    <div class="modal-window">
-      <h3 style="font-size:1.15rem;margin-bottom:4px;color:var(--text);">⚖️ File Citizen Dispute</h3>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">Submit evidence for Traffic Review Tribunal review</div>
+  <div class="stat-row">
+    <div class="stat-card"><div class="s-label">Total Infractions</div><div class="s-value" id="statTotal">0</div></div>
+    <div class="stat-card"><div class="s-label">Outstanding Balance</div><div class="s-value" id="statUnpaid">₹0</div></div>
+    <div class="stat-card"><div class="s-label">Settled</div><div class="s-value text-success" id="statPaid">0</div></div>
+  </div>
 
-      <input type="hidden" id="dispute-vid-input">
-      <input type="hidden" id="dispute-plate-input">
-
-      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px;">
-        <div>
-          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Dispute Category:</label>
-          <select id="dispute-reason-select" class="btn btn-outline" style="width:100%;">
-            <option value="Incorrect Plate Character Recognition">Incorrect Plate Character Recognition</option>
-            <option value="Emergency Vehicle / Medical Exemption">Emergency Vehicle / Medical Exemption</option>
-            <option value="Vehicle Sold / Stolen Prior to Incident">Vehicle Sold / Stolen Prior to Incident</option>
-            <option value="Helmet was Worn (Occlusion by Angle)">Helmet was Worn (Occlusion by Angle)</option>
-          </select>
-        </div>
-
-        <div>
-          <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Explanation & Proof Details:</label>
-          <textarea id="dispute-explanation-input" rows="3" class="btn btn-outline" style="width:100%;text-align:left;" placeholder="Describe what happened and mention dashcam timestamp..."></textarea>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px;">
-        <button class="btn btn-saffron" style="flex:1;" onclick="submitCitizenDispute()">Submit Dispute</button>
-        <button class="btn btn-outline" onclick="closeDisputeModal()">Cancel</button>
-      </div>
+  <div class="side-grid">
+    <!-- SURAKSHA SCORE -->
+    <div class="info-panel" id="surakshaPanel">
+      <h3>🏆 Suraksha Safe Driving Score</h3>
+      <div id="surakshaBody"><div class="empty-note">Search a plate to compute its 0–100 compliance score.</div></div>
+    </div>
+    <!-- RC / VAHAN -->
+    <div class="info-panel" id="rcPanel">
+      <h3>🗂️ RC Details (Vahan)</h3>
+      <div id="rcBody"><div class="empty-note">Search a plate to fetch national registry records.</div></div>
     </div>
   </div>
 
-  <!-- ── SCRIPTS ── -->
-  <script>
-    let activePayVid = null;
+  <div class="zone-panel info-panel" style="margin-bottom:2rem;" id="zonePanel">
+    <h3>🏘️ Safest Zones Leaderboard</h3>
+    <div id="zoneBody"><div class="empty-note">Loading zone compliance…</div></div>
+  </div>
 
-    function toggleTheme() {
-      const cur = document.documentElement.getAttribute('data-theme') || 'dark';
-      const nxt = (cur === 'dark') ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', nxt);
-      localStorage.setItem('tg_theme', nxt);
-    }
-    const savedTheme = localStorage.getItem('tg_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
+  <div id="violationsList" class="flex flex-col gap-4"></div>
+</div>
 
-    function loadCitizenViolations(plateQuery = '') {
-      const url = plateQuery ? '/citizen/violations?plate=' + encodeURIComponent(plateQuery) : '/citizen/violations';
-      fetch(url).then(r => r.json()).then(rows => {
-        const container = document.getElementById('citizen-challans-list');
-        if (!rows.length) {
-          container.innerHTML = `
-            <div class="glass-card" style="text-align:center;padding:32px;">
-              <div style="font-size:2rem;margin-bottom:8px;">🛡️</div>
-              <h3 style="color:var(--green);">Zero Pending Infractions</h3>
-              <p style="color:var(--text-muted);font-size:0.85rem;">No unpaid traffic violations found for this vehicle. Thank you for safe driving!</p>
-            </div>
-          `;
-          return;
+<!-- Payment Modal -->
+<div id="payModal" class="modal-backdrop hidden">
+  <div class="modal-window">
+    <h3 class="mb-4">Settle Challan</h3>
+    <div class="mb-4">
+      <div class="text-sm text-muted">Challan Ref</div>
+      <div id="payRef" class="font-mono text-accent mb-2"></div>
+      <div class="text-sm text-muted">Violation</div>
+      <div id="payType" class="mb-2"></div>
+      <div class="text-sm text-muted">Amount</div>
+      <div id="payAmount" class="font-mono text-lg text-danger"></div>
+    </div>
+    <input type="hidden" id="payViolationId">
+    <label class="input-label mb-2">Payer Name</label>
+    <input type="text" id="payName" class="input mb-4" placeholder="Full Name">
+    <label class="input-label mb-2">Payment Method</label>
+    <select id="payMethod" class="input mb-6">
+      <option value="UPI / Razorpay">UPI</option>
+      <option value="NetBanking">NetBanking</option>
+      <option value="Debit / Credit Card">Debit / Credit Card</option>
+    </select>
+    <div class="flex flex-col gap-2">
+      <button id="btnConfirmPay" class="btn btn-primary w-full">Confirm Payment</button>
+      <button onclick="closeModals()" class="btn btn-ghost w-full">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dispute Modal -->
+<div id="disputeModal" class="modal-backdrop hidden">
+  <div class="modal-window">
+    <h3 class="mb-4">File Dispute</h3>
+    <input type="hidden" id="disputeViolationId">
+    <label class="input-label mb-2">Reason</label>
+    <select id="disputeReason" class="input mb-4">
+      <option value="Incorrect Plate Character Recognition">Incorrect plate recognition</option>
+      <option value="Not My Vehicle">Not my vehicle</option>
+      <option value="Technical Error / Evidence Issue">Technical error / evidence issue</option>
+      <option value="Other">Other</option>
+    </select>
+    <label class="input-label mb-2">Explanation</label>
+    <textarea id="disputeExplanation" class="input mb-6" rows="4" placeholder="Please provide details…"></textarea>
+    <div class="flex flex-col gap-2">
+      <button id="btnSubmitDispute" class="btn btn-primary w-full">Submit Dispute</button>
+      <button onclick="closeModals()" class="btn btn-ghost w-full">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Saarthi Chatbot -->
+<button class="chat-fab" id="chatFab" title="Ask Saarthi AI">🤖</button>
+<div class="chat-window hidden" id="chatWindow">
+  <div class="chat-head">
+    <div>
+      <div class="ch-title">Saarthi AI Assistant</div>
+      <div class="ch-sub">Motor Vehicles Act expert · हिन्दी + English</div>
+    </div>
+    <div class="mode-switch">
+      <button class="mode-btn active" id="modeSaarthi" title="Traffic law knowledge base">SAARTHI</button>
+      <button class="mode-btn" id="modeWhatsapp" title="WhatsApp bot commands: STATUS / PAY / RULES / DISPUTE">WA BOT</button>
+    </div>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="chat-foot">
+    <input type="text" id="chatInput" class="input" placeholder="e.g. What is the helmet fine?" autocomplete="off">
+    <button class="btn btn-primary btn-sm" id="chatSend">Send</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function formatCurrency(n) { return '₹' + parseInt(n || 0).toLocaleString('en-IN'); }
+  function closeModals() {
+    $('payModal').classList.add('hidden');
+    $('disputeModal').classList.add('hidden');
+  }
+  window.closeModals = closeModals;
+
+  function openPayModal(id, ref, type, amount) {
+    $('payViolationId').value = id;
+    $('payRef').textContent = ref;
+    $('payType').textContent = type;
+    $('payAmount').textContent = formatCurrency(amount);
+    $('payModal').classList.remove('hidden');
+  }
+  function openDisputeModal(id) {
+    $('disputeViolationId').value = id;
+    $('disputeModal').classList.remove('hidden');
+  }
+
+  /* ═══ VIOLATIONS LIST ═══ */
+  let lastPlate = '';
+  function renderViolations(violations) {
+    const list = $('violationsList');
+    list.innerHTML = '';
+    let unpaidAmount = 0, paidCount = 0;
+
+    if (!violations.length) {
+      list.innerHTML = '<div class="info-panel text-center text-muted">No infractions found. Safe driving! 🛡️</div>';
+    } else {
+      violations.forEach(v => {
+        const isPaid = !!v.paid;
+        if (isPaid) paidCount++;
+        else unpaidAmount += v.fine || 0;
+
+        const badgeClass = isPaid ? 'badge-success' : 'badge-danger';
+        let actionHtml = '';
+        if (!isPaid) {
+          actionHtml =
+            '<button class="btn btn-primary btn-sm" onclick="openPayModal(' + v.id + ',\'' + esc(v.challan) + '\',\'' + esc(v.violation) + '\',' + v.fine + ')">Pay Online</button>' +
+            '<button class="btn btn-ghost btn-sm" onclick="openDisputeModal(' + v.id + ')">File Dispute</button>';
+        } else {
+          actionHtml = '<button class="btn btn-ghost btn-sm" onclick="window.open(\'/receipt/' + v.id + '\')">Download Receipt</button>';
         }
 
-        container.innerHTML = rows.map(r => `
-          <div class="glass-card" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;">
-            <div style="display:flex;flex-direction:column;gap:4px;">
-              <div style="display:flex;align-items:center;gap:10px;">
-                <span class="plate-chip">${r.plate}</span>
-                <span class="badge ${r.paid ? 'badge-green' : 'badge-red'}">${r.paid ? '✅ PAID' : '⏳ UNPAID'}</span>
-                <span style="font-size:0.75rem;color:var(--text-dim);font-family:var(--font-mono);">${r.challan}</span>
-              </div>
-              <div style="font-weight:700;color:var(--text);font-size:0.9rem;margin-top:2px;">${r.violation}</div>
-              <div style="font-size:0.72rem;color:var(--text-muted);">${r.timestamp} · Camera: ${r.camera}</div>
-            </div>
-
-            <div style="display:flex;align-items:center;gap:14px;">
-              <div style="text-align:right;">
-                <div style="font-size:0.7rem;color:var(--text-muted);">Statutory Fine</div>
-                <div style="font-size:1.3rem;font-weight:800;color:${r.paid ? 'var(--green)' : 'var(--saffron)'};font-family:var(--font-heading);">
-                  ₹${r.fine.toLocaleString('en-IN')}
-                </div>
-              </div>
-
-              <div style="display:flex;gap:6px;">
-                ${r.paid ? `
-                  <a href="/receipt/${r.id}" target="_blank" class="btn btn-success" style="padding:8px 14px;font-size:0.8rem;">⬇ Receipt</a>
-                ` : `
-                  <button class="btn btn-primary" onclick="openPayModal(${r.id}, '${r.challan}', '${r.plate}', ${r.fine})">💳 Pay Online</button>
-                  <button class="btn btn-outline" onclick="openDisputeModal(${r.id}, '${r.plate}')">⚖️ Dispute</button>
-                `}
-                <a href="/challan/${r.id}" target="_blank" class="btn btn-outline" style="padding:8px 12px;font-size:0.8rem;">PDF</a>
-              </div>
-            </div>
-          </div>
-        `).join('');
+        const card = document.createElement('div');
+        card.className = 'violation-card';
+        card.innerHTML =
+          '<div class="violation-card-top">' +
+          '  <span class="badge badge-accent font-mono">' + esc(v.challan) + '</span>' +
+          '  <span class="badge ' + badgeClass + '">' + (isPaid ? 'PAID' : 'UNPAID') + '</span>' +
+          '</div>' +
+          '<div class="violation-card-mid">' +
+          '  <div class="font-semibold">' + esc(v.violation) + '</div>' +
+          '  <div class="text-sm text-muted">Camera: ' + esc(v.camera || 'Unknown') + '</div>' +
+          '  <div class="text-sm text-muted font-mono">' + esc(v.timestamp || '') + '</div>' +
+          '</div>' +
+          '<div class="violation-card-bottom">' +
+          '  <div class="font-mono text-lg">' + formatCurrency(v.fine) + '</div>' +
+          '  <div class="violation-actions">' +
+          '    <button class="btn btn-ghost btn-sm" onclick="window.open(\'/challan/' + v.id + '\')">Challan PDF</button>' +
+          '    <button class="btn btn-ghost btn-sm" onclick="window.open(\'/verify/' + v.id + '\')">Public Verify</button>' +
+          actionHtml +
+          '  </div>' +
+          '</div>';
+        list.appendChild(card);
       });
+      if (window.gsap) gsap.from('#violationsList .violation-card', { y: 18, opacity: 0, stagger: 0.07, duration: 0.5, ease: 'power3.out' });
     }
 
-    function searchCitizenChallans() {
-      const p = document.getElementById('citizen-plate-search').value.trim();
-      document.getElementById('result-status-text').textContent = p ? `Search results for "${p}"` : 'Displaying recent records';
-      loadCitizenViolations(p);
-    }
+    $('statTotal').textContent = violations.length;
+    const unpaidElem = $('statUnpaid');
+    unpaidElem.textContent = formatCurrency(unpaidAmount);
+    unpaidElem.classList.toggle('text-danger', unpaidAmount > 0);
+    $('statPaid').textContent = paidCount;
+  }
 
-    // Payment Modal Functions
-    function openPayModal(vid, challan, plate, fine) {
-      activePayVid = vid;
-      document.getElementById('pay-modal-challan').textContent = challan;
-      document.getElementById('pay-modal-plate').textContent = plate;
-      document.getElementById('pay-modal-amount').textContent = '₹' + fine.toLocaleString('en-IN');
-      document.getElementById('pay-modal').classList.add('show');
+  async function fetchViolations(plate) {
+    lastPlate = plate || '';
+    try {
+      const url = lastPlate ? '/citizen/violations?plate=' + encodeURIComponent(lastPlate) : '/citizen/violations';
+      const res = await fetch(url);
+      const data = await res.json();
+      renderViolations(Array.isArray(data) ? data : (data.violations || []));
+      loadSuraksha(lastPlate);
+      loadRc(lastPlate);
+    } catch (e) { console.error('Failed to fetch violations', e); }
+  }
+  window.openPayModal = openPayModal;
+  window.openDisputeModal = openDisputeModal;
+
+  /* ═══ SURAKSHA SCORE ═══ */
+  async function loadSuraksha(plate) {
+    const body = $('surakshaBody');
+    if (!plate) { body.innerHTML = '<div class="empty-note">Search a plate to compute its 0–100 compliance score.</div>'; return; }
+    try {
+      const d = await (await fetch('/api/suraksha/score/' + encodeURIComponent(plate))).json();
+      if (d.error) { body.innerHTML = '<div class="empty-note">' + esc(d.error) + '</div>'; return; }
+      let html =
+        '<div class="score-ring" style="background: conic-gradient(' + (d.color || '#0EA5E9') + ' ' + Math.max(0, Math.min(100, d.current_score)) * 3.6 + 'deg, rgba(255,255,255,0.06) 0deg);">' +
+        '  <div style="position:absolute;inset:8px;border-radius:50%;background:var(--canvas-subtle);display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
+        '    <div class="sr-val" style="color:' + (d.color || 'var(--text)') + '">' + d.current_score + '</div>' +
+        '    <div class="sr-sub">OF 100</div>' +
+        '  </div>' +
+        '</div>' +
+        '<div style="position:relative">' +
+        '<div class="score-row"><span class="k">Tier</span><span class="v">' + esc(d.tier || '—') + '</span></div>' +
+        '<div class="score-row"><span class="k">Grade</span><span class="v">' + esc(d.grade || '—') + '</span></div>' +
+        '<div class="score-row"><span class="k">Risk Level</span><span class="v">' + esc(d.risk_level || '—') + '</span></div>' +
+        '<div class="score-row"><span class="k">Violations</span><span class="v">' + (d.total_violations ?? 0) + '</span></div>' +
+        '<div class="score-row"><span class="k">Vehicle</span><span class="v">' + esc(d.vehicle_model || '—') + '</span></div>';
+      (d.reasons || []).slice(0, 3).forEach(r => { html += '<div class="text-xs text-muted" style="padding-top:0.35rem">• ' + esc(r) + '</div>'; });
+      if (d.eligible_for_certificate) html += '<div class="badge badge-success" style="margin-top:0.7rem">ELIGIBLE · SAFE DRIVER CERTIFICATE</div>';
+      html += '</div>';
+      body.innerHTML = html;
+    } catch (e) { body.innerHTML = '<div class="empty-note">Score unavailable.</div>'; }
+  }
+
+  /* ═══ RC / VAHAN ═══ */
+  async function loadRc(plate) {
+    const body = $('rcBody');
+    if (!plate) { body.innerHTML = '<div class="empty-note">Search a plate to fetch national registry records.</div>'; return; }
+    try {
+      const res = await fetch('/api/vahan/lookup/' + encodeURIComponent(plate));
+      const d = await res.json();
+      if (!res.ok) { body.innerHTML = '<div class="empty-note">' + esc(d.error || 'Vehicle not found') + '</div>'; return; }
+      const o = d.owner || {};
+      const cell = (k, v) => '<div class="rc-cell"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v ?? '—') + '</div></div>';
+      body.innerHTML =
+        '<div class="rc-grid">' +
+        cell('Owner', o.name) + cell('Father', o.father_name) +
+        cell('Make / Model', o.make_model) + cell('Fuel', o.fuel_type) +
+        cell('Colour', o.color) + cell('City', o.city) +
+        cell('Insurance', o.insurance_status) + cell('PUCC', o.pucc_status) +
+        cell('Chassis', o.chassis_no) + cell('Engine', o.engine_no) +
+        '</div>' +
+        '<div class="badge ' + (d.vahan_mode === 'LIVE_VAHAN_API' ? 'badge-success' : 'badge-accent') + '" style="margin-top:0.8rem">' + esc((d.vahan_mode || 'DEMO').replace(/_/g, ' ')) + '</div>';
+    } catch (e) { body.innerHTML = '<div class="empty-note">Registry unavailable.</div>'; }
+  }
+
+  /* ═══ SAFEST ZONES ═══ */
+  async function loadZones() {
+    try {
+      const d = await (await fetch('/api/suraksha/leaderboard')).json();
+      const z = d.safest_zones || [];
+      $('zoneBody').innerHTML = z.length ? z.slice(0, 5).map(x =>
+        '<div class="zone-row">' +
+        '<div class="zone-rank">' + x.rank + '</div>' +
+        '<div style="flex:1"><div>' + esc(x.zone) + '</div><div class="text-muted text-xs">' + esc(x.safety_badge || '') + ' · ' + (x.active_cameras ?? '—') + ' cameras</div></div>' +
+        '<div class="font-mono text-success">' + x.compliance_score + '</div>' +
+        '</div>'
+      ).join('') : '<div class="empty-note">No zone data.</div>';
+    } catch (e) { $('zoneBody').innerHTML = '<div class="empty-note">Unavailable.</div>'; }
+  }
+
+  /* ═══ SAARTHI CHATBOT ═══ */
+  let chatMode = 'saarthi';
+  const chatExamples = {
+    saarthi: 'Ask anything about the Motor Vehicles Act, fines, or RTO procedures…',
+    whatsapp: 'Try: STATUS KA03MX4521 · PAY RX-000036 · RULES · DISPUTE RX-000036'
+  };
+  function addMsg(text, who) {
+    const el = document.createElement('div');
+    el.className = 'msg ' + who;
+    el.textContent = text;
+    $('chatBody').appendChild(el);
+    $('chatBody').scrollTop = $('chatBody').scrollHeight;
+    return el;
+  }
+  async function sendChat() {
+    const input = $('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    addMsg(text, 'user');
+    const typing = document.createElement('div');
+    typing.className = 'msg bot typing-dots';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    $('chatBody').appendChild(typing);
+    $('chatBody').scrollTop = $('chatBody').scrollHeight;
+    try {
+      let d;
+      if (chatMode === 'saarthi') {
+        const res = await fetch('/api/chatbot/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: text, lang: 'en' }) });
+        d = await res.json();
+      } else {
+        const res = await fetch('/api/bot/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text }) });
+        d = await res.json();
+      }
+      typing.remove();
+      addMsg(d.answer || d.reply || 'No response.', 'bot');
+    } catch (e) {
+      typing.remove();
+      addMsg('Connection error — please retry.', 'bot');
     }
-    function closePayModal() {
-      document.getElementById('pay-modal').classList.remove('show');
+  }
+
+  $('chatFab').addEventListener('click', () => {
+    const w = $('chatWindow');
+    w.classList.toggle('hidden');
+    if (!w.classList.contains('hidden') && !$('chatBody').children.length) {
+      addMsg('🙏 Namaste! I am Saarthi, your traffic-safety assistant. Ask me about helmet fines, document requirements, or challan procedures — in English or हिन्दी.', 'bot');
+      $('chatInput').focus();
     }
-    function submitPayment() {
-      if (!activePayVid) return;
-      const payer = document.getElementById('payer-name-input').value.trim();
-      const mode = document.getElementById('pay-mode-select').value;
-      fetch('/citizen/pay', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          violation_id: activePayVid,
-          payer_name: payer,
-          payment_mode: mode
-        })
-      }).then(r => r.json().then(d => ({ status: r.status, data: d })))
-      .then(res => {
-        if (res.status >= 400 || res.data.error) {
-          alert('Payment Notice: ' + (res.data.error || 'Could not complete transaction'));
-          return;
-        }
-        closePayModal();
-        alert('Payment Settled Successfully! Challan No: ' + res.data.challan);
-        searchCitizenChallans();
-        if (res.data.receipt_url) {
-          window.open(res.data.receipt_url, '_blank');
-        }
-      }).catch(err => {
-        alert('Payment processing error: ' + err.message);
+  });
+  $('chatSend').addEventListener('click', sendChat);
+  $('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') sendChat(); });
+  $('modeSaarthi').addEventListener('click', () => {
+    chatMode = 'saarthi'; $('modeSaarthi').classList.add('active'); $('modeWhatsapp').classList.remove('active');
+    $('chatInput').placeholder = chatExamples.saarthi;
+  });
+  $('modeWhatsapp').addEventListener('click', () => {
+    chatMode = 'whatsapp'; $('modeWhatsapp').classList.add('active'); $('modeSaarthi').classList.remove('active');
+    $('chatInput').placeholder = chatExamples.whatsapp;
+  });
+
+  /* ═══ PAY / DISPUTE ═══ */
+  $('searchBtn').addEventListener('click', () => fetchViolations($('plateSearch').value.trim().toUpperCase()));
+  $('plateSearch').addEventListener('keypress', e => { if (e.key === 'Enter') $('searchBtn').click(); });
+
+  $('btnConfirmPay').addEventListener('click', async () => {
+    const violation_id = $('payViolationId').value;
+    const payer_name = $('payName').value.trim();
+    const payment_mode = $('payMethod').value;
+    if (!payer_name) return alert('Please enter payer name');
+    try {
+      const res = await fetch('/citizen/pay', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ violation_id: parseInt(violation_id, 10), payer_name, payment_mode })
       });
-    }
+      if (res.ok) { closeModals(); fetchViolations(lastPlate); }
+      else alert('Payment failed');
+    } catch (e) { alert('Error processing payment'); }
+  });
 
-    // Dispute Modal Functions
-    function openDisputeModal(vid, plate) {
-      document.getElementById('dispute-vid-input').value = vid;
-      document.getElementById('dispute-plate-input').value = plate;
-      document.getElementById('dispute-modal').classList.add('show');
-    }
-    function closeDisputeModal() {
-      document.getElementById('dispute-modal').classList.remove('show');
-    }
-    function submitCitizenDispute() {
-      const vid = document.getElementById('dispute-vid-input').value;
-      const plate = document.getElementById('dispute-plate-input').value;
-      const reason = document.getElementById('dispute-reason-select').value;
-      const exp = document.getElementById('dispute-explanation-input').value.trim();
-
-      fetch('/citizen/dispute', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          violation_id: parseInt(vid),
-          plate: plate,
-          reason: reason,
-          explanation: exp
-        })
-      }).then(r => r.json().then(d => ({ status: r.status, data: d })))
-      .then(res => {
-        if (res.status >= 400 || res.data.error) {
-          alert('Dispute Submission Notice:\n' + (res.data.error || 'Unable to file dispute at this time.'));
-          return;
-        }
-        closeDisputeModal();
-        alert('Dispute Ticket #' + res.data.dispute_id + ' submitted to Traffic Police Review Tribunal.');
-        searchCitizenChallans();
-      }).catch(err => {
-        alert('Error submitting dispute: ' + err.message);
+  $('btnSubmitDispute').addEventListener('click', async () => {
+    const violation_id = $('disputeViolationId').value;
+    const reason = $('disputeReason').value;
+    const explanation = $('disputeExplanation').value.trim();
+    try {
+      const res = await fetch('/citizen/dispute', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ violation_id: parseInt(violation_id, 10), plate: lastPlate, reason, explanation })
       });
-    }
+      if (res.ok) { closeModals(); alert('Dispute submitted — an officer will adjudicate within 15 days.'); }
+      else alert('Failed to submit dispute');
+    } catch (e) { alert('Error submitting dispute'); }
+  });
 
-    window.addEventListener('DOMContentLoaded', () => {
-      loadCitizenViolations();
-    });
-  </script>
-</body>
-</html>
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchViolations();
+    loadZones();
+    $('chatInput').placeholder = chatExamples.saarthi;
+  });
+})();
+</script>
+{% endblock %}

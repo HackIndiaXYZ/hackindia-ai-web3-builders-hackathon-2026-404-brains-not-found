@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+
+{% block title %}Officer Operations — {{ app_name }}{% endblock %}
+
+{% block head_extra %}
+<style>
+  .of-topbar {
+    height: 60px;
+    background: var(--surface-overlay);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .of-nav { display: flex; gap: 0.25rem; align-items: center; flex-wrap: wrap; }
+  .of-nav a {
+    color: var(--text-secondary); text-decoration: none;
+    font-size: 0.8rem; font-weight: 600;
+    padding: 0.4rem 0.75rem; border-radius: var(--radius-md);
+    transition: all var(--duration-fast) var(--ease-out);
+    white-space: nowrap;
+  }
+  .of-nav a:hover { color: var(--text); background: var(--surface-raised); }
+  .of-nav a.active { color: var(--accent); background: var(--accent-muted); }
+
+  .of-container { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .of-hero { margin-bottom: 1.75rem; }
+  .of-hero h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.35rem; }
+  .of-hero p { color: var(--text-secondary); max-width: 620px; }
+
+  .ops-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.25rem; align-items: start; }
+  @media (max-width: 980px) { .ops-grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 1.4rem;
+    margin-bottom: 1.25rem;
+  }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1rem; }
+  .panel-head h2 { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+  .count-pill {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    background: var(--accent-muted); color: var(--accent);
+    border: 1px solid rgba(14,165,233,0.3);
+    padding: 0.15rem 0.55rem; border-radius: 999px;
+  }
+
+  table.ops-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  .ops-table th {
+    text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-muted); padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border);
+    font-weight: 700;
+  }
+  .ops-table td { padding: 0.65rem 0.6rem; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+  .ops-table tr:last-child td { border-bottom: none; }
+  .ops-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .mono { font-family: var(--font-mono); }
+
+  .resolve-row { display: flex; gap: 0.4rem; margin-top: 0.4rem; flex-wrap: wrap; }
+  .resolve-row .input { padding: 0.35rem 0.5rem; font-size: 0.72rem; width: 150px; }
+
+  .add-form { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+  .add-form .input { font-size: 0.78rem; }
+
+  .leader-card {
+    display: flex; gap: 0.75rem; align-items: center;
+    padding: 0.7rem 0.6rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .leader-card:last-child { border-bottom: none; }
+  .rank-badge {
+    width: 30px; height: 30px; border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+  .rank-1 { background: rgba(245,158,11,0.18); color: var(--warning); }
+  .rank-2 { background: rgba(255,255,255,0.10); color: var(--text-secondary); }
+  .rank-3 { background: rgba(180,83,9,0.22); color: #d97706; }
+  .leader-meta { flex: 1; min-width: 0; }
+  .leader-meta .l-name { font-weight: 700; font-size: 0.82rem; }
+  .leader-meta .l-sub { font-size: 0.68rem; color: var(--text-muted); }
+  .leader-kpis { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-secondary); text-align: right; }
+  .badge-row { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.3rem; }
+  .mini-badge {
+    font-size: 0.6rem; padding: 0.1rem 0.4rem;
+    background: var(--surface-inset); border: 1px solid var(--border-subtle);
+    border-radius: 999px; color: var(--text-secondary);
+  }
+
+  .empty-note { color: var(--text-dim); font-style: italic; padding: 0.6rem 0; font-size: 0.8rem; }
+  .ok-flash { animation: okFlash 1.2s var(--ease-out); }
+  @keyframes okFlash { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); } 100% { box-shadow: 0 0 0 14px rgba(16,185,129,0); } }
+  .toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100;
+    background: var(--surface-overlay); border: 1px solid var(--success);
+    color: var(--text); border-radius: var(--radius-md);
+    padding: 0.8rem 1.2rem; font-size: 0.82rem; font-weight: 600;
+    box-shadow: var(--shadow-lg);
+    opacity: 0; transform: translateY(10px);
+    transition: all var(--duration-normal) var(--ease-out);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="of-topbar">
+  <div class="flex items-center gap-3">
+    <span class="font-bold text-base">{{ app_name }}</span>
+    <span class="badge badge-accent">Officer Operations</span>
+  </div>
+  <nav class="of-nav">
+    <a href="/command">Command Centre</a>
+    <a href="/advanced-features">Advanced Grid</a>
+    <a href="/analytics">Analytics</a>
+    <a href="/ai-safety">AI Safety</a>
+    <a href="/blockchain">Blockchain</a>
+    <a href="/logout" style="color: var(--danger);">Logout</a>
+  </nav>
+</div>
+
+<div class="of-container">
+  <div class="of-hero">
+    <h1>Officer Operations Console</h1>
+    <p>Dispute tribunal adjudication, human-in-the-loop evidence review, enforcement performance tracking, vehicle blacklist and camera registry — the full officer workflow.</p>
+  </div>
+
+  <div class="ops-grid">
+    <div><!-- LEFT COLUMN -->
+
+      <!-- DISPUTE TRIBUNAL -->
+      <div class="panel" id="panel-disputes">
+        <div class="panel-head">
+          <h2>⚖️ Citizen Dispute Tribunal <span class="count-pill" id="disputeCount">0</span></h2>
+          <button class="btn btn-ghost btn-sm" onclick="loadDisputes()">Refresh</button>
+        </div>
+        <div id="disputesBody"><div class="empty-note">Loading disputes…</div></div>
+      </div>
+
+      <!-- REVIEW QUEUE -->
+      <div class="panel" id="panel-reviews">
+        <div class="panel-head">
+          <h2>👁️ Evidence Review Queue <span class="count-pill" id="reviewCount">0</span></h2>
+          <button class="btn btn-ghost btn-sm" onclick="loadReviews()">Refresh</button>
+        </div>
+        <p class="text-secondary text-xs" style="margin-bottom:0.8rem">Human-in-the-loop verification of AI detections — approve, reject, or issue the challan directly.</p>
+        <div id="reviewsBody"><div class="empty-note">Loading review queue…</div></div>
+      </div>
+
+      <!-- CAMERA REGISTRY -->
+      <div class="panel" id="panel-cameras">
+        <div class="panel-head">
+          <h2>📹 Camera Registry <span class="count-pill" id="cameraCount">0</span></h2>
+        </div>
+        <div class="add-form">
+          <input class="input" id="camId" placeholder="Camera ID e.g. CAM-07" style="width:140px">
+          <input class="input" id="camName" placeholder="Label e.g. Silk Board North" style="flex:1;min-width:160px">
+          <input class="input" id="camRtsp" placeholder="rtsp://… (optional)" style="flex:1;min-width:160px">
+          <button class="btn btn-primary btn-sm" onclick="addCamera()">Register</button>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.9rem;">
+          <input class="input" id="trajPlate" placeholder="Trajectory search — plate fragment e.g. KA03" style="flex:1;min-width:180px">
+          <button class="btn btn-ghost btn-sm" onclick="searchTrajectory()">Trace Vehicle</button>
+        </div>
+        <div id="camerasBody"><div class="empty-note">Loading registry…</div></div>
+      </div>
+
+    </div>
+    <div><!-- RIGHT COLUMN -->
+
+      <!-- OFFICER LEADERBOARD -->
+      <div class="panel" id="panel-leaderboard">
+        <div class="panel-head">
+          <h2>🏆 Enforcement Leaderboard</h2>
+        </div>
+        <div id="leaderBody"><div class="empty-note">Loading roster…</div></div>
+      </div>
+
+      <!-- BLACKLIST -->
+      <div class="panel" id="panel-blacklist">
+        <div class="panel-head">
+          <h2>🚫 Vehicle Blacklist <span class="count-pill" id="blCount">0</span></h2>
+        </div>
+        <div class="add-form">
+          <input class="input input-mono" id="blPlate" placeholder="Plate e.g. MH12AB3456" style="flex:1;min-width:130px">
+          <input class="input" id="blReason" placeholder="Reason" style="flex:1;min-width:130px" value="Stolen / Flagged in Police Database">
+          <button class="btn btn-danger btn-sm" onclick="addBlacklist()">Flag</button>
+        </div>
+        <div id="blacklistBody"><div class="empty-note">Loading blacklist…</div></div>
+      </div>
+
+      <!-- QUICK EXPORTS -->
+      <div class="panel">
+        <div class="panel-head"><h2>📤 Station Exports</h2></div>
+        <div style="display:flex;flex-direction:column;gap:0.6rem;">
+          <a href="/export" class="btn btn-ghost btn-sm" style="justify-content:center;text-decoration:none;">⬇ Violations CSV (full ledger)</a>
+          <a href="/reports/monthly" target="_blank" class="btn btn-ghost btn-sm" style="justify-content:center;text-decoration:none;">📄 Monthly HQ Report (PDF)</a>
+          <a href="/api/blockchain/verify-ledger" target="_blank" class="btn btn-ghost btn-sm" style="justify-content:center;text-decoration:none;">⛓ Verify Blockchain Integrity</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const inr = (n) => '₹' + Number(n || 0).toLocaleString('en-IN');
+
+  async function api(path, opts) {
+    const res = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    return data;
+  }
+
+  let toastTimer = null;
+  function toast(msg, ok) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.style.borderColor = ok === false ? 'var(--danger)' : 'var(--success)';
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  }
+  function flash(id) {
+    const el = $(id); el.classList.remove('ok-flash'); void el.offsetWidth; el.classList.add('ok-flash');
+  }
+  async function guard(btn, fn) {
+    if (!btn) return fn();
+    const old = btn.textContent; btn.disabled = true; btn.textContent = '…';
+    try { return await fn(); } catch (e) { toast('Failed: ' + e.message, false); }
+    finally { btn.disabled = false; btn.textContent = old; }
+  }
+
+  /* ═══ DISPUTES ═══ */
+  async function loadDisputes() {
+    try {
+      const rows = await api('/admin/disputes');
+      $('disputeCount').textContent = (rows || []).length;
+      if (!(rows || []).length) {
+        $('disputesBody').innerHTML = '<div class="empty-note">No citizen disputes pending. The tribunal is clear.</div>';
+        return;
+      }
+      $('disputesBody').innerHTML =
+        '<table class="ops-table"><thead><tr><th>#</th><th>Plate</th><th>Reason</th><th>Fine</th><th>Filed</th><th style="width:210px">Adjudicate</th></tr></thead><tbody>' +
+        rows.map(d =>
+          '<tr>' +
+          '<td class="mono">' + d.id + '</td>' +
+          '<td class="mono">' + esc(d.plate || '—') + '</td>' +
+          '<td>' + esc(d.reason || '—') + (d.explanation ? '<div class="text-muted text-xs" style="margin-top:2px;">' + esc(String(d.explanation).slice(0, 90)) + '</div>' : '') + '</td>' +
+          '<td class="mono">' + inr(d.fine) + '</td>' +
+          '<td class="text-muted text-xs">' + esc((d.created_at || '').slice(0, 16)) + '</td>' +
+          '<td>' + (d.resolved_at
+            ? '<span class="badge ' + (d.status === 'APPROVED' ? 'badge-success' : 'badge-danger') + '">' + esc(d.status || 'RESOLVED') + '</span>'
+            : '<div class="resolve-row">' +
+              '<input class="input" id="dn-' + d.id + '" placeholder="Officer notes">' +
+              '<button class="btn btn-success btn-sm" onclick="resolveDispute(' + d.id + ',\'APPROVED\',this)">Uphold Citizen</button>' +
+              '<button class="btn btn-danger btn-sm" onclick="resolveDispute(' + d.id + ',\'REJECTED\',this)">Reject</button>' +
+              '</div>') + '</td>' +
+          '</tr>'
+        ).join('') + '</tbody></table>';
+    } catch (e) {
+      $('disputesBody').innerHTML = '<div class="empty-note">Could not load disputes: ' + esc(e.message) + '</div>';
+    }
+  }
+  function resolveDispute(id, action_, btn) {
+    guard(btn, async () => {
+      const notes = ($('dn-' + id) || {}).value || '';
+      await api('/admin/dispute/' + id + '/resolve', { method: 'POST', body: JSON.stringify({ action: action_, notes }) });
+      toast('Dispute #' + id + ' ' + action_.toLowerCase() + ' · blockchain-noted');
+      flash('panel-disputes');
+      loadDisputes();
+    });
+  }
+
+  /* ═══ REVIEWS ═══ */
+  async function loadReviews() {
+    try {
+      const d = await api('/api/reviews');
+      const rows = d.reviews || [];
+      $('reviewCount').textContent = rows.length;
+      if (!rows.length) {
+        $('reviewsBody').innerHTML = '<div class="empty-note">Review queue empty — all AI detections verified.</div>';
+        return;
+      }
+      $('reviewsBody').innerHTML =
+        '<table class="ops-table"><thead><tr><th>Vio #</th><th>Violation</th><th>Plate</th><th>Confidence</th><th style="width:220px">Officer Action</th></tr></thead><tbody>' +
+        rows.map(r =>
+          '<tr>' +
+          '<td class="mono">' + r.violation_id + '</td>' +
+          '<td>' + esc(r.violation || '—') + '</td>' +
+          '<td class="mono">' + esc(r.plate || '—') + '</td>' +
+          '<td><span class="badge ' + (r.confidence >= 95 ? 'badge-success' : 'badge-warning') + '">' + r.confidence + '%</span></td>' +
+          '<td>' + (r.status === 'PENDING'
+            ? '<div class="resolve-row">' +
+              '<button class="btn btn-success btn-sm" onclick="reviewAction(' + r.violation_id + ',\'APPROVED\',this)">Approve</button>' +
+              '<button class="btn btn-primary btn-sm" onclick="reviewAction(' + r.violation_id + ',\'CHALLAN_ISSUED\',this)">Issue Challan</button>' +
+              '<button class="btn btn-danger btn-sm" onclick="reviewAction(' + r.violation_id + ',\'REJECTED\',this)">Reject</button>' +
+              '</div>'
+            : '<span class="badge badge-accent">' + esc(r.status) + '</span>') + '</td>' +
+          '</tr>'
+        ).join('') + '</tbody></table>';
+    } catch (e) {
+      $('reviewsBody').innerHTML = '<div class="empty-note">Could not load reviews: ' + esc(e.message) + '</div>';
+    }
+  }
+  function reviewAction(vid, action_, btn) {
+    guard(btn, async () => {
+      await api('/api/review/' + vid + '/action', { method: 'POST', body: JSON.stringify({ action: action_, notes: 'Officer console action' }) });
+      toast('Violation #' + vid + ' → ' + action_.replace('_', ' '));
+      flash('panel-reviews');
+      loadReviews();
+    });
+  }
+
+  /* ═══ LEADERBOARD ═══ */
+  async function loadLeaderboard() {
+    try {
+      const rows = await api('/api/officers/leaderboard');
+      if (!(rows || []).length) {
+        $('leaderBody').innerHTML = '<div class="empty-note">No roster data.</div>';
+        return;
+      }
+      $('leaderBody').innerHTML = rows.slice(0, 10).map((o, i) =>
+        '<div class="leader-card">' +
+        '<div class="rank-badge rank-' + (i + 1) + '">' + (i + 1) + '</div>' +
+        '<div class="leader-meta">' +
+        '<div class="l-name">' + esc(o.name || o.officer_name || 'Officer') + '</div>' +
+        '<div class="l-sub">' + esc(o.designation || '') + ' · ' + esc(o.station || o.badge || '') + '</div>' +
+        '<div class="badge-row">' + (o.badges || []).slice(0, 3).map(b => '<span class="mini-badge">' + esc(b) + '</span>').join('') + '</div>' +
+        '</div>' +
+        '<div class="leader-kpis">' + (o.challans_issued ?? '—') + ' challans<br>' + (o.accuracy_rate ?? '—') + '% accuracy<br>' + inr(o.revenue_collected) + '</div>' +
+        '</div>'
+      ).join('');
+    } catch (e) {
+      $('leaderBody').innerHTML = '<div class="empty-note">Could not load roster: ' + esc(e.message) + '</div>';
+    }
+  }
+
+  /* ═══ BLACKLIST ═══ */
+  async function loadBlacklist() {
+    try {
+      const d = await api('/admin/blacklist/list');
+      const rows = d.blacklist || [];
+      $('blCount').textContent = rows.length;
+      if (!rows.length) {
+        $('blacklistBody').innerHTML = '<div class="empty-note">Blacklist empty. Flag a stolen or wanted vehicle.</div>';
+        return;
+      }
+      $('blacklistBody').innerHTML =
+        '<table class="ops-table"><thead><tr><th>Plate</th><th>Reason</th><th>Severity</th></tr></thead><tbody>' +
+        rows.map(b =>
+          '<tr><td class="mono">' + esc(b.plate || b.plate_text || '—') + '</td>' +
+          '<td>' + esc(b.reason || '—') + '</td>' +
+          '<td><span class="badge ' + (String(b.severity).toUpperCase() === 'HIGH' ? 'badge-danger' : 'badge-warning') + '">' + esc(b.severity || 'HIGH') + '</span></td></tr>'
+        ).join('') + '</tbody></table>';
+    } catch (e) {
+      $('blacklistBody').innerHTML = '<div class="empty-note">Could not load blacklist: ' + esc(e.message) + '</div>';
+    }
+  }
+  function addBlacklist() {
+    guard(event ? event.target : null, async () => {
+      const plate = $('blPlate').value.trim().toUpperCase();
+      if (!plate) return toast('Enter a plate number', false);
+      await api('/admin/blacklist/add', { method: 'POST', body: JSON.stringify({ plate: plate, reason: $('blReason').value.trim() }) });
+      $('blPlate').value = '';
+      toast(plate + ' added to blacklist');
+      flash('panel-blacklist');
+      loadBlacklist();
+    });
+  }
+
+  /* ═══ CAMERAS ═══ */
+  async function loadCameras() {
+    try {
+      const rows = await api('/admin/cameras/list');
+      const list = rows.cameras || rows || [];
+      $('cameraCount').textContent = (list || []).length;
+      if (!(list || []).length) {
+        $('camerasBody').innerHTML = '<div class="empty-note">No cameras registered. Add one above or via RTSP.</div>';
+        return;
+      }
+      $('camerasBody').innerHTML =
+        '<table class="ops-table"><thead><tr><th>ID</th><th>Location</th><th>Coordinates</th><th>Status</th></tr></thead><tbody>' +
+        list.slice(0, 10).map(c =>
+          '<tr><td class="mono">' + esc((c.id || c.camera_id || '—').slice(0, 10)) + '</td>' +
+          '<td>' + esc(c.name || c.label || '—') + '</td>' +
+          '<td class="mono text-xs">' + (c.lat != null ? Number(c.lat).toFixed(4) + ', ' + Number(c.lng).toFixed(4) : '—') + '</td>' +
+          '<td>' + esc(c.sector || '—') + '</td></tr>'
+        ).join('') + '</tbody></table>';
+    } catch (e) {
+      $('camerasBody').innerHTML = '<div class="empty-note">Could not load cameras: ' + esc(e.message) + '</div>';
+    }
+  }
+  function addCamera() {
+    guard(event ? event.target : null, async () => {
+      const id = $('camId').value.trim();
+      const name = $('camName').value.trim();
+      if (!id || !name) return toast('Camera ID and label required', false);
+      await api('/admin/cameras/add', { method: 'POST', body: JSON.stringify({
+        name: name, lat: 12.9176, lng: 77.6238, rtsp_url: $('camRtsp').value.trim() || '', sector: 'Command'
+      })});
+      $('camId').value = ''; $('camName').value = ''; $('camRtsp').value = '';
+      toast('Camera ' + id + ' registered');
+      flash('panel-cameras');
+      loadCameras();
+    });
+  }
+  async function searchTrajectory() {
+    const plate = $('trajPlate').value.trim();
+    if (!plate) return toast('Enter a plate fragment', false);
+    try {
+      const d = await api('/api/trajectory/search?plate=' + encodeURIComponent(plate));
+      const t = (d.trajectory && d.trajectory.features) ? d.trajectory.features : [];
+      if (!t.length) {
+        $('camerasBody').innerHTML = '<div class="empty-note">No sightings of "' + esc(plate) + '" across the camera network.</div>';
+        return;
+      }
+      $('camerasBody').innerHTML =
+        '<div class="text-xs text-muted" style="margin-bottom:0.4rem">TRAJECTORY · ' + esc(d.plate || plate) + ' · ' + t.length + ' sightings (chronological)</div>' +
+        '<table class="ops-table"><tbody>' +
+        t.slice(0, 10).map(f =>
+          '<tr><td class="mono">' + esc((f.properties && f.properties.camera) || 'Unknown camera') + '</td>' +
+          '<td class="text-muted text-xs">' + esc((f.properties && f.properties.time) || '') + '</td></tr>'
+        ).join('') + '</tbody></table>';
+    } catch (e) { toast('Search failed: ' + e.message, false); }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadDisputes(); loadReviews(); loadLeaderboard(); loadBlacklist(); loadCameras();
+  });
+
+  ['resolveDispute','reviewAction','addBlacklist','addCamera','searchTrajectory','loadDisputes','loadReviews']
+    .forEach(fn => { window[fn] = eval(fn); });
+})();
+</script>
+{% endblock %}

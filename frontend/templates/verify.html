@@ -1,133 +1,202 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ app_name }} — Official Challan Verification</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
-  <style>
-    body {
-      padding: 30px 20px 60px;
-    }
-    .verify-container {
-      max-width: 680px;
-      margin: auto;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
-    .verify-header {
-      padding: 24px;
-      text-align: center;
-      background: linear-gradient(180deg, rgba(19, 136, 8, 0.15), transparent);
-      border-bottom: 1px solid var(--border);
-    }
-    .verify-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-    }
-    .verify-table td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-    }
-    .verify-table td.label {
-      color: var(--text-muted);
-      width: 40%;
-    }
-    .verify-table td.val {
-      font-weight: 600;
-      color: var(--text);
-    }
-  </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-  <div class="verify-container">
-    <div class="tricolor-stripe"></div>
+{% block head_extra %}
+<style>
+.verify-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding-top: 48px;
+    padding-bottom: 64px;
+}
+.status-banner {
+    padding: 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-weight: 600;
+}
+.status-paid {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+.status-unpaid {
+    background: rgba(244, 63, 94, 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+.details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+.detail-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.detail-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+.detail-val {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text);
+}
+.evidence-img {
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--surface-raised);
+}
+.actions-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2.5rem;
+}
+.footer-text {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+.public-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--surface-raised);
+}
+.brand {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--text);
+    text-decoration: none;
+}
+@media (max-width: 600px) {
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
 
-    <div class="verify-header">
-      <div style="font-size:2rem; margin-bottom:4px;">🏛️</div>
-      <div style="font-weight:700; color:var(--saffron); font-size:0.8rem; letter-spacing:0.05em;">सत्यमेव जयते · GOVERNMENT OF INDIA</div>
-      <h1 style="font-size:1.4rem; color:var(--text); margin:4px 0;">Official E-Challan Verification Record</h1>
-      <div style="font-size:0.75rem; color:var(--text-dim);">National Road Safety & Automated AI Vision Enforcement Ledger</div>
+{% block content %}
+<div class="public-topbar">
+    <a href="/" class="brand">{{ app_name }}</a>
+    <a href="/citizen/login" class="text-accent" style="text-decoration: none; font-weight: 500;">Citizen Portal</a>
+</div>
+
+<div class="container verify-container anim-fade-up">
+    {% if record.paid %}
+    <div class="status-banner status-paid">
+        <span class="badge badge-success">PAID & SETTLED</span>
+        <div style="margin-top:0.5rem; font-size:0.875rem; color: var(--text-secondary); font-weight: 400;">
+            This challan has been paid in full and the record is closed.
+        </div>
     </div>
-
-    <div style="padding: 24px;">
-      
-      <!-- Verification Badge -->
-      <div style="background:rgba(19,136,8,0.12); border:1px solid #138808; padding:12px; border-radius:10px; display:flex; align-items:center; gap:12px; margin-bottom:20px;">
-        <span style="font-size:1.6rem;">✅</span>
-        <div>
-          <div style="font-weight:800; color:#00e676; font-size:0.95rem;">OFFICIALLY VERIFIED & REGISTERED</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">This electronic challan is authentic and certified under the Motor Vehicles Act 1988 (Amended 2019).</div>
+    {% else %}
+    <div class="status-banner status-unpaid">
+        <span class="badge badge-danger">PAYMENT PENDING</span>
+        <div style="margin-top:0.5rem; font-size:0.875rem; color: var(--text-secondary); font-weight: 400;">
+            This challan requires immediate payment.
         </div>
-      </div>
+    </div>
+    {% endif %}
 
-      <!-- Record Table -->
-      <table class="verify-table">
-        <tr>
-          <td class="label">Challan Reference</td>
-          <td class="val" style="font-family:var(--font-mono); color:var(--saffron);">RX-{{ "%06d"|format(record.id) }}</td>
-        </tr>
-        <tr>
-          <td class="label">Vehicle Registration No</td>
-          <td class="val"><span class="plate-chip">{{ record.plate }}</span></td>
-        </tr>
-        <tr>
-          <td class="label">Registered Owner</td>
-          <td class="val">{{ record.owner_name or 'Citizen' }}</td>
-        </tr>
-        <tr>
-          <td class="label">Violation Committed</td>
-          <td class="val" style="color:#ff6b6b;">{{ record.violation }}</td>
-        </tr>
-        <tr>
-          <td class="label">Detection Timestamp</td>
-          <td class="val">{{ record.timestamp }}</td>
-        </tr>
-        <tr>
-          <td class="label">Interception Camera</td>
-          <td class="val">{{ record.video }}</td>
-        </tr>
-        <tr>
-          <td class="label">Statutory Penalty</td>
-          <td class="val" style="font-size:1.1rem; color:var(--saffron); font-weight:800;">₹{{ "{:,}".format(record.fine) }}</td>
-        </tr>
-        <tr>
-          <td class="label">Settlement Status</td>
-          <td class="val">
-            <span class="badge {{ 'badge-green' if record.paid else 'badge-red' }}">
-              {{ '✅ SETTLED & PAID' if record.paid else '⏳ UNPAID / PENDING' }}
-            </span>
-          </td>
-        </tr>
-      </table>
-
-      <!-- Evidence Preview -->
-      {% if record.screenshot %}
-      <div style="margin-top:20px;">
-        <h4 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">📷 AI Photographic Evidence Frame:</h4>
-        <div style="border-radius:10px; overflow:hidden; border:1px solid var(--border); max-height:280px; background:#000;">
-          <img src="/static/screenshots/{{ record.screenshot }}" style="width:100%; height:100%; object-fit:contain;" alt="Evidence Screenshot">
+    <div class="glass-card" style="padding: 2.5rem;">
+        <div class="flex items-center justify-between" style="border-bottom: 1px solid var(--surface-raised); padding-bottom: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin: 0; color: var(--text);">Official E-Challan Certificate</h2>
+            <span class="badge badge-accent font-mono">RX-{{ '%06d' | format(record.id) }}</span>
         </div>
-      </div>
-      {% endif %}
 
-      <!-- Actions -->
-      <div style="display:flex; gap:10px; margin-top:24px; justify-content:center;">
-        {% if record.paid %}
-        <a href="/receipt/{{ record.id }}" target="_blank" class="btn btn-success">⬇ Download Payment Receipt</a>
-        {% else %}
-        <a href="/citizen?challan=RX-{{ '%06d'|format(record.id) }}" class="btn btn-primary">💳 Settle Penalty Online</a>
+        <div class="details-grid">
+            <div class="detail-group">
+                <span class="detail-label">Registration</span>
+                <span class="detail-val plate-chip" style="display:inline-block; width:fit-content; margin-top:0.25rem;">{{ record.plate }}</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Registered Owner</span>
+                <span class="detail-val">{{ record.owner_name }}</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Violation</span>
+                <span class="detail-val"><span class="badge badge-danger">{{ record.violation }}</span></span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Date & Time</span>
+                <span class="detail-val font-mono">{{ record.timestamp }}</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Camera / Location</span>
+                <span class="detail-val">{{ record.location or record.video }}</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Vehicle Type</span>
+                <span class="detail-val">{{ record.vehicle_type }}</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">AI Confidence</span>
+                <span class="detail-val font-mono">{{ record.confidence }}%</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Statutory Fine</span>
+                <span class="detail-val font-mono text-danger" style="font-size: 1.25rem; font-weight: bold;">₹{{ '{:,}'.format(record.fine) }}</span>
+            </div>
+            <div class="detail-group" style="grid-column: 1 / -1;">
+                <span class="detail-label">Payment Status</span>
+                <span class="detail-val" style="margin-top:0.25rem;">
+                    {% if record.paid %}
+                    <span class="badge badge-success">PAID</span>
+                    {% else %}
+                    <span class="badge badge-danger">UNPAID</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        {% if record.screenshot %}
+        <div style="margin-top: 2rem; border-top: 1px solid var(--surface-raised); padding-top: 1.5rem;">
+            <span class="detail-label" style="display:block; margin-bottom: 0.75rem;">Evidence Image</span>
+            <img src="/static/screenshots/{{ record.screenshot }}" alt="Violation Evidence" class="evidence-img">
+        </div>
         {% endif %}
-        <a href="/challan/{{ record.id }}" target="_blank" class="btn btn-outline">⬇ Download Challan PDF</a>
-      </div>
 
+        <div class="actions-row">
+            {% if not record.paid %}
+            <a href="/citizen/login" class="btn btn-primary">Pay Online</a>
+            <a href="/challan/{{ record.id }}" class="btn btn-ghost">Download Challan PDF</a>
+            {% else %}
+            <a href="/receipt/{{ record.id }}" class="btn btn-ghost">Download Receipt</a>
+            <a href="/challan/{{ record.id }}" class="btn btn-ghost">Download Challan PDF</a>
+            {% endif %}
+        </div>
     </div>
-  </div>
 
-</body>
-</html>
+    <div class="footer-text">
+        Computer-generated document issued by {{ app_name }}.<br>
+        Verification timestamp: <span id="verification-time" class="font-mono"></span>.<br>
+        Cryptographic hash registered on MST blockchain.
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (typeof gsap !== 'undefined') {
+            gsap.from('.anim-fade-up', { y: 24, opacity: 0, stagger: 0.1, duration: 0.6, ease: 'power3.out' });
+        }
+        
+        const now = new Date();
+        document.getElementById('verification-time').textContent = now.toLocaleString();
+    });
+</script>
+{% endblock %}

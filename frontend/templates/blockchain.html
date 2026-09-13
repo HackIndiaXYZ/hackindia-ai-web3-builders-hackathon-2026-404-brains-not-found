@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}MST Blockchain Audit - {{ app_name }}{% endblock %}
+
+{% block head_extra %}
+<style>
+  .hash-cell {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    cursor: help;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex h-screen w-full" style="height: 100vh; overflow: hidden;">
+  <!-- Sidebar -->
+  <aside class="sidebar" style="width: 260px; min-width: 260px; flex-shrink: 0; background: var(--surface-raised); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; padding: 1.5rem 1rem;">
+    <div class="brand flex items-center gap-4 mb-8 px-4">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <h2 style="font-family: var(--font-sans); font-size: 1.25rem; font-weight: 700; color: var(--text);">TrafficGuard Pro</h2>
+    </div>
+    
+    <nav class="nav-menu" style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1;">
+      <a href="/command" class="nav-item" style="padding: 0.75rem 1rem; border-radius: 8px; color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span>Command Center</span>
+      </a>
+      <a href="/analytics" class="nav-item" style="padding: 0.75rem 1rem; border-radius: 8px; color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-4"/></svg>
+        <span>Analytics</span>
+      </a>
+      <a href="/blockchain" class="nav-item active" style="padding: 0.75rem 1rem; border-radius: 8px; background: rgba(14, 165, 233, 0.1); color: var(--accent); font-weight: 500; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+        <span>MST Blockchain</span>
+      </a>
+      <a href="/map" class="nav-item" style="padding: 0.75rem 1rem; border-radius: 8px; color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>Live Map</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1" style="overflow-y: auto;">
+    <header class="topbar flex items-center justify-between px-6 py-4" style="background: var(--surface); border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 10;">
+      <h1 style="font-family: var(--font-sans); font-size: 1.5rem; font-weight: 600; color: var(--text);">Cryptographic Audit Ledger</h1>
+      <div class="flex items-center gap-4">
+          <span id="chainStatus" class="badge badge-success"><span class="pulse-dot" style="background: var(--success);"></span> Intact</span>
+          <button id="repairChainBtn" class="btn btn-ghost btn-sm" title="Re-anchor chain linkage after a fork (payload data untouched)">⛓ Repair Chain</button>
+          <button id="verifyChainBtn" class="btn btn-primary btn-sm flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Verify Chain Integrity
+        </button>
+      </div>
+    </header>
+
+    <div class="p-6 anim-fade-up">
+      <div class="glass-card mb-6" style="padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+        <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;">
+          Immutable SHA-256 MST blockchain recording every challan. Each block links to its predecessor via cryptographic hash chain. This ensures that no violation data can be altered, removed, or manipulated retroactively.
+        </p>
+      </div>
+
+      <div class="glass-card" style="border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden;">
+        <div style="overflow-x: auto;">
+          <table class="data-table w-full text-left" style="width: 100%; border-collapse: collapse; min-width: 900px;">
+            <thead style="background: rgba(0,0,0,0.2);">
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <th style="padding: 1rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Block #</th>
+                <th style="padding: 1rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Challan Ref</th>
+                <th style="padding: 1rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Timestamp</th>
+                <th style="padding: 1rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Plate</th>
+                <th style="padding: 1rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Violation & Fine</th>
+                <th style="padding: 1rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Evidence Hash</th>
+                <th style="padding: 1rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Block Hash</th>
+                <th style="padding: 1rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="ledgerTable">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    gsap.from('.anim-fade-up', { y: 24, opacity: 0, stagger: 0.1, duration: 0.6, ease: 'power3.out' });
+
+    function truncateHash(hash) {
+      if (!hash) return '-';
+      return hash.substring(0, 12) + '...';
+    }
+
+    async function loadLedger() {
+      try {
+        const res = await fetch('/api/blockchain/ledger');
+        if (!res.ok) throw new Error('Ledger API unavailable');
+        const payload = await res.json();
+        // API shape: { count, items: [{block_height, challan_ref, timestamp, plate, violation, fine, evidence_hash, block_hash}] }
+        const data = payload.items || [];
+
+        const tbody = document.getElementById('ledgerTable');
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="8" style="padding:2rem;text-align:center;color:var(--text-muted);">No blocks committed yet — issue a challan to start the chain.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.map(b => `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 1rem; color: var(--text-secondary); font-family: var(--font-mono);">#${b.block_height}</td>
+            <td style="padding: 1rem; font-family: var(--font-mono); color: var(--text);">${b.challan_ref}</td>
+            <td style="padding: 1rem; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.85rem;">${(b.timestamp || '').replace('T', ' ').slice(0, 19)}</td>
+            <td style="padding: 1rem;">
+              <span class="plate-chip font-mono bg-white text-black px-2 py-1 rounded inline-block text-xs font-bold border border-black">${b.plate}</span>
+            </td>
+            <td style="padding: 1rem;">
+              <div style="font-size: 0.85rem; color: var(--text);">${b.violation || '—'}</div>
+              <div style="font-size: 0.85rem; color: var(--danger); font-family: var(--font-mono);">₹${(b.fine || 0).toLocaleString('en-IN')}</div>
+            </td>
+            <td style="padding: 1rem;" class="hash-cell" title="${b.evidence_hash}">${truncateHash(b.evidence_hash)}</td>
+            <td style="padding: 1rem;" class="hash-cell" title="${b.block_hash}">${truncateHash(b.block_hash)}</td>
+            <td style="padding: 1rem;">
+              <button onclick="verifyBlock('${b.challan_ref}')" class="btn btn-ghost btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Verify</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error("Failed to load ledger", err);
+        document.getElementById('ledgerTable').innerHTML = '<tr><td colspan="8" style="padding:2rem;text-align:center;color:var(--danger);">Ledger API error — see console.</td></tr>';
+      }
+    }
+
+    window.verifyBlock = async (ref) => {
+      try {
+        const res = await fetch(`/api/blockchain/verify/${ref}`);
+        const d = await res.json();
+        if (d.verified) {
+          alert(`✅ Block ${ref} (#${d.block_height}) is mathematically verified — tamper-proof.`);
+        } else {
+          alert(`❌ Verification FAILED for ${ref}:\n${d.status || ''}\n${d.message || 'Stored hash does not match recomputed hash.'}`);
+        }
+      } catch (e) {
+        alert(`Error verifying block: ${e.message}`);
+      }
+    };
+
+    function setChainBadge(result) {
+      const status = document.getElementById('chainStatus');
+      if (!result) return;
+      if (result.is_valid) {
+        status.className = 'badge badge-success';
+        status.innerHTML = `<span class="pulse-dot" style="background: var(--success);"></span> Intact · ${result.total_blocks} blocks`;
+      } else {
+        status.className = 'badge badge-danger';
+        status.innerHTML = `Compromised @ block #${result.tampered_block ?? '?'}`;
+      }
+    }
+
+    // Honest status on load — never assume Intact
+    async function loadChainStatus() {
+      try {
+        const res = await fetch('/api/blockchain/verify-ledger');
+        if (res.ok) setChainBadge(await res.json());
+      } catch (e) { console.warn('chain status unavailable', e); }
+    }
+
+    document.getElementById('verifyChainBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('verifyChainBtn');
+      btn.innerHTML = `<span class="pulse-dot"></span> Verifying...`;
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/blockchain/verify-ledger');
+        const d = await res.json();
+        setChainBadge(d);
+        if (d.is_valid) {
+          alert(`✅ ${d.message || 'Ledger valid.'}`);
+        } else {
+          alert(`❌ ${d.message || 'Ledger compromised.'}\n${d.error || ''}\n\nUse "Repair Chain" to re-anchor the linkage (admin).`);
+        }
+      } catch (e) {
+        console.error(e);
+        const status = document.getElementById('chainStatus');
+        status.className = 'badge badge-warning';
+        status.innerHTML = `Error`;
+      }
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Verify Chain Integrity`;
+      btn.disabled = false;
+    });
+
+    document.getElementById('repairChainBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('repairChainBtn');
+      if (!confirm('Re-anchor the ledger chain? Payload data (plates, fines, evidence hashes) is untouched — only hash linkage is recomputed.')) return;
+      const old = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Repairing…';
+      try {
+        const res = await fetch('/api/blockchain/repair', { method: 'POST' });
+        const d = await res.json();
+        if (res.ok && d.status === 'REPAIRED') {
+          alert(`✅ Chain re-anchored — ${d.blocks_relinked} blocks relinked.\n${d.verification.message || ''}`);
+        } else {
+          alert(`❌ Repair failed: ${d.error || d.status || 'unknown error'}`);
+        }
+        setChainBadge(d.verification);
+        loadLedger();
+      } catch (e) {
+        alert('Repair error: ' + e.message);
+      }
+      btn.disabled = false; btn.textContent = old;
+    });
+
+    loadLedger();
+    loadChainStatus();
+  });
+</script>
+{% endblock %}

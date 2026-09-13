@@ -1,91 +1,413 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>{{ app_name }} - Real-Time Traffic Intelligence</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='brand.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <style>
-    :root { --map-bg:#071116; --panel:#101b20; --line:rgba(255,255,255,.1); --muted:#91a3a9; }
-    body { margin:0; background:var(--map-bg); color:#eef6f4; overflow:hidden; font-family:var(--font-sans, sans-serif); }
-    .topbar { height:58px; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; padding:0 18px; background:rgba(9,18,22,.96); border-bottom:1px solid var(--line); position:absolute; inset:0 0 auto; z-index:1100; }
-    .brand { display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.02em; }
-    .brand small { display:block; color:#ffb454; font-size:.63rem; letter-spacing:.12em; margin-top:3px; }
-    .actions { display:flex; gap:8px; align-items:center; }
-    .workspace { position:absolute; top:58px; right:0; bottom:0; left:0; }
-    #map { position:absolute; inset:0 360px 0 0; background:#152328; }
-    .sidebar { position:absolute; top:0; right:0; bottom:0; width:360px; box-sizing:border-box; padding:14px; overflow-y:auto; background:var(--panel); border-left:1px solid var(--line); z-index:1000; }
-    .kpis { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:12px; }
-    .kpi { padding:10px; border:1px solid var(--line); background:rgba(255,255,255,.035); border-radius:8px; }
-    .kpi b { display:block; font-size:1.15rem; color:#fff; margin-top:4px; }
-    .kpi span { color:var(--muted); font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; }
-    .panel { border-top:1px solid var(--line); padding:13px 0; }
-    .panel h2 { font-size:.82rem; margin:0 0 10px; letter-spacing:.04em; text-transform:uppercase; color:#d9e7e3; }
-    .status { display:flex; align-items:center; gap:7px; color:#8bf0b8; font-size:.72rem; }
-    .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 12px #22c55e; }
-    .dot.off { background:#f59e0b; box-shadow:0 0 10px #f59e0b; }
-    .controls { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
-    .control { display:flex; align-items:center; gap:6px; font-size:.72rem; color:var(--muted); }
-    .control input { accent-color:#ff9933; }
-    select, input[type=range] { width:100%; accent-color:#ff9933; }
-    select { background:#0b1519; color:#eaf4f1; border:1px solid var(--line); border-radius:6px; padding:7px; }
-    .feed, .list { display:flex; flex-direction:column; gap:7px; }
-    .row { padding:8px; border:1px solid var(--line); border-radius:7px; background:rgba(255,255,255,.025); cursor:pointer; }
-    .row:hover { border-color:#ff9933; background:rgba(255,153,51,.08); }
-    .row-line { display:flex; justify-content:space-between; gap:8px; font-size:.74rem; }
-    .row-meta { color:var(--muted); font-size:.67rem; margin-top:4px; }
-    .severity { font-size:.62rem; font-weight:800; padding:3px 5px; border-radius:4px; }
-    .critical,.high { color:#ffb4ae; background:rgba(239,68,68,.18); }.medium { color:#ffd28c; background:rgba(245,158,11,.16); }.low { color:#a7f3d0; background:rgba(34,197,94,.15); }
-    .legend { position:absolute; bottom:16px; left:16px; z-index:700; padding:9px 11px; border-radius:7px; background:rgba(8,16,20,.9); border:1px solid var(--line); font-size:.67rem; }
-    .legend-bar { width:160px; height:7px; border-radius:4px; background:linear-gradient(90deg,#2563eb,#facc15,#f97316,#ef4444); margin:6px 0 3px; }
-    .detail { position:absolute; left:16px; top:16px; width:250px; max-height:240px; overflow:auto; z-index:800; display:none; padding:13px; border-radius:8px; background:rgba(9,18,22,.95); border:1px solid #ff9933; box-shadow:0 14px 36px rgba(0,0,0,.3); }
-    .detail.show { display:block; }
-    .close { float:right; border:0; background:none; color:var(--muted); cursor:pointer; font-size:1.1rem; }
-    .table { width:100%; border-collapse:collapse; font-size:.67rem; }.table th,.table td { text-align:left; padding:6px 3px; border-bottom:1px solid var(--line); }.table th { color:var(--muted); font-weight:600; }
-    .arrow { font-size:18px; font-weight:bold; text-shadow:0 1px 5px #000; }
-    .leaflet-layer, .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-attribution { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
-    @media(max-width:900px) { body { overflow:auto; }.workspace { position:relative; top:58px; min-height:calc(100vh - 58px); }.sidebar { position:relative; width:100%; max-height:none; }.workspace #map { position:relative; height:52vh; inset:auto; }.topbar { position:fixed; }.legend,.detail { position:absolute; }.actions a { display:none; } }
-  </style>
-</head>
-<body>
-  <header class="topbar"><div class="brand"><span style="font-size:1.5rem">◈</span><div>{{ app_name }}<small>REAL-TIME TRAFFIC INTELLIGENCE</small></div></div><div class="actions"><span class="status"><i class="dot" id="live-dot"></i><span id="connection">SIMULATION ACTIVE</span></span><button class="btn btn-outline" id="pause" onclick="togglePause()" style="padding:6px 10px;font-size:.72rem">Pause</button><a href="/" class="btn btn-outline" style="padding:6px 10px;font-size:.72rem">Command Centre</a><a href="/citizen" class="btn btn-outline" style="padding:6px 10px;font-size:.72rem">Citizen</a></div></header>
-  <main class="workspace">
-    <div id="map"></div>
-    <div class="legend"><strong>Congestion intensity</strong><div class="legend-bar"></div><div style="display:flex;justify-content:space-between;color:var(--muted)"><span>Free</span><span>Critical</span></div><div style="margin-top:7px;color:var(--muted)">Click hotspots, markers, or flows for details</div></div>
-    <div id="detail" class="detail"><button class="close" onclick="closeDetail()">×</button><div id="detail-content"></div></div>
-    <aside class="sidebar">
-      <div style="display:flex;justify-content:space-between;align-items:start"><div><div style="font-size:.65rem;color:#ffb454;letter-spacing:.12em">CITY OPERATIONS</div><h1 style="font-size:1.25rem;margin:3px 0 12px">Live traffic grid</h1></div><button class="btn btn-saffron" onclick="refreshNow()" style="padding:6px 9px;font-size:.7rem">Refresh</button></div>
-      <div class="kpis"><div class="kpi"><span>Current violations</span><b id="k-violations">--</b></div><div class="kpi"><span>Vehicles on road</span><b id="k-vehicles">--</b></div><div class="kpi"><span>Average speed</span><b id="k-speed">--</b></div><div class="kpi"><span>Risk alerts</span><b id="k-alerts">--</b></div></div>
-      <section class="panel"><h2>Layers & update rate</h2><div class="controls"><label class="control"><input type="checkbox" checked data-layer="traffic"> Traffic heatmap</label><label class="control"><input type="checkbox" checked data-layer="violations"> Violations</label><label class="control"><input type="checkbox" checked data-layer="flows"> Flow arrows</label><label class="control"><input type="checkbox" checked data-layer="predictions"> Risk zones</label></div><div style="display:flex;gap:7px;margin-top:10px;align-items:center"><select id="speed"><option value="500">0.5 sec</option><option value="1000">1 sec</option><option value="2000" selected>2 sec</option><option value="5000">5 sec</option></select><select id="severity"><option value="all">All severities</option><option value="high">High only</option><option value="medium">Medium only</option></select></div></section>
-      <section class="panel"><h2>Top hotspots <span style="float:right;color:#ffb454" id="hotspot-count">0</span></h2><div id="hotspots" class="list"></div></section>
-      <section class="panel"><h2>Recent violations</h2><div id="violations" class="feed"></div></section>
-      <section class="panel"><h2>Location Search</h2><div style="display:flex;gap:6px"><input id="searchLoc" placeholder="Search area..." class="btn btn-outline" style="flex:1;text-align:left;font-size:.75rem"><button class="btn btn-outline" onclick="searchLocation()" style="padding:6px 9px;font-size:.7rem">Find</button><button class="btn btn-outline" onclick="locateMe()" style="padding:6px 9px;font-size:.7rem;color:#00e5ff">Live</button></div></section>
-      <section class="panel"><h2>Trajectory search</h2><div style="display:flex;gap:6px"><input id="searchPlate" placeholder="KA03MX4521" class="btn btn-outline" style="flex:1;text-align:left;font-size:.75rem"><button class="btn btn-outline" onclick="searchTrajectory()" style="padding:6px 9px;font-size:.7rem">Trace</button></div></section>
-      <section class="panel"><h2>Provider status</h2><div id="provider" style="color:var(--muted);font-size:.72rem">Connecting...</div></section>
-    </aside>
-  </main>
+{% extends 'base.html' %}
+
+{% block title %}Live Map - {{ app_name }}{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  .map-wrapper {
+    position: absolute;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    right: 360px;
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+    background: var(--canvas) !important;
+  }
+
+  /* Dark theme map tiles */
+  .leaflet-layer,
+  .leaflet-control-zoom-in,
+  .leaflet-control-zoom-out,
+  .leaflet-control-attribution {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+  }
+
+  .map-sidebar {
+    position: absolute;
+    top: 56px;
+    right: 0;
+    bottom: 0;
+    width: 360px;
+    background: var(--surface-raised);
+    border-left: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+  }
+
+  .map-topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    z-index: 1001;
+  }
+
+  .sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+  }
+
+  .map-kpi {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .kpi-box {
+    background: var(--surface);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .kpi-val {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+  }
+
+  .kpi-lbl {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .control-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .list-item {
+    padding: 0.75rem;
+    background: var(--surface);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<header class="map-topbar">
+  <div class="flex items-center gap-3">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <h1 style="font-family: var(--font-sans); font-size: 1.1rem; font-weight: 700; color: var(--text);">{{ app_name }}</h1>
+  </div>
+  <div class="flex items-center gap-4">
+    <a href="/command" class="text-sm text-secondary" style="text-decoration: none; color: var(--text-secondary); transition: color 0.2s;">Command Center</a>
+    <a href="/citizen/login" class="text-sm text-secondary" style="text-decoration: none; color: var(--text-secondary); transition: color 0.2s;">Citizen Portal</a>
+    <span class="badge badge-accent"><span class="pulse-dot"></span> GIS Active</span>
+  </div>
+</header>
+
+<!-- Map Container -->
+<div class="map-wrapper">
+  <div id="map"></div>
+</div>
+
+<!-- Right Sidebar -->
+<aside class="map-sidebar">
+  <div class="sidebar-content">
+    <div class="flex items-center justify-between mb-4">
+      <h2 style="font-family: var(--font-sans); font-size: 1.1rem; font-weight: 600; color: var(--text);">City Operations</h2>
+      <button id="refreshDataBtn" class="btn btn-sm btn-ghost" title="Force Refresh">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.21l5.67-1.16"/></svg>
+      </button>
+    </div>
+    <h3 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em;">Live Traffic Grid</h3>
+
+    <!-- KPI Grid -->
+    <div class="map-kpi">
+      <div class="kpi-box">
+        <div class="kpi-val text-danger" id="kpiViolations">0</div>
+        <div class="kpi-lbl">Violations/hr</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-val text-accent" id="kpiVehicles">0</div>
+        <div class="kpi-lbl">Active Vehicles</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-val text-success" id="kpiSpeed">0 km/h</div>
+        <div class="kpi-lbl">Avg Speed</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-val text-warning" id="kpiAlerts">0</div>
+        <div class="kpi-lbl">Active Alerts</div>
+      </div>
+    </div>
+
+    <!-- Location Search -->
+    <div class="control-group">
+      <label class="input-label" style="font-size: 0.85rem;">Location Search</label>
+      <div class="flex gap-2">
+        <input type="text" id="searchInput" class="input flex-1" placeholder="Search area...">
+        <button id="searchBtn" class="btn btn-primary btn-sm">Find</button>
+        <button id="geoBtn" class="btn btn-ghost btn-sm" title="My Location">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="control-group">
+      <label class="input-label" style="font-size: 0.85rem;">Map Layers</label>
+      <div class="flex flex-col gap-2 mt-2">
+        <label class="flex items-center gap-2 text-sm" style="color: var(--text);">
+          <input type="checkbox" id="layerViolations" checked style="accent-color: var(--accent);"> Violations (Points)
+        </label>
+        <label class="flex items-center gap-2 text-sm" style="color: var(--text);">
+          <input type="checkbox" id="layerHeatmap" checked style="accent-color: var(--accent);"> Heatmap
+        </label>
+        <label class="flex items-center gap-2 text-sm" style="color: var(--text);">
+          <input type="checkbox" id="layerZones" style="accent-color: var(--accent);"> Intelligence Overlays (Risk · Pollution · EV)
+        </label>
+      </div>
+    </div>
+
+    <!-- Hotspots -->
+    <div class="control-group">
+      <h3 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Hotspots</h3>
+      <div id="hotspots" class="flex flex-col gap-2">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Recent Events -->
+    <div class="control-group">
+      <h3 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Recent Events</h3>
+      <div id="violations" class="flex flex-col gap-2">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </div>
+</aside>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
-const map=L.map('map').setView([12.9716,77.5946],12);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
-const layers={traffic:L.layerGroup().addTo(map),violations:L.layerGroup().addTo(map),flows:L.layerGroup().addTo(map),predictions:L.layerGroup().addTo(map),blackspots:L.layerGroup().addTo(map)};let trajectoryLayer=null,paused=false,timer=null,latest=null;
-const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-function color(v){return v>=80?'#ef4444':v>=60?'#f97316':v>=35?'#facc15':'#2563eb'}
-function popupDetail(title,body){$('detail-content').innerHTML='<h3 style="font-size:.9rem;margin:0 0 8px">'+esc(title)+'</h3>'+body;$('detail').classList.add('show')}
-function closeDetail(){$('detail').classList.remove('show')}
-function render(d){latest=d;$('k-violations').textContent=d.kpis.current_violations;$('k-vehicles').textContent=d.kpis.total_vehicles;$('k-speed').textContent=d.kpis.average_speed+' km/h';$('k-alerts').textContent=d.kpis.prediction_alerts;$('hotspot-count').textContent=d.hotspots.length;$('connection').textContent=d.provider.mode==='LIVE_PROVIDER'?'LIVE PROVIDERS':'SIMULATION ACTIVE';$('live-dot').classList.toggle('off',d.provider.mode!=='LIVE_PROVIDER');$('provider').textContent=d.provider.message+' · '+d.provider.camera_feeds+' camera slots';
- layers.traffic.clearLayers();layers.violations.clearLayers();layers.flows.clearLayers();layers.predictions.clearLayers();
- d.heatmap.forEach(p=>L.circle([p.lat,p.lng],{radius:350,color:color(p.congestion),fillColor:color(p.congestion),fillOpacity:.14,weight:1}).bindTooltip(p.location+' · '+p.congestion+'% congestion').on('click',()=>popupDetail(p.location,'<div class="row-meta">Congestion</div><strong>'+p.congestion+'%</strong><div class="row-meta">Live density cell</div>')).addTo(layers.traffic));
- d.violations.forEach(v=>L.circleMarker([v.lat,v.lng],{radius:7,color:v.severity==='high'?'#ef4444':'#f59e0b',fillColor:v.severity==='high'?'#ef4444':'#f59e0b',fillOpacity:.9}).bindPopup('<b>'+esc(v.type)+'</b><br>Plate: '+esc(v.plate)+'<br>Fine: ₹'+v.fine+'<br>Confidence: '+v.confidence).addTo(layers.violations));
- d.flows.forEach(f=>L.marker([f.lat,f.lng],{icon:L.divIcon({className:'arrow',html:'<span style="color:'+f.color+';transform:rotate('+f.heading+'deg);display:block">➜</span>',iconSize:[22,22],iconAnchor:[11,11]})}).bindTooltip(f.name+' · '+f.avg_speed+' km/h · '+f.vehicle_count+' vehicles').on('click',()=>popupDetail(f.name,'<div class="row-meta">Average speed</div><strong>'+f.avg_speed+' km/h</strong><div class="row-meta">Vehicles</div><strong>'+f.vehicle_count+'</strong>')).addTo(layers.flows));
- d.predictions.forEach(p=>L.circle([p.lat,p.lng],{radius:260,color:color(p.risk_score),fillColor:color(p.risk_score),fillOpacity:.2,dashArray:'5 5'}).bindPopup('<b>'+p.risk_level+' risk · '+p.risk_score+'/100</b><br>'+p.factors.join(', ')+'<br><small>'+p.recommended_action+'</small>').addTo(layers.predictions));
- $('hotspots').innerHTML=d.hotspots.map(h=>'<div class="row" onclick="focus('+h.lat+','+h.lng+')"><div class="row-line"><strong>'+esc(h.location)+'</strong><span class="severity '+h.severity.toLowerCase()+'">'+h.congestion+'%</span></div><div class="row-meta">'+h.vehicle_count+' vehicles · '+h.avg_speed+' km/h · trend '+h.trend+' ↓</div></div>').join('');
- const filter=$('severity').value;$('violations').innerHTML=d.violations.filter(v=>filter==='all'||v.severity===filter).slice().reverse().map(v=>'<div class="row" onclick="focus('+v.lat+','+v.lng+')"><div class="row-line"><strong>'+esc(v.type)+'</strong><span style="color:#ffb454">₹'+v.fine+'</span></div><div class="row-meta">'+esc(v.plate)+' · '+Math.round(v.confidence*100)+'% confidence</div></div>').join('')||'<div class="row-meta">No matching violations</div>';
-}
-function focus(lat,lng){map.flyTo([lat,lng],15,{duration:.5})}function refreshNow(){fetch('/api/realtime/traffic?refresh=1').then(r=>r.json()).then(render).catch(()=>{})}function tick(){if(!paused)fetch('/api/realtime/traffic').then(r=>r.json()).then(render).catch(()=>{$('connection').textContent='OFFLINE';$('live-dot').classList.add('off')})}function schedule(){clearInterval(timer);timer=setInterval(tick,Number($('speed').value))}function togglePause(){paused=!paused;$('pause').textContent=paused?'Resume':'Pause'}
-document.querySelectorAll('[data-layer]').forEach(c=>c.addEventListener('change',e=>{const l=layers[e.target.dataset.layer];if(e.target.checked)l.addTo(map);else map.removeLayer(l)}));$('speed').addEventListener('change',schedule);$('severity').addEventListener('change',()=>latest&&render(latest));
-function searchTrajectory(){const p=$('searchPlate').value.trim();if(!p)return;fetch('/api/trajectory/search?plate='+encodeURIComponent(p)).then(r=>r.json()).then(d=>{if(!d.trajectory?.features?.length){alert('No sighting trajectory found for '+p);return}if(trajectoryLayer)map.removeLayer(trajectoryLayer);const c=d.trajectory.features.map(f=>[f.geometry.coordinates[1],f.geometry.coordinates[0]]);trajectoryLayer=L.polyline(c,{color:'#00e5ff',weight:4}).addTo(map);map.fitBounds(trajectoryLayer.getBounds())})}
-refreshNow();schedule();
-function searchLocation(){const q=$('searchLoc').value.trim();if(!q)return;fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(q)).then(r=>r.json()).then(d=>{if(d&&d.length>0){map.flyTo([d[0].lat,d[0].lon],14);L.marker([d[0].lat,d[0].lon]).addTo(map).bindPopup(d[0].display_name).openPopup()}else{alert('Location not found')}})}
-function locateMe(){if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{map.flyTo([p.coords.latitude,p.coords.longitude],15);L.marker([p.coords.latitude,p.coords.longitude]).addTo(map).bindPopup('You are here').openPopup()},()=>alert('Geolocation failed'))}else{alert('Geolocation not supported')}}
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Map
+    const map = L.map('map', { zoomControl: false }).setView([12.9716, 77.5946], 12);
+    L.control.zoom({ position: 'bottomleft' }).addTo(map);
+
+    // Dark tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Layers & Markers
+    let violationMarkers = L.layerGroup().addTo(map);
+    
+    let currentArea = '';
+    
+    // Icon Definitions
+    const createIcon = (color) => L.divIcon({
+      className: 'custom-icon',
+      html: `<div style="width: 12px; height: 12px; background: ${color}; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 10px ${color};"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+
+    const dangerIcon = createIcon('var(--danger)');
+    const warningIcon = createIcon('var(--warning)');
+
+    let heatmapLayerGroup = L.layerGroup().addTo(map);
+    let overlayLayerGroup = L.layerGroup();
+
+    // Intelligence overlays: accident-risk, pollution, impairment hotspots, EV stations
+    async function loadOverlays() {
+      overlayLayerGroup.clearLayers();
+      if (!document.getElementById('layerZones').checked) return;
+      const plot = (list, latKey, lngKey, valKey, max, color, label) => {
+        (list || []).forEach(pt => {
+          const v = Number(pt[valKey] ?? 0);
+          if (!pt[latKey] || !pt[lngKey]) return;
+          L.circleMarker([Number(pt[latKey]), Number(pt[lngKey])], {
+            radius: Math.max(5, Math.min(16, (v / (max || 1)) * 16)),
+            color: color, fillColor: color, fillOpacity: 0.45, weight: 1
+          }).bindPopup(`<b>${label}</b><br>${valKey.replace(/_/g, ' ')}: ${v}`).addTo(overlayLayerGroup);
+        });
+      };
+      try {
+        const [risk, pol, drunk, ev] = await Promise.all([
+          fetch('/api/predict/heatmap').then(r => r.json()).catch(() => []),
+          fetch('/api/emission/heatmap').then(r => r.json()).catch(() => []),
+          fetch('/api/drunk-drive/heatmap').then(r => r.json()).catch(() => []),
+          fetch('/api/ev/stations-map').then(r => r.json()).catch(() => [])
+        ]);
+        plot(risk, 'lat', 'lng', 'intensity', 1, '#F43F5E', 'Accident Risk Zone');
+        plot(pol, 'lat', 'lng', 'intensity', 1, '#F59E0B', 'Pollution Hotspot');
+        plot(drunk, 'lat', 'lng', 'count', 15, '#A855F7', 'Impairment Alert Cluster');
+        (ev || []).forEach(s => {
+          const lat = s.location_lat ?? s.lat, lng = s.location_lng ?? s.lng;
+          if (!lat || !lng) return;
+          L.marker([Number(lat), Number(lng)], {
+            icon: L.divIcon({ className: 'custom-icon', html: '<div style="font-size:14px;">⚡</div>', iconSize: [18, 18], iconAnchor: [9, 9] })
+          }).bindPopup(`<b>EV Station</b><br>${s.station_name || s.station_id || ''}<br>${s.available_spots ?? '—'} spots free`).addTo(overlayLayerGroup);
+        });
+      } catch (e) { console.warn('Overlay load failed', e); }
+    }
+
+    async function fetchData() {
+      try {
+        let url = '/api/realtime/traffic';
+        if (currentArea) {
+            url += `?area=${encodeURIComponent(currentArea)}`;
+        }
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        violationMarkers.clearLayers();
+        heatmapLayerGroup.clearLayers();
+        
+        const showViolations = document.getElementById('layerViolations').checked;
+        const showHeatmap = document.getElementById('layerHeatmap').checked;
+
+        // Render Violations
+        const viList = document.getElementById('violations');
+        viList.innerHTML = '';
+        
+        if (data.violations && data.violations.length > 0) {
+            data.violations.forEach(pt => {
+              if (showViolations) {
+                L.marker([pt.lat, pt.lng], { icon: pt.type === 'WRONG WAY' ? dangerIcon : warningIcon })
+                  .bindPopup(`<b>${pt.type}</b><br>${new Date(pt.timestamp).toLocaleTimeString()}`)
+                  .addTo(violationMarkers);
+              }
+              
+              viList.innerHTML += `
+                <div class="list-item flex justify-between items-center" style="cursor:pointer;" onclick="map.setView([${pt.lat}, ${pt.lng}], 16)">
+                  <div>
+                    <div style="font-size: 0.85rem; font-weight: 500; color: var(--text);">${pt.type}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">${new Date(pt.timestamp).toLocaleTimeString()}</div>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </div>
+              `;
+            });
+        } else {
+            viList.innerHTML = '<div style="font-size: 0.8rem; color: var(--text-muted); padding: 0.5rem;">No recent violations.</div>';
+        }
+
+        // Render KPIs
+        if (data.kpis) {
+            document.getElementById('kpiViolations').textContent = data.kpis.current_violations || 0;
+            document.getElementById('kpiVehicles').textContent = data.kpis.total_vehicles || 0;
+            document.getElementById('kpiSpeed').textContent = (data.kpis.average_speed || 0) + ' km/h';
+            document.getElementById('kpiAlerts').textContent = data.kpis.prediction_alerts || 0;
+        }
+
+        // Fetch & Render Heatmap separately if needed or from data.heatmap
+        let heatmapUrl = '/api/heatmap';
+        if (currentArea) heatmapUrl += `?area=${encodeURIComponent(currentArea)}`;
+        const hmRes = await fetch(heatmapUrl);
+        const hmData = await hmRes.json();
+        
+        const hotspotsContainer = document.getElementById('hotspots');
+        hotspotsContainer.innerHTML = '';
+        
+        if (hmData && hmData.length > 0) {
+            hmData.forEach(h => {
+                if (showHeatmap && h.grid_lat && h.grid_lng) {
+                    L.circleMarker([h.grid_lat, h.grid_lng], {
+                        radius: Math.min(20, Math.max(5, (h.vehicle_count || 10) / 2)),
+                        color: 'red',
+                        fillColor: '#f03',
+                        fillOpacity: 0.4,
+                        weight: 1
+                    }).bindPopup(`<b>${h.zone || 'Hotspot'}</b><br>Vehicles: ${h.vehicle_count}`).addTo(heatmapLayerGroup);
+                }
+                
+                if (h.zone) {
+                    hotspotsContainer.innerHTML += `
+                      <div class="list-item flex justify-between items-center" style="cursor:pointer;" onclick="map.setView([${h.grid_lat}, ${h.grid_lng}], 15)">
+                        <span style="font-size: 0.85rem; color: var(--text);">${h.zone}</span>
+                        <span class="badge badge-danger" style="font-size: 0.65rem;">${h.vehicle_count} Veh</span>
+                      </div>
+                    `;
+                }
+            });
+        } else {
+             hotspotsContainer.innerHTML = '<div style="font-size: 0.8rem; color: var(--text-muted); padding: 0.5rem;">No hotspots found.</div>';
+        }
+
+      } catch (e) {
+        console.error('Error fetching traffic data', e);
+      }
+    }
+
+    fetchData();
+    loadOverlays();
+
+    // Controls Logic
+    document.getElementById('refreshDataBtn').addEventListener('click', fetchData);
+    
+    document.getElementById('layerViolations').addEventListener('change', () => fetchData());
+    document.getElementById('layerHeatmap').addEventListener('change', () => fetchData());
+    document.getElementById('layerZones').addEventListener('change', () => {
+      if (document.getElementById('layerZones').checked) overlayLayerGroup.addTo(map); else map.removeLayer(overlayLayerGroup);
+      loadOverlays();
+    });
+
+    // Auto refresh
+    setInterval(fetchData, 30000);
+    setInterval(loadOverlays, 60000);
+
+    // Geolocation
+    document.getElementById('geoBtn').addEventListener('click', () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+        });
+      }
+    });
+
+    // Nominatim Search
+    document.getElementById('searchBtn').addEventListener('click', async () => {
+      const query = document.getElementById('searchInput').value;
+      if (!query) {
+         currentArea = '';
+         fetchData();
+         return;
+      }
+      currentArea = query;
+      fetchData(); // Update API data based on search area
+      
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          map.setView([data[0].lat, data[0].lon], 14);
+        }
+      } catch (e) {
+        console.error('Search failed', e);
+      }
+    });
+  });
 </script>
-</body></html>
+{% endblock %}

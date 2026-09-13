@@ -594,6 +594,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS vehicle_health_status (
     last_service_date TIMESTAMP,
     next_service_due TIMESTAMP,
     fine_issued INTEGER DEFAULT 0,
+    fine_amount REAL DEFAULT 0,
     certificate_url TEXT,
     certificate_valid_until TIMESTAMP
 )''')
