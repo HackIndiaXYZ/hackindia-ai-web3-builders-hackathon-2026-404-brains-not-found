@@ -54,6 +54,49 @@ pinned: true
 | 18 | **Multi-Language (i18n)** | UI support for English, हिन्दी (Hindi), and ਪੰਜਾਬੀ (Punjabi) | ✅ |
 
 ---
+AI Detection Pipeline:
+
+                 TRAFFIC VIDEO
+                       │
+                       ▼
+              Video Validation
+                       │
+                       ▼
+                Frame Extraction
+                       │
+                       ▼
+              Vehicle Detection
+                       │
+                       ▼
+              Vehicle Classification
+                       │
+              ┌────────┴────────┐
+              ▼                 ▼
+        Two-Wheeler          Car
+              │                 │
+      ┌───────┼───────┐         │
+      ▼       ▼       ▼         ▼
+    Helmet  Triple   Wrong    Seatbelt
+   Detection Riding   Way     Detection
+              │                 │
+              └────────┬────────┘
+                       ▼
+                Vehicle Tracking
+                       │
+                       ▼
+                 ANPR / OCR
+                       │
+                       ▼
+              Evidence Generation
+                       │
+                       ▼
+              Violation Verification
+                       │
+                       ▼
+              Challan / Notification
+                       │
+                       ▼
+              Command Dashboard
 
 ## 🏛️ System Architecture
 
