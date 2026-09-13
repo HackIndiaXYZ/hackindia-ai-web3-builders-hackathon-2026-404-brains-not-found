@@ -55,7 +55,6 @@ pinned: true
 
 ---
 AI Detection Pipeline:
-
                  TRAFFIC VIDEO
                        │
                        ▼
