@@ -78,7 +78,7 @@
 ### 13. 📡 Server-Sent Events (SSE) Real-Time Notification Stream
 - Real-time event broadcasting (`/api/events`) pushing live violation detections, payment settlements, and near-miss warnings to dashboard clients without page reloads.
 
-### 14. ⛓️ Cryptographic Blockchain Audit Ledger
+### 14. ⛓️ Cryptographic MST Blockchain Audit Ledger
 - SHA-256 block hash chain linking every challan with its evidence screenshot digest, issuing officer ID, and timestamp to provide mathematical proof against record tampering.
 
 ### 15. 🏛️ National Vahan Database Integration

@@ -237,21 +237,82 @@ for video_name in videos:
                         if get_overlap((px1,py1,px2,py2), bike_region) > 0.50)
             if count >= 3: triple_riding = True; break
 
-        # No helmet
-        nohelmet_count = helmet_objects.count("nohelmet")
-        helmet_count   = helmet_objects.count("helmet") + helmet_objects.count("motorcyclist")
-        no_helmet      = ("motorcycle" in traffic_objects and
-                          nohelmet_count > 0 and nohelmet_count > helmet_count)
+        # No helmet (Check overlap with motorcycle boxes)
+        no_helmet = False
+        nohelmet_boxes = []
+        for box in helmet_results.boxes:
+            if helmet_model.names[int(box.cls)] == "nohelmet":
+                nohelmet_boxes.append(list(map(int, box.xyxy[0])))
+
+        for (mx1, my1, mx2, my2) in motorcycle_boxes:
+            bw = mx2 - mx1; bh = my2 - my1
+            bike_region = (
+                max(0, mx1 - int(bw * 0.05)), max(0, my1 - int(bh * 0.05)),
+                min(width, mx2 + int(bw * 0.05)), min(height, my2 + int(bh * 0.05))
+            )
+            for (hx1, hy1, hx2, hy2) in nohelmet_boxes:
+                if get_overlap((hx1, hy1, hx2, hy2), bike_region) > 0.50:
+                    no_helmet = True
+                    break
+            if no_helmet:
+                break
+
+        import math
+        def detect_seatbelt_frame(frame, vehicle_box):
+            x1, y1, x2, y2 = map(int, vehicle_box)
+            h, w = frame.shape[:2]
+            x1, y1, x2, y2 = max(0, x1), max(0, y1), min(w, x2), min(h, y2)
+            roi = frame[y1:y2, x1:x2]
+            if roi.size == 0 or roi.shape[0] < 30 or roi.shape[1] < 30:
+                return True # conservative
+            gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+            edges = cv2.Canny(gray, 60, 160)
+            lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=18, minLineLength=max(12, roi.shape[1] // 5), maxLineGap=8)
+            if lines is None: return False
+            for line in lines[:, 0]:
+                lx1, ly1, lx2, ly2 = map(int, line)
+                angle = abs(math.degrees(math.atan2(ly2 - ly1, lx2 - lx1)))
+                if 25 <= angle <= 65 and roi.shape[1] * 0.2 <= math.hypot(lx2-lx1, ly2-ly1): return True
+            return False
 
         violations = []
+        
+        # Seatbelt and Speeding
+        car_boxes = []
+        overspeeding_ids = set()
+        no_seatbelt = False
+        SPEED_FRAMES = 10
+        SPEED_THRESHOLD = 35 # px/frame approx
+        
+        for box in traffic_results.boxes:
+            if box.id is None: continue
+            label = traffic_model.names[int(box.cls)]
+            track_id = int(box.id)
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
+            cx, cy = (x1+x2)//2, (y1+y2)//2
+            
+            # Speed tracking
+            if not hasattr(traffic_results, 'speed_history'): traffic_results.speed_history = defaultdict(list)
+            hist = traffic_results.speed_history[track_id]
+            hist.append((cx, cy))
+            if len(hist) > SPEED_FRAMES:
+                dist = math.hypot(cx - hist[-SPEED_FRAMES][0], cy - hist[-SPEED_FRAMES][1])
+                if dist / SPEED_FRAMES > SPEED_THRESHOLD:
+                    overspeeding_ids.add(track_id)
+                hist.pop(0)
+
+            # Seatbelt detection
+            if label == "car":
+                car_boxes.append((x1, y1, x2, y2))
+                if not detect_seatbelt_frame(frame, (x1, y1, x2, y2)):
+                    no_seatbelt = True
+                    
+        if overspeeding_ids: violations.append("OVERSPEEDING")
+        if no_seatbelt: violations.append("NO SEATBELT")
+        
         if no_helmet:     violations.append("NO HELMET")
         if triple_riding: violations.append("TRIPLE RIDING")
         if wrong_way_ids: violations.append("WRONG WAY")
-
-        # Suppress NO HELMET when WRONG WAY is active — helmet classifier
-        # is unreliable on front-facing riders coming head-on
-        if "WRONG WAY" in violations and "NO HELMET" in violations:
-            violations.remove("NO HELMET")
 
         for v in violations:
             if v not in violations_found:

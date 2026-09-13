@@ -48,7 +48,7 @@ pinned: true
 | 11 | **Saarthi AI Chatbot** | Bilingual (Hindi + English) Motor Vehicles Act knowledge engine | ✅ |
 | 12 | **Suraksha Gamification** | 0-100 safe driving score & digital certificate generator | ✅ |
 | 13 | **National Vahan DB** | 50+ pre-seeded vehicles + procedural fallback for ANY plate | ✅ |
-| 14 | **Blockchain Audit** | SHA-256 cryptographic immutability block ledger | ✅ |
+| 14 | **MST Blockchain Audit** | SHA-256 cryptographic immutability block ledger | ✅ |
 | 15 | **Automated PDF Reports** | Multi-page Monthly & Daily PDF reports for Police HQ | ✅ |
 | 16 | **Role-Based Access (RBAC)** | 4 user roles: Superadmin, Admin, Inspector, Citizen | ✅ |
 | 17 | **Live SSE Push Stream** | Real-time event broadcasting to command centre tabs | ✅ |
@@ -70,7 +70,7 @@ graph TD
     F --> H[Multi-Channel Alerts: WhatsApp / SMS / Email]
     F --> I[ReportLab PDF E-Challan & Receipt Engine]
     F --> J[Safety & Predictive Analytics Engine]
-    F --> K[Cryptographic Blockchain Ledger]
+    F --> K[Cryptographic MST Blockchain Ledger]
     
     subgraph Frontend Interfaces
         L[Command Centre - index.html]

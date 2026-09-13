@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+
+{% block head_extra %}
+<style>
+    /* Sticky Topbar */
+    .landing-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 1.2rem 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .brand-text {
+        font-family: var(--font-sans);
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--text);
+        letter-spacing: -0.03em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        padding: 0 1rem;
+    }
+    
+    /* Premium Mesh Gradient Background */
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background-color: var(--canvas);
+        background-image: 
+            radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.15), transparent 40%),
+            radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.05), transparent 40%),
+            radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.1), transparent 50%);
+        animation: breath 15s ease-in-out infinite alternate;
+        filter: blur(40px);
+    }
+    
+    @keyframes breath {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.1); }
+    }
+    
+    .hero-badge {
+        margin-bottom: 2rem;
+        padding: 6px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 100px;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    }
+    
+    .hero-headline {
+        font-size: clamp(3rem, 6vw, 5rem);
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 1.5rem;
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+        background: linear-gradient(180deg, #FFFFFF 0%, #A1A1AA 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .hero-subheadline {
+        font-size: clamp(1.1rem, 2vw, 1.3rem);
+        color: var(--text-secondary);
+        max-width: 680px;
+        margin-bottom: 3rem;
+        line-height: 1.6;
+        font-weight: 400;
+    }
+    
+    .hero-cta-group {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .hero-cta {
+        padding: 14px 32px;
+        font-size: 1.05rem;
+        border-radius: 100px;
+    }
+    
+    .hero-footer-text {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+    }
+    
+    /* Stats Bar */
+    .stats-section {
+        padding: 5rem 2rem;
+        background: rgba(10, 10, 10, 0.5);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border-subtle);
+        border-bottom: 1px solid var(--border-subtle);
+        position: relative;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .hero-cta-group { flex-direction: column; }
+    }
+    
+    /* Features Section */
+    .features-section {
+        padding: 8rem 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .features-heading {
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 4rem;
+        color: var(--text);
+        letter-spacing: -0.03em;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .features-grid { grid-template-columns: 1fr; }
+    }
+    
+    .feature-card {
+        padding: 2.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        background: linear-gradient(145deg, rgba(25, 25, 25, 0.6) 0%, rgba(15, 15, 15, 0.8) 100%);
+        border: 1px solid var(--border-subtle);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .feature-icon {
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        color: var(--text);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    
+    .feature-icon svg {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .feature-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -0.01em;
+    }
+    
+    .feature-desc {
+        color: var(--text-secondary);
+        line-height: 1.7;
+        font-size: 1rem;
+    }
+    
+    /* Footer */
+    .landing-footer {
+        padding: 3rem 2rem;
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        border-top: 1px solid var(--border-subtle);
+        background: var(--canvas);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navbar -->
+<div class="landing-topbar flex items-center justify-between">
+    <div class="brand-text">TrafficGuard Pro</div>
+    <div class="flex items-center gap-4">
+        <a href="/login" class="btn btn-ghost btn-sm">Officer Login</a>
+        <a href="/citizen/login" class="btn btn-ghost btn-sm">Citizen Portal</a>
+    </div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-badge badge badge-accent anim-fade-up">TrafficGuard Pro</div>
+    <h1 class="hero-headline anim-fade-up">AI-Powered Traffic Enforcement<br>& Smart City Intelligence</h1>
+    <p class="hero-subheadline anim-fade-up">Transforming India's traffic enforcement into a transparent, intelligent, and citizen-friendly system that saves lives, reduces accidents, and builds trust.</p>
+    <div class="hero-cta-group anim-fade-up">
+        <a href="/citizen/login" class="btn btn-primary btn-lg hero-cta">Citizen Portal</a>
+        <a href="/login" class="btn btn-ghost btn-lg hero-cta">Officer Dashboard</a>
+    </div>
+    <p class="hero-footer-text anim-fade-up">Targeting 50+ Cities &middot; 97%+ Detection Accuracy &middot; Immutable Blockchain Records</p>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="stats-grid">
+        <div class="bento-card bento-card-counter anim-fade-up">
+            <div class="bento-label">Lives to Save Annually</div>
+            <div class="bento-value font-mono">21,000</div>
+        </div>
+        <div class="bento-card bento-card-counter anim-fade-up">
+            <div class="bento-label">Target Detection Accuracy</div>
+            <div class="bento-value font-mono">97%+</div>
+        </div>
+        <div class="bento-card bento-card-counter anim-fade-up">
+            <div class="bento-label">Accident Reduction</div>
+            <div class="bento-value font-mono">50%</div>
+        </div>
+        <div class="bento-card bento-card-counter anim-fade-up">
+            <div class="bento-label">Urban Traffic Reduction</div>
+            <div class="bento-value font-mono">20-30%</div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <h2 class="features-heading anim-fade-up">Platform Capabilities</h2>
+    <div class="features-grid">
+        <div class="glass-card feature-card anim-fade-up">
+            <div class="feature-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+            </div>
+            <h3 class="feature-title">Detects Violations</h3>
+            <p class="feature-desc">AI-based violation detection with 97%+ accuracy for no helmet, triple riding, wrong-way driving, speeding, and emission violations.</p>
+        </div>
+        <div class="glass-card feature-card anim-fade-up">
+            <div class="feature-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            </div>
+            <h3 class="feature-title">Manages Enforcement</h3>
+            <p class="feature-desc">Automated digital challan generation, real-time multi-channel delivery (WhatsApp, SMS, Email), and blockchain-based immutable record keeping.</p>
+        </div>
+        <div class="glass-card feature-card anim-fade-up">
+            <div class="feature-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+            </div>
+            <h3 class="feature-title">Provides Intelligence</h3>
+            <p class="feature-desc">Real-time traffic heatmaps, accident risk zone prediction, traffic flow optimization, and seamless integration with the National Vahan database.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="landing-footer">
+    Ministry of Road Transport & Highways &middot; {{ organization }}
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initial Hero Animation
+    gsap.from('.hero-section .anim-fade-up', {
+        y: 24,
+        opacity: 0,
+        stagger: 0.1,
+        duration: 0.6,
+        ease: 'power3.out',
+        delay: 0.2
+    });
+
+    // Stagger counters on load
+    gsap.from('.bento-card-counter', {
+        y: 24,
+        opacity: 0,
+        stagger: 0.1,
+        duration: 0.6,
+        ease: 'power3.out',
+        delay: 0.6
+    });
+
+    // IntersectionObserver for Features Section
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                gsap.from(entry.target.querySelectorAll('.anim-fade-up'), {
+                    y: 24,
+                    opacity: 0,
+                    stagger: 0.1,
+                    duration: 0.6,
+                    ease: 'power3.out'
+                });
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.2 });
+
+    const featuresSection = document.querySelector('.features-section');
+    if (featuresSection) {
+        observer.observe(featuresSection);
+    }
+</script>
+{% endblock %}

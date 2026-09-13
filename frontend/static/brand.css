@@ -1,4 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Poppins:wght@500;600;700;800&display=swap');
+/* brand.css — Backwards-compatibility shim
+   Imports the new design system and maps legacy variable names.
+   Keeps intelligence.html and other unrewritten templates functional. */
+
+@import url('design-system.css');
 
 :root {
   /* Indian National & Traffic Palette */
@@ -12,6 +17,17 @@
   --navy-dark: #000e2b;
   --cyan: #00e5ff;
   --gold: #ffd700;
+  /* Legacy variable mappings → new design tokens */
+  --saffron:          var(--accent);
+  --saffron-glow:     var(--accent-muted);
+  --traffic-red:      var(--danger);
+  --traffic-red-glow: var(--danger-muted);
+  --green:            var(--success);
+  --green-glow:       var(--success-muted);
+  --navy:             #0F172A;
+  --navy-dark:        #0A0E17;
+  --cyan:             var(--accent);
+  --gold:             var(--warning);
 
   /* Dark Mode Defaults */
   --bg: #070d18;
@@ -27,10 +43,19 @@
   --text-muted: #8fa0b5;
   --text-dim: #5c6f84;
   --shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  --bg:               var(--canvas);
+  --bg-gradient:      var(--canvas);
+  --surface-card:     var(--surface-raised);
+  --surface-hover:    var(--surface-raised);
+  --border-focus:     var(--border-glow);
+  --text-dim:         var(--text-dim);
+  --shadow:           var(--shadow-md);
 
   --font-heading: 'Poppins', sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --font-heading:     var(--font-sans);
+  --font-body:        var(--font-body);
 }
 
 [data-theme="light"] {
@@ -70,10 +95,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ── TRICOLOR ACCENT ── */
+/* Legacy class support */
 .tricolor-stripe {
   height: 4px;
   background: linear-gradient(90deg, var(--saffron) 0%, var(--saffron) 33.3%, #ffffff 33.3%, #ffffff 66.6%, var(--green) 66.6%, var(--green) 100%);
   width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--success) 50%, var(--accent) 100%);
+  opacity: 0.5;
 }
 
 /* ── GLASSMORPHISM ── */
@@ -81,25 +110,38 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--surface);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: var(--shadow);
+  border-radius: var(--radius-lg);
 }
 
 .glass-card {
   background: var(--surface-card);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  background: var(--surface-raised);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: var(--radius-md);
+  padding: var(--sp-5);
+  transition: border-color var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out),
+              box-shadow var(--duration-normal) var(--ease-out);
 }
 
 .glass-card:hover {
   border-color: var(--border-focus);
+  border-color: var(--border-glow);
   transform: translateY(-2px);
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-glow);
 }
 
 /* ── BADGES & CHIPS ── */
@@ -114,6 +156,12 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+/* Legacy badges */
+.badge-red    { background: var(--danger-muted); border: 1px solid rgba(244,63,94,0.3); color: var(--danger); }
+.badge-orange { background: var(--warning-muted); border: 1px solid rgba(245,158,11,0.3); color: var(--warning); }
+.badge-green  { background: var(--success-muted); border: 1px solid rgba(16,185,129,0.3); color: var(--success); }
+.badge-blue   { background: var(--accent-muted); border: 1px solid rgba(14,165,233,0.3); color: var(--accent); }
+.badge-gold   { background: var(--warning-muted); border: 1px solid rgba(245,158,11,0.3); color: var(--warning); }
 
 .badge-red {
   background: rgba(230, 28, 22, 0.15);
@@ -162,10 +210,13 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: none;
 }
 
+/* Legacy buttons */
 .btn-primary {
   background: linear-gradient(135deg, #e61c16, #ff453a);
+  background: var(--accent);
   color: #ffffff;
   box-shadow: 0 4px 14px var(--traffic-red-glow);
+  box-shadow: 0 2px 12px rgba(14, 165, 233, 0.30);
 }
 
 .btn-primary:hover {
@@ -190,9 +241,14 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 4px 14px var(--green-glow);
 }
 
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-saffron { background: var(--accent); color: #ffffff; }
+.btn-saffron:hover { background: var(--accent-hover); }
+.btn-success { background: var(--success); color: #ffffff; }
 .btn-outline {
   background: transparent;
   color: var(--text);
+  color: var(--text-secondary);
   border: 1px solid var(--border);
 }
 
@@ -200,6 +256,9 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--cyan);
   color: var(--cyan);
   background: rgba(0, 229, 255, 0.05);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-muted);
 }
 
 /* ── NUMBER PLATE DISPLAY ── */
@@ -208,10 +267,16 @@ h1, h2, h3, h4, h5, h6 {
   background: #000e2b;
   border: 2px solid var(--saffron);
   color: var(--saffron);
+  background: var(--surface-inset);
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
   font-weight: 700;
   font-size: 0.95rem;
   padding: 4px 10px;
   border-radius: 6px;
+  font-size: 0.9rem;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
   letter-spacing: 0.1em;
   display: inline-block;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
@@ -222,15 +287,20 @@ h1, h2, h3, h4, h5, h6 {
   0% { transform: scale(0.95); opacity: 0.7; }
   50% { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 6px #00e5ff); }
   100% { transform: scale(0.95); opacity: 0.7; }
+  0%, 100% { opacity: 0.5; transform: scale(0.9); }
+  50%      { opacity: 1; transform: scale(1.1); }
 }
 
 .pulse-dot {
   width: 9px;
   height: 9px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   background: #00e676;
+  background: var(--success);
   display: inline-block;
   animation: pulse-live 1.8s infinite;
+  animation: pulse-live 2s ease-in-out infinite;
 }
 
 .pulse-dot.danger {
@@ -536,3 +606,4 @@ body.intelligence-shell .copilot-terminal {
     height: 222px;
   }
 }
+.pulse-dot.danger { background: var(--danger); }

@@ -29,6 +29,8 @@ BASE_FINES = {
     "NO SEATBELT":   1000,
     "SIGNAL JUMP":   1000,
     "DRUNK DRIVING": 10000,
+    "PARKING VIOLATION": 500,
+    "EMISSION VIOLATION": 10000,
 }
 
 SECTIONS = {
@@ -39,6 +41,8 @@ SECTIONS = {
     "NO SEATBELT":   "Sec 194B MV Act (Seatbelt Non-compliance)",
     "SIGNAL JUMP":   "Sec 184(c) MV Act (Red Light Violation)",
     "DRUNK DRIVING": "Sec 185 MV Act (Driving Under Influence)",
+    "PARKING VIOLATION": "Sec 177 / 122 MV Act (Improper Parking)",
+    "EMISSION VIOLATION": "Sec 190(2) MV Act (Violation of Standards)",
 }
 
 SEVERITY_MULTIPLIER = {

@@ -119,26 +119,54 @@ def get_predictive_recommendations(conn):
     peak_data = get_peak_violation_hours(conn)
     peak_window = peak_data["peak_hour"]
 
+    c = conn.cursor()
+    
+    # 1. Top violation type
+    c.execute('''
+        SELECT violation, COUNT(*) as cnt 
+        FROM violations 
+        WHERE timestamp > datetime('now', '-7 days')
+        GROUP BY violation ORDER BY cnt DESC LIMIT 1
+    ''')
+    top_viol = c.fetchone()
+    if top_viol:
+        top_violation, viol_count = top_viol[0], top_viol[1]
+    else:
+        top_violation, viol_count = "Helmet & Triple Riding", 0
+
+    # 2. Top location/camera
+    c.execute('''
+        SELECT video, COUNT(*) as cnt 
+        FROM violations 
+        WHERE timestamp > datetime('now', '-7 days')
+        GROUP BY video ORDER BY cnt DESC LIMIT 1
+    ''')
+    top_cam = c.fetchone()
+    if top_cam:
+        top_camera, cam_count = top_cam[0].replace('.mp4', '').replace('cctv_', '').replace('dashcam_', '').replace('_', ' ').title(), top_cam[1]
+    else:
+        top_camera, cam_count = "Silk Board & Koramangala Outer Ring", 0
+
     recs = [
         {
             "priority": "HIGH",
             "icon": "🚨",
             "directive": f"Deploy Mobile Interceptor Patrols during peak risk window ({peak_window})",
-            "basis": f"Violations surge by 280% between {peak_window} along high-density junctions.",
+            "basis": f"Violations surge during {peak_window} along high-density junctions.",
             "action": "Dispatch 2 Interceptor units with ANPR cameras"
         },
         {
             "priority": "CRITICAL",
             "icon": "🪖",
-            "directive": "Two-Wheeler Safety Checkpoint at Silk Board & Koramangala Outer Ring",
-            "basis": "Helmet & Triple Riding non-compliance accounts for 68% of all recorded infractions.",
+            "directive": f"Targeted Safety Checkpoint at {top_camera}",
+            "basis": f"'{top_violation}' accounts for the highest volume of recent infractions ({viol_count} cases in 7 days).",
             "action": "Deploy automated speed & helmet enforcement camera"
         },
         {
             "priority": "MEDIUM",
             "icon": "⚡",
-            "directive": "Active Warning Signs for Wrong-Way Driving near Service Road entries",
-            "basis": "12 wrong-way maneuvers flagged by AI trajectory tracking this week.",
+            "directive": "Active Warning Signs for Wrong-Way Driving",
+            "basis": "Identify and alert wrong-way maneuvers flagged by AI trajectory tracking this week.",
             "action": "Install physical spike-strips & prominent LED directional signage"
         }
     ]
