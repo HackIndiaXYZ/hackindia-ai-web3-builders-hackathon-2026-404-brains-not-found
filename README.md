@@ -55,6 +55,7 @@ pinned: true
 
 ---
 AI Detection Pipeline:
+
                  TRAFFIC VIDEO
                        │
                        ▼
@@ -77,7 +78,8 @@ AI Detection Pipeline:
       ▼       ▼       ▼         ▼
     Helmet  Triple   Wrong    Seatbelt
    Detection Riding   Way     Detection
-              │                 │
+          
+            │                 │
               └────────┬────────┘
                        ▼
                 Vehicle Tracking
